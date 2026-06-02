@@ -112,7 +112,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* ===== MAIN CONTENT ===== */}
-      <main className="flex-1 flex flex-col overflow-hidden min-w-0">
+      <main className="flex-1 flex flex-col overflow-hidden min-w-0 pb-[72px] md:pb-0 relative">
 
         {/* Header */}
         <header className="h-16 bg-white flex items-center justify-between px-5 sm:px-6 shrink-0"
@@ -154,6 +154,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex-1 overflow-y-auto">
           {children}
         </div>
+
+        {/* ===== MOBILE BOTTOM NAVIGATION ===== */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[72px] bg-white border-t border-gray-200 flex justify-around items-center px-1 z-50 pb-safe"
+          style={{ boxShadow: '0 -4px 12px rgba(0,0,0,0.05)' }}>
+          {menuItems.slice(0, 4).map((item) => {
+            const isActive = item.href === '/'
+              ? pathname === '/'
+              : pathname === item.href || pathname.startsWith(item.href + '/');
+            return (
+              <Link key={item.href} href={item.href} className="flex flex-col items-center justify-center w-full h-full gap-1.5 pt-1">
+                <item.icon className={`w-6 h-6 transition-all ${isActive ? 'text-brand-red scale-110 drop-shadow-md' : 'text-gray-400'}`} />
+                <span className={`text-[10px] font-medium tracking-tight transition-colors ${isActive ? 'text-brand-blue font-bold' : 'text-gray-500'}`}>
+                  {item.name === 'Dashboard' ? 'Trang chủ' : item.name === 'Hồ sơ tài liệu' ? 'Hồ sơ' : item.name === 'Công nhân' ? 'Nhân sự' : item.name}
+                </span>
+              </Link>
+            );
+          })}
+          <Link href="/settings" className="flex flex-col items-center justify-center w-full h-full gap-1.5 pt-1">
+             <Settings className={`w-6 h-6 transition-all ${pathname.startsWith('/settings') ? 'text-brand-red scale-110 drop-shadow-md' : 'text-gray-400'}`} />
+             <span className={`text-[10px] font-medium tracking-tight transition-colors ${pathname.startsWith('/settings') ? 'text-brand-blue font-bold' : 'text-gray-500'}`}>
+               Cài đặt
+             </span>
+          </Link>
+        </nav>
       </main>
     </div>
   );

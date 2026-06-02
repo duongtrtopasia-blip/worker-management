@@ -340,8 +340,8 @@ export default function WorkersPage() {
       {/* ===== TABLE ===== */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-50 border-b border-gray-100">
+          <TableHeader className="hidden md:table-header-group bg-gray-50/50 sticky top-0 z-10 backdrop-blur-sm">
+            <TableRow className="border-b border-gray-100">
               <TableHead className="w-10 pl-4">
                 <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-gray-300 text-brand-blue cursor-pointer" />
               </TableHead>
@@ -377,7 +377,9 @@ export default function WorkersPage() {
               </TableRow>
             ) : (
               filteredWorkers.map((worker) => (
-                <TableRow key={worker.id} className={`border-b border-gray-50 transition-colors ${checkedIds.has(worker.id) ? 'bg-blue-50/60' : 'hover:bg-gray-50/80'}`}>
+                <React.Fragment key={worker.id}>
+                {/* --- DESKTOP VIEW --- */}
+                <TableRow className={`hidden md:table-row border-b border-gray-50 transition-colors ${checkedIds.has(worker.id) ? 'bg-blue-50/60' : 'hover:bg-gray-50/80'}`}>
                   <TableCell className="pl-4">
                     <input type="checkbox" checked={checkedIds.has(worker.id)} onChange={(e) => toggleCheck(worker.id, e as any)} onClick={(e) => e.stopPropagation()} className="w-4 h-4 rounded border-gray-300 text-brand-blue cursor-pointer" />
                   </TableCell>
@@ -445,6 +447,66 @@ export default function WorkersPage() {
                     </div>
                   </TableCell>
                 </TableRow>
+
+                {/* --- MOBILE VIEW --- */}
+                <tr className="md:hidden border-b border-gray-100 bg-white">
+                  <td colSpan={9} className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="pt-1">
+                        <input type="checkbox" checked={checkedIds.has(worker.id)} onChange={(e) => toggleCheck(worker.id, e as any)} className="w-5 h-5 rounded border-gray-300 text-brand-blue" />
+                      </div>
+                      <div className="w-12 h-12 shrink-0 rounded-full bg-gradient-to-br from-brand-blue to-brand-red overflow-hidden flex items-center justify-center border border-gray-200">
+                        {worker.portrait_url ? (
+                          <img src={worker.portrait_url} alt={worker.full_name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-white text-sm font-bold">{worker.full_name?.charAt(0)}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start mb-1">
+                          <p className="font-bold text-gray-900 truncate">{worker.full_name}</p>
+                          <span className="font-mono text-xs font-semibold text-brand-blue shrink-0">{worker.mnv}</span>
+                        </div>
+                        <p className="text-xs text-gray-500 font-mono mb-2">CCCD: {worker.cccd}</p>
+                        
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px]">{worker.team}</span>
+                          <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px]">{worker.area}</span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="scale-90 origin-left">
+                            {!worker.card_status || worker.card_status === 'none' ? (
+                              userRole === 'editor' ? (
+                                <Button variant="outline" size="sm" onClick={() => handleCardRequest(worker.id, 'pending')} className="text-[10px] h-6 px-2 text-blue-600 border-blue-200 hover:bg-blue-50">
+                                  Trình duyệt
+                                </Button>
+                              ) : cardStatusBadge('none')
+                            ) : worker.card_status === 'pending' ? (
+                              userRole === 'admin' ? (
+                                <Button size="sm" onClick={() => handleCardRequest(worker.id, 'approved')} className="text-[10px] h-6 px-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+                                  Phê duyệt
+                                </Button>
+                              ) : cardStatusBadge('pending')
+                            ) : cardStatusBadge(worker.card_status)}
+                          </div>
+
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => window.open(`/workers/${worker.id}/print`, '_blank')} className="h-7 w-7 p-0 border-gray-200 rounded-full">
+                              <Printer className="h-3 w-3 text-gray-500" />
+                            </Button>
+                            <Link href={`/workers/${worker.id}/edit`}>
+                              <Button variant="outline" size="sm" className="h-7 w-7 p-0 border-gray-200 rounded-full">
+                                <Edit className="h-3 w-3 text-brand-blue" />
+                              </Button>
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                </React.Fragment>
               ))
             )}
           </TableBody>
