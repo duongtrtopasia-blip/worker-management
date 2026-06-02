@@ -2,26 +2,74 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@font-face {
+  font-family: 'UTM Avo';
+  font-style: normal;
+  font-weight: 400;
+  src: local('UTM Avo'), local('UTMAvo'), url('/fonts/UTMAvo-Regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'UTM Avo';
+  font-style: normal;
+  font-weight: 700;
+  src: local('UTM Avo Bold'), local('UTMAvo-Bold'), url('/fonts/UTMAvo-Bold.ttf') format('truetype');
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  .sidebar-gradient {
+    background: linear-gradient(160deg, #1e3a8a 0%, #1a2f6e 40%, #970731 100%);
+  }
+  .brand-header-gradient {
+    background: linear-gradient(90deg, #1e3a8a 0%, #970731 100%);
+  }
+  .stat-card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .stat-card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px rgba(0,0,0,0.12);
+  }
+}
+
+@layer base {
+  :root {
+    --font-sans: 'UTM Avo', sans-serif;
+    --background: oklch(0.97 0.005 260);
+    --foreground: oklch(0.15 0.01 260);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.15 0.01 260);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.15 0.01 260);
+    --primary: oklch(0.32 0.12 260);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.96 0.005 260);
+    --secondary-foreground: oklch(0.32 0.12 260);
+    --muted: oklch(0.96 0.005 260);
+    --muted-foreground: oklch(0.50 0.01 260);
+    --accent: oklch(0.94 0.01 260);
+    --accent-foreground: oklch(0.32 0.12 260);
+    --destructive: oklch(0.54 0.22 27);
+    --border: oklch(0.90 0.005 260);
+    --input: oklch(0.92 0.005 260);
+    --ring: oklch(0.32 0.12 260);
+    --radius: 0.625rem;
+    --font-sans: 'Be Vietnam Pro', sans-serif;
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+    font-family: 'UTM Avo', sans-serif;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'UTM Avo', sans-serif;
+    background-color: #f0f4f8;
+  }
+  html {
+    font-family: 'UTM Avo', sans-serif;
   }
 }
