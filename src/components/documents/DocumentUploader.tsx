@@ -54,7 +54,7 @@ export const DocumentUploader = ({ workerId, docType, existingDocUrl, onSuccess 
       });
 
       if (!res.ok) throw new Error('Upload thất bại');
-      
+
       toast.success('Upload tài liệu thành công');
       setFile(null);
       onSuccess();

@@ -10,6 +10,8 @@ import { importWorkersAction, type ImportRow, type ImportResult } from '@/app/ac
 const HEADER_MAP: Record<string, keyof ImportRow> = {
   'họ và tên (*)':            'full_name',
   'họ và tên':                'full_name',
+  'họ tên':                   'full_name',
+  'tên':                      'full_name',
   'mã nhân viên - mnv (*)':   'employee_id',
   'mã nhân viên - mnv':       'employee_id',
   'mã nhân viên':             'employee_id',
@@ -86,13 +88,35 @@ export default function ImportExcelModal({ open, onClose, onImported }: Props) {
           return;
         }
 
-        const headerRow = (raw[0] as string[]).map(h => String(h).trim().toLowerCase());
+        // Tìm dòng chứa header (quét tối đa 5 dòng đầu)
+        let headerRowIndex = 0;
+        let headerRow: string[] = [];
+        let maxMatchCount = 0;
+
+        for (let i = 0; i < Math.min(raw.length, 5); i++) {
+          const rowStrings = (raw[i] as string[]).map(h => String(h || '').trim().toLowerCase());
+          let matchCount = 0;
+          rowStrings.forEach(h => {
+            if (HEADER_MAP[h]) matchCount++;
+          });
+          if (matchCount > maxMatchCount) {
+            maxMatchCount = matchCount;
+            headerRowIndex = i;
+            headerRow = rowStrings;
+          }
+        }
+
+        if (maxMatchCount === 0) {
+          toast.error('Không tìm thấy dữ liệu hợp lệ. Vui lòng đảm bảo file có các cột như "Họ và tên", "MNV", "CCCD"...');
+          return;
+        }
+
         const parsed: ImportRow[] = [];
 
-        for (let i = 1; i < raw.length; i++) {
+        for (let i = headerRowIndex + 1; i < raw.length; i++) {
           const cells = raw[i] as string[];
           // Bỏ qua dòng rỗng
-          if (cells.every(c => !String(c).trim())) continue;
+          if (!cells || cells.every(c => !String(c).trim())) continue;
 
           const obj: any = {};
           headerRow.forEach((h, ci) => {

@@ -61,11 +61,11 @@ export default function EditWorkerPage({ params }: { params: { id: string } }) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsUploading(true);
-    
+
     // Thu thập tất cả dữ liệu form
     const formData = new FormData(e.currentTarget);
     const file = fileInputRef.current?.files?.[0];
-    
+
     // Nếu có file mới thì đính kèm, còn URL ảnh cũ (nếu có) cũng được gửi lên
     if (file) {
       formData.append('portrait', file);
@@ -73,7 +73,7 @@ export default function EditWorkerPage({ params }: { params: { id: string } }) {
     if (worker?.portrait_url) {
       formData.append('existing_portrait_url', worker.portrait_url);
     }
-    
+
     try {
       // Gọi Server Action để cập nhật, xử lý upload GDrive nếu cần
       const res = await updateWorkerAction(params.id, formData);
@@ -107,7 +107,7 @@ export default function EditWorkerPage({ params }: { params: { id: string } }) {
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold tracking-tight text-brand-blue">Hồ Sơ Công Nhân</h1>
-      
+
       <Tabs defaultValue="info" className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
           <TabsTrigger value="info">Thông tin cơ bản</TabsTrigger>
@@ -120,25 +120,25 @@ export default function EditWorkerPage({ params }: { params: { id: string } }) {
               <div className="space-y-4">
                 <div>
                   <Label>Ảnh chân dung (3:4)</Label>
-                  <div 
+                  <div
                     onClick={() => fileInputRef.current?.click()}
                     className="mt-2 border-2 border-dashed rounded-md p-2 h-48 flex flex-col items-center justify-center text-gray-500 hover:bg-gray-50 cursor-pointer overflow-hidden relative"
                   >
                     {imagePreview ? (
-                       <img src={imagePreview} alt="Preview" className="h-full object-contain" />
+                      <img src={imagePreview} alt="Preview" className="h-full object-contain" />
                     ) : (
-                       <span>Kéo thả hoặc click để tải ảnh mới lên</span>
+                      <span>Kéo thả hoặc click để tải ảnh mới lên</span>
                     )}
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      className="hidden" 
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
                       ref={fileInputRef}
                       onChange={handleImageChange}
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="full_name">Họ và Tên *</Label>
                   <Input id="full_name" name="full_name" required defaultValue={worker.full_name} />
@@ -156,7 +156,7 @@ export default function EditWorkerPage({ params }: { params: { id: string } }) {
               </div>
 
               <div className="space-y-4">
-                 <div>
+                <div>
                   <Label htmlFor="team_name">Tổ Đội *</Label>
                   <Input id="team_name" name="team_name" required defaultValue={worker.team} />
                 </div>
@@ -176,7 +176,7 @@ export default function EditWorkerPage({ params }: { params: { id: string } }) {
                   <Input id="phone" name="phone" placeholder="0901234567" />
                 </div>
 
-                 <div>
+                <div>
                   <Label htmlFor="start_date">Ngày Vào Làm</Label>
                   <Input id="start_date" name="start_date" type="date" />
                 </div>
@@ -218,7 +218,7 @@ export default function EditWorkerPage({ params }: { params: { id: string } }) {
                 Các tài liệu tải lên tại đây sẽ tự động được tạo thư mục <b>{worker.mnv}-{worker.cccd}</b> trên Google Drive.
               </p>
             </div>
-            
+
             <div className="grid grid-cols-1 gap-6">
               <DocumentUploader workerId={worker.id} docType="cccd_notarized" existingDocUrl={getDocumentUrl('cccd_notarized')} onSuccess={fetchWorker} />
               <DocumentUploader workerId={worker.id} docType="health_certificate" existingDocUrl={getDocumentUrl('health_certificate')} onSuccess={fetchWorker} />
