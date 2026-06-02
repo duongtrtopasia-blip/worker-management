@@ -5,13 +5,17 @@ import { Toaster } from 'react-hot-toast';
 
 
 export const metadata: Metadata = {
-  title: "Worker Management",
+  title: "SCMP Vincons",
   description: "Hệ thống quản lý công nhân và thẻ ra vào",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Worker Management",
+    title: "SCMP Vincons",
+  },
+  icons: {
+    icon: "/logo.svg",
+    apple: "/logo.svg",
   },
   themeColor: "#1e3a8a",
 };
