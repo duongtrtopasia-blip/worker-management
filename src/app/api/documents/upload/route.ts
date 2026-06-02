@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { uploadDocument } from '@/lib/google-drive';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createWorkerFolderStructure, uploadDocument } from '@/lib/google-drive';
 import { DocumentType } from '@/types';
 
 export async function POST(request: Request) {
@@ -19,9 +19,20 @@ export async function POST(request: Request) {
 
     const supabase = createRouteHandlerClient({ cookies });
     
-    // Tạm thời hardcode folder ID cho ví dụ. 
-    // Thực tế cần query cấu trúc folder của worker này từ DB hoặc gọi lại Google Drive.
-    const workerFolderId = 'dummy-worker-folder-id'; 
+    // Fetch worker details to create folder structure
+    const { data: worker, error: workerError } = await supabase
+      .from('workers')
+      .select('*')
+      .eq('id', workerId)
+      .single();
+
+    if (workerError || !worker) {
+      throw new Error('Không tìm thấy thông tin công nhân');
+    }
+
+    // Create or get the folder structure dynamically
+    const folders = await createWorkerFolderStructure(worker as any);
+    const workerFolderId = folders.rootFolderId;
 
     // Chuyển File sang Buffer
     const arrayBuffer = await file.arrayBuffer();

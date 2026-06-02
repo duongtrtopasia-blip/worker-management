@@ -88,7 +88,10 @@ export async function createWorkerFolderStructure(worker: Worker): Promise<Worke
   const areaTeamFolderId = await getOrCreateFolder(areaTeamName, rootId);
 
   // 2. Thư mục Công nhân
-  const workerFolderName = `${worker.employee_id} - ${worker.full_name}`;
+  // Lấy giá trị mnv/cccd từ DB hoặc thuộc tính tương ứng
+  const mnv = (worker as any).mnv || worker.employee_id;
+  const cccd = (worker as any).cccd || (worker as any).cccd_number;
+  const workerFolderName = `${mnv}-${cccd}`;
   const workerFolderId = await getOrCreateFolder(workerFolderName, areaTeamFolderId);
 
   // 3. Các thư mục con
