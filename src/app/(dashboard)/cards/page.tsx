@@ -154,10 +154,10 @@ export default function CardsPage() {
       </div>
 
       {/* ===== MAIN CONTENT ===== */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="flex flex-col lg:grid lg:grid-cols-5 gap-6 lg:h-[calc(100vh-160px)] pb-6 lg:pb-0">
 
         {/* Card Preview - 3 cols */}
-        <div className="lg:col-span-3 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="lg:col-span-3 order-2 lg:order-1 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
           <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-1 h-5 rounded-full" style={{ background: 'linear-gradient(to bottom, #1e3a8a, #970731)' }} />
@@ -165,9 +165,9 @@ export default function CardsPage() {
             </div>
             <span className="text-xs px-2.5 py-1 rounded-full bg-blue-50 text-brand-blue font-medium border border-blue-100">Thẻ Ngang</span>
           </div>
-          <div className="flex justify-center items-center bg-gray-50 p-10 min-h-[420px]">
+          <div className="flex-1 flex justify-center items-center bg-gray-50 p-6 lg:p-10 min-h-[350px] lg:min-h-0 overflow-hidden">
             {cardData ? (
-              <div id="card-preview" className="drop-shadow-2xl">
+              <div id="card-preview" className="drop-shadow-2xl scale-75 sm:scale-90 lg:scale-100 origin-center">
                 <CardTemplate data={cardData} layout="horizontal" />
               </div>
             ) : (
@@ -180,7 +180,7 @@ export default function CardsPage() {
         </div>
 
         {/* Worker List - 2 cols */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+        <div className="lg:col-span-2 order-1 lg:order-2 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col h-[450px] lg:h-auto">
           <div className="px-5 py-4 border-b border-gray-100">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
