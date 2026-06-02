@@ -6,7 +6,9 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Home, Users, CreditCard, FolderOpen, UploadCloud, Settings, LogOut, Bell, ChevronRight } from 'lucide-react';
 import { logoutAction } from '@/app/actions/auth';
 
-const menuItems = [
+import { ClipboardList } from 'lucide-react';
+
+const baseMenuItems = [
   { name: 'Dashboard', href: '/', icon: Home },
   { name: 'Công nhân', href: '/workers', icon: Users },
   { name: 'Thẻ ra vào', href: '/cards', icon: CreditCard },
@@ -17,12 +19,27 @@ const menuItems = [
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [userRole, setUserRole] = React.useState('admin');
+  const [username, setUsername] = React.useState('Admin');
+
+  React.useEffect(() => {
+    const roleMatch = document.cookie.match(new RegExp('(^| )user_role=([^;]+)'));
+    if (roleMatch) setUserRole(roleMatch[2]);
+    
+    const userMatch = document.cookie.match(new RegExp('(^| )username=([^;]+)'));
+    if (userMatch) setUsername(userMatch[2]);
+  }, []);
 
   const handleLogout = async () => {
     await logoutAction();
     router.push('/login');
     router.refresh();
   };
+
+  const menuItems = [...baseMenuItems];
+  if (userRole === 'admin') {
+    menuItems.push({ name: 'Lịch sử thao tác', href: '/audit-logs', icon: ClipboardList });
+  }
 
   return (
     <div className="flex h-screen font-sans" style={{ backgroundColor: '#f0f4f8' }}>
@@ -121,13 +138,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </button>
             <div className="hidden sm:block h-6 w-px bg-gray-200" />
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm"
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm uppercase"
                 style={{ background: 'linear-gradient(135deg, #1e3a8a, #970731)' }}>
-                A
+                {username[0]}
               </div>
               <div className="hidden sm:block">
-                <p className="text-sm font-semibold text-gray-800 leading-none">Admin</p>
-                <p className="text-[11px] text-gray-400 mt-0.5">Quản trị viên</p>
+                <p className="text-sm font-semibold text-gray-800 leading-none capitalize">{username}</p>
+                <p className="text-[11px] text-gray-400 mt-0.5">{userRole === 'admin' ? 'Quản trị viên' : 'Người dùng'}</p>
               </div>
             </div>
           </div>

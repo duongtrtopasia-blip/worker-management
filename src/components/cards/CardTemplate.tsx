@@ -1,5 +1,33 @@
-import React from 'react';
+import React, { useRef, useLayoutEffect } from 'react';
 import QRCode from 'react-qr-code';
+
+const AutoFitText = ({ text, className, align = 'center', defaultFontSize = 13 }: { text: string; className?: string; align?: 'center' | 'left'; defaultFontSize?: number }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLSpanElement>(null);
+
+  useLayoutEffect(() => {
+    if (containerRef.current && textRef.current) {
+      const container = containerRef.current;
+      const textEl = textRef.current;
+      
+      textEl.style.fontSize = `${defaultFontSize}px`;
+      let currentSize = defaultFontSize;
+      
+      while (textEl.scrollWidth > container.clientWidth && currentSize > 6) {
+        currentSize -= 0.5;
+        textEl.style.fontSize = `${currentSize}px`;
+      }
+    }
+  }, [text, defaultFontSize]);
+
+  return (
+    <div ref={containerRef} className={`w-full overflow-hidden whitespace-nowrap flex ${align === 'center' ? 'justify-center' : 'justify-start'} ${className}`}>
+      <span ref={textRef} style={{ fontSize: `${defaultFontSize}px`, display: 'inline-block' }}>
+        {text}
+      </span>
+    </div>
+  );
+};
 
 export type CardData = {
   card_type: 'person' | 'vehicle';
@@ -52,7 +80,7 @@ export const PersonCard = ({ data }: { data: CardData }) => {
         </div>
         
         <div className="text-center w-full mt-1">
-          <p className="font-bold text-[13px] text-brand-blue leading-tight pb-[2px] uppercase">{data.worker.full_name}</p>
+          <AutoFitText text={data.worker.full_name} className="font-bold text-brand-blue pb-[2px] uppercase" defaultFontSize={13} align="center" />
           <p className="font-semibold text-brand-maroon text-[11px] leading-tight pb-[1px]">{data.worker.employee_id}</p>
           {data.worker.position && <p className="font-semibold text-brand-red text-[11px] leading-tight pb-[1px] uppercase">{data.worker.position}</p>}
           <p className="text-[10px] text-gray-700 leading-tight pb-[1px]">{data.worker.team_name}</p>
@@ -83,7 +111,7 @@ export const PersonCard = ({ data }: { data: CardData }) => {
 export const PersonCardHorizontal = ({ data }: { data: CardData }) => {
   return (
     <div className="w-[324px] h-[204px] bg-white border-[3px] border-brand-blue rounded-lg relative overflow-hidden flex p-2 shadow-md font-sans text-xs">
-      <div className="flex flex-col flex-1 border-r-[2px] border-dashed border-brand-blue/30 pr-2 justify-between">
+      <div className="flex flex-col flex-1 min-w-0 border-r-[2px] border-dashed border-brand-blue/30 pr-2 justify-between">
         <div className="w-full flex justify-between items-center mb-1 pb-1 border-b-[2px] border-brand-red/20">
            <img src="/vingroup_logo.svg" alt="Vingroup" className="h-[24px] w-auto object-contain shrink-0" />
            <div className="flex flex-col items-center justify-center text-center px-1 flex-1">
@@ -100,8 +128,8 @@ export const PersonCardHorizontal = ({ data }: { data: CardData }) => {
                <div className="flex items-center justify-center h-full text-gray-400 text-[10px]">Ảnh</div>
              )}
            </div>
-           <div className="flex flex-col space-y-[2px]">
-             <p className="font-bold text-[13px] text-brand-blue leading-tight uppercase">{data.worker.full_name}</p>
+           <div className="flex flex-col space-y-[2px] overflow-hidden flex-1">
+             <AutoFitText text={data.worker.full_name} className="font-bold text-brand-blue uppercase" defaultFontSize={13} align="left" />
              <p className="font-semibold text-brand-maroon text-[11px] leading-tight">{data.worker.employee_id}</p>
              {data.worker.position && <p className="font-semibold text-brand-red text-[11px] leading-tight uppercase">{data.worker.position}</p>}
              <p className="text-[10px] text-gray-700 leading-tight">{data.worker.team_name}</p>
@@ -116,7 +144,7 @@ export const PersonCardHorizontal = ({ data }: { data: CardData }) => {
         </div>
       </div>
       
-      <div className="w-24 flex flex-col items-center justify-between pl-2">
+      <div className="w-24 shrink-0 flex flex-col items-center justify-between pl-2">
         <div className="w-full text-center mt-1 text-[10px] font-bold text-brand-red uppercase drop-shadow-sm">
            Thẻ Ra Vào
         </div>

@@ -33,8 +33,32 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  const cookieStore = cookies();
+  const role = cookieStore.get('user_role')?.value;
+  const username = cookieStore.get('username')?.value || 'unknown';
+
+  if (role !== 'admin') {
+    return NextResponse.json({ error: 'Bạn không có quyền xóa công nhân' }, { status: 403 });
+  }
+
   const supabase = createRouteHandlerClient({ cookies });
+  
+  // Get worker info for audit log
+  const { data: worker } = await supabase.from('workers').select('mnv, full_name').eq('id', params.id).single();
+  
   const { error } = await supabase.from('workers').delete().eq('id', params.id);
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  // Add audit log
+  if (worker) {
+    await supabase.from('audit_logs').insert({
+      actor: username,
+      role: role,
+      action: 'DELETE',
+      target: `${worker.full_name} (${worker.mnv})`,
+      details: 'Đã xóa công nhân khỏi hệ thống'
+    });
+  }
+
   return NextResponse.json({ success: true });
 }

@@ -2,8 +2,9 @@
 
 import { sendTelegramMessage } from '@/lib/telegram';
 import { supabase } from '@/lib/supabase';
+import { cookies } from 'next/headers';
 
-async function uploadToFlaskAPI(file: File): Promise<string> {
+export async function uploadToFlaskAPI(file: File): Promise<string> {
   const formData = new FormData();
   formData.append('file', file);
 
@@ -61,6 +62,10 @@ export async function addWorkerAction(formData: FormData) {
     ])
     .select();
 
+  const cookieStore = cookies();
+  const role = cookieStore.get('user_role')?.value || 'admin';
+  const username = cookieStore.get('username')?.value || 'unknown';
+
   if (error) {
     console.error('Supabase insert error:', JSON.stringify(error, null, 2));
 
@@ -89,6 +94,15 @@ export async function addWorkerAction(formData: FormData) {
   } catch (telegramError) {
     console.warn('Telegram notification failed (không ảnh hưởng lưu DB):', telegramError);
   }
+
+  // Insert audit log
+  await supabase.from('audit_logs').insert({
+    actor: username,
+    role: role,
+    action: 'CREATE',
+    target: `${formData.get('full_name')} (${formData.get('employee_id')})`,
+    details: 'Đã thêm công nhân mới'
+  });
 
   return { success: true, data };
 }
@@ -131,6 +145,19 @@ export async function updateWorkerAction(id: string, formData: FormData) {
     }
     throw new Error(`Lỗi cập nhật: ${error.message}`);
   }
+
+  const cookieStore = cookies();
+  const role = cookieStore.get('user_role')?.value || 'admin';
+  const username = cookieStore.get('username')?.value || 'unknown';
+
+  // Insert audit log
+  await supabase.from('audit_logs').insert({
+    actor: username,
+    role: role,
+    action: 'UPDATE',
+    target: `${formData.get('full_name')} (${formData.get('employee_id')})`,
+    details: 'Đã cập nhật thông tin hồ sơ'
+  });
 
   return { success: true, data };
 }
@@ -218,4 +245,144 @@ export async function importWorkersAction(rows: ImportRow[]): Promise<ImportResu
   } catch (_) {}
 
   return result;
+}
+
+export async function updateCardStatusAction(workerId: string, newStatus: string) {
+  const cookieStore = cookies();
+  const role = cookieStore.get('user_role')?.value;
+  const username = cookieStore.get('username')?.value || 'unknown';
+
+  if (newStatus === 'approved' && role !== 'admin') {
+    throw new Error('Chỉ Admin mới có quyền phê duyệt thẻ');
+  }
+
+  const { data: worker, error: wError } = await supabase.from('workers').select('mnv, full_name, card_status').eq('id', workerId).single();
+  if (wError) throw new Error('Không tìm thấy công nhân');
+
+  const { error } = await supabase.from('workers').update({ card_status: newStatus }).eq('id', workerId);
+  if (error) throw new Error(error.message);
+
+  let actionName = 'REQUEST_CARD';
+  let details = 'Đã gửi yêu cầu cấp thẻ ra vào';
+  if (newStatus === 'approved') {
+    actionName = 'APPROVE_CARD';
+    details = 'Đã phê duyệt yêu cầu cấp thẻ';
+  } else if (newStatus === 'rejected') {
+    actionName = 'REJECT_CARD';
+    details = 'Đã từ chối yêu cầu cấp thẻ';
+  }
+
+  // Add audit log
+  await supabase.from('audit_logs').insert({
+    actor: username,
+    role: role || 'admin',
+    action: actionName,
+    target: `${worker.full_name} (${worker.mnv})`,
+    details: details
+  });
+
+  return { success: true };
+}
+
+export async function updateCardStatusBulkAction(workerIds: string[], newStatus: string) {
+  if (!workerIds || workerIds.length === 0) return { success: true };
+
+  const cookieStore = cookies();
+  const role = cookieStore.get('user_role')?.value;
+  const username = cookieStore.get('username')?.value || 'unknown';
+
+  if (newStatus === 'approved' && role !== 'admin') {
+    throw new Error('Chỉ Admin mới có quyền phê duyệt thẻ');
+  }
+
+  // Update all
+  const { error } = await supabase.from('workers').update({ card_status: newStatus }).in('id', workerIds);
+  if (error) throw new Error(error.message);
+
+  let actionName = 'REQUEST_CARD_BULK';
+  let details = `Đã gửi yêu cầu cấp thẻ cho ${workerIds.length} công nhân`;
+  let telegramMsg = `🛎 <b>YÊU CẦU CẤP THẺ MỚI</b>\n\nNgười yêu cầu: <b>${username}</b>\nSố lượng: ${workerIds.length} thẻ\nVui lòng vào hệ thống để phê duyệt.`;
+
+  if (newStatus === 'approved') {
+    actionName = 'APPROVE_CARD_BULK';
+    details = `Đã phê duyệt yêu cầu cấp thẻ cho ${workerIds.length} công nhân`;
+    telegramMsg = `✅ <b>THẺ ĐÃ ĐƯỢC PHÊ DUYỆT</b>\n\nNgười duyệt: <b>${username}</b>\nSố lượng: ${workerIds.length} thẻ\nCác thẻ đã được chuyển sang Hàng đợi In.`;
+  } else if (newStatus === 'issued') {
+    actionName = 'ISSUE_CARD_BULK';
+    details = `Đã in và cấp ${workerIds.length} thẻ ra vào`;
+    telegramMsg = `🖨 <b>THẺ ĐÃ ĐƯỢC IN</b>\n\nSố lượng: ${workerIds.length} thẻ\nCác thẻ đã được lấy khỏi Hàng đợi In.`;
+  }
+
+  // Send Telegram Notification
+  try {
+    await sendTelegramMessage(telegramMsg, 'HTML');
+  } catch (telegramError) {
+    console.warn('Telegram notification failed:', telegramError);
+  }
+
+  // Add audit log
+  await supabase.from('audit_logs').insert({
+    actor: username,
+    role: role || 'admin',
+    action: actionName,
+    target: `${workerIds.length} công nhân`,
+    details: details
+  });
+
+  return { success: true };
+}
+
+export async function uploadBulkImagesAction(formData: FormData) {
+  const files = formData.getAll('images') as File[];
+  if (!files || files.length === 0) {
+    throw new Error('Không có file nào được chọn');
+  }
+
+  const results = { success: 0, failed: 0, errors: [] as string[] };
+
+  for (const file of files) {
+    try {
+      const fileNameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+      const cccd = fileNameWithoutExt.trim();
+
+      // 1. Kiểm tra xem công nhân có tồn tại không
+      const { data: worker } = await supabase
+        .from('workers')
+        .select('id')
+        .eq('cccd', cccd)
+        .single();
+
+      if (!worker) {
+        results.failed++;
+        results.errors.push(`Không tìm thấy công nhân mang CCCD: ${cccd} (Tên file: ${file.name})`);
+        continue;
+      }
+
+      // 2. Upload ảnh
+      const portraitUrl = await uploadToFlaskAPI(file);
+      if (!portraitUrl) {
+        results.failed++;
+        results.errors.push(`Upload thất bại hoặc Flask API lỗi cho CCCD: ${cccd}`);
+        continue;
+      }
+
+      // 3. Cập nhật URL ảnh vào Database
+      const { error: updateError } = await supabase
+        .from('workers')
+        .update({ portrait_url: portraitUrl })
+        .eq('cccd', cccd);
+
+      if (updateError) {
+        results.failed++;
+        results.errors.push(`Lỗi cập nhật CSDL cho CCCD: ${cccd}`);
+      } else {
+        results.success++;
+      }
+    } catch (e: any) {
+      results.failed++;
+      results.errors.push(`Lỗi với file ${file.name}: ${e.message}`);
+    }
+  }
+
+  return results;
 }

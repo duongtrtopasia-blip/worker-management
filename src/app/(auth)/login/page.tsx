@@ -7,6 +7,7 @@ import { loginAction } from '@/app/actions/auth';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 
 export default function LoginPage() {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -17,7 +18,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await loginAction('administrator', password);
+      const res = await loginAction(username, password);
 
       if (res.success) {
         toast.success('Đăng nhập thành công!');
@@ -105,20 +106,20 @@ export default function LoginPage() {
               </div>
 
               <form onSubmit={handleLogin} className="space-y-5">
-                {/* Username (read-only display) */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-1.5">
                     Tài khoản
                   </label>
-                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 bg-gray-50">
-                    <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #1e3a8a, #970731)' }}>
-                      <span className="text-white text-xs font-bold">A</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800">administrator</p>
-                      <p className="text-xs text-gray-400">Quản trị viên hệ thống</p>
-                    </div>
-                  </div>
+                  <input
+                    id="username"
+                    type="text"
+                    required
+                    autoFocus
+                    value={username}
+                    onChange={e => setUsername(e.target.value)}
+                    placeholder="Nhập tên đăng nhập..."
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-sm placeholder-gray-400 outline-none transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                  />
                 </div>
 
                 {/* Password */}
@@ -131,7 +132,6 @@ export default function LoginPage() {
                       id="password"
                       type={showPassword ? 'text' : 'password'}
                       required
-                      autoFocus
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                       placeholder="Nhập mật khẩu..."
