@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Home, Users, CreditCard, FolderOpen, UploadCloud, Settings, LogOut, Bell, ChevronRight } from 'lucide-react';
 import { logoutAction } from '@/app/actions/auth';
+import { AppNotification, getNotificationsAction } from '@/app/actions/notification';
 
 import { ClipboardList } from 'lucide-react';
 
@@ -29,6 +30,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const userMatch = document.cookie.match(new RegExp('(^| )username=([^;]+)'));
     if (userMatch) setUsername(userMatch[2]);
   }, []);
+
+  const [notifications, setNotifications] = React.useState<AppNotification[]>([]);
+  const [showNotifs, setShowNotifs] = React.useState(false);
+  const [lastRead, setLastRead] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const fetchNotifs = async () => {
+      const data = await getNotificationsAction();
+      setNotifications(data);
+    };
+    fetchNotifs();
+    const interval = setInterval(fetchNotifs, 30000);
+    const savedTime = localStorage.getItem('last_read_notif');
+    if (savedTime) setLastRead(savedTime);
+    return () => clearInterval(interval);
+  }, []);
+
+  const unreadCount = notifications.filter(n => !lastRead || new Date(n.created_at) > new Date(lastRead)).length;
+
+  const handleOpenNotifs = () => {
+    setShowNotifs(!showNotifs);
+    if (!showNotifs) {
+      const now = new Date().toISOString();
+      setLastRead(now);
+      localStorage.setItem('last_read_notif', now);
+    }
+  };
 
   const handleLogout = async () => {
     await logoutAction();
@@ -132,10 +160,44 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {/* Right actions */}
           <div className="flex items-center gap-3">
-            <button className="relative p-2 rounded-full hover:bg-gray-100 transition-colors">
-              <Bell className="w-5 h-5 text-gray-500" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-brand-red border border-white" />
-            </button>
+            
+            {/* Notifications */}
+            <div className="relative">
+              <button onClick={handleOpenNotifs} className="relative p-2 rounded-full hover:bg-gray-100 transition-colors">
+                <Bell className="w-5 h-5 text-gray-500" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-4 h-4 flex items-center justify-center rounded-full bg-brand-red border border-white text-[9px] font-bold text-white">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+              
+              {showNotifs && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowNotifs(false)}></div>
+                  <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50">
+                    <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                      <h3 className="font-semibold text-gray-800">Thông báo</h3>
+                      {unreadCount > 0 && <span className="text-xs text-brand-blue font-medium">{unreadCount} mới</span>}
+                    </div>
+                    <div className="max-h-[350px] overflow-y-auto overscroll-contain">
+                      {notifications.length === 0 ? (
+                        <div className="p-6 text-center text-gray-400 text-sm">Không có thông báo nào</div>
+                      ) : (
+                        notifications.map(n => (
+                          <div key={n.id} onClick={() => { setShowNotifs(false); if(n.link) router.push(n.link); }} className="px-4 py-3 border-b border-gray-50 hover:bg-blue-50/50 cursor-pointer transition-colors group">
+                            <p className="font-medium text-sm text-gray-800 group-hover:text-brand-blue">{n.title}</p>
+                            <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{n.message}</p>
+                            <p className="text-[10px] text-gray-400 mt-1">{new Date(n.created_at).toLocaleString('vi-VN')}</p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
             <div className="hidden sm:block h-6 w-px bg-gray-200" />
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm uppercase"

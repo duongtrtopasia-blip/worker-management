@@ -3,6 +3,7 @@
 import { sendTelegramMessage } from '@/lib/telegram';
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
+import { createNotification } from './notification';
 
 export async function uploadToFlaskAPI(file: File): Promise<string> {
   const formData = new FormData();
@@ -281,6 +282,15 @@ export async function updateCardStatusAction(workerId: string, newStatus: string
     details: details
   });
 
+  // Gửi thông báo trong hệ thống
+  if (newStatus === 'pending') {
+    await createNotification('Yêu cầu cấp thẻ', `${username} vừa yêu cầu cấp thẻ cho ${worker.full_name}`, 'admin', '/cards');
+  } else if (newStatus === 'approved') {
+    await createNotification('Thẻ đã được duyệt', `Yêu cầu cấp thẻ cho ${worker.full_name} đã được phê duyệt`, 'editor', '/cards');
+  } else if (newStatus === 'rejected') {
+    await createNotification('Từ chối cấp thẻ', `Yêu cầu cấp thẻ cho ${worker.full_name} đã bị từ chối`, 'editor', '/cards');
+  }
+
   return { success: true };
 }
 
@@ -318,6 +328,15 @@ export async function updateCardStatusBulkAction(workerIds: string[], newStatus:
     await sendTelegramMessage(telegramMsg, 'HTML');
   } catch (telegramError) {
     console.warn('Telegram notification failed:', telegramError);
+  }
+
+  // Gửi thông báo trong hệ thống
+  if (newStatus === 'pending') {
+    await createNotification('Yêu cầu cấp thẻ', `${username} vừa yêu cầu cấp thẻ cho ${workerIds.length} công nhân`, 'admin', '/cards');
+  } else if (newStatus === 'approved') {
+    await createNotification('Thẻ đã được duyệt', `${username} đã phê duyệt thẻ cho ${workerIds.length} công nhân`, 'editor', '/cards');
+  } else if (newStatus === 'issued') {
+    await createNotification('Thẻ đã được in', `${workerIds.length} thẻ ra vào đã được xuất để in`, 'editor', '/cards');
   }
 
   // Add audit log
