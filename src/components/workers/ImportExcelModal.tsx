@@ -124,8 +124,11 @@ export default function ImportExcelModal({ open, onClose, onImported }: Props) {
             if (field) obj[field] = String(cells[ci] ?? '').trim();
           });
 
-          // Chỉ thêm nếu có ít nhất full_name
-          if (obj.full_name) parsed.push(obj as ImportRow);
+          // Chỉ thêm nếu có ít nhất full_name và không phải là dòng hướng dẫn
+          const nameLower = obj.full_name?.toLowerCase() || '';
+          if (nameLower && nameLower !== 'bắt buộc' && nameLower !== 'văn bản') {
+            parsed.push(obj as ImportRow);
+          }
         }
 
         if (parsed.length === 0) {
