@@ -14,8 +14,8 @@ export const metadata: Metadata = {
     title: "SCMP Vincons",
   },
   icons: {
-    icon: "/logo.svg",
-    apple: "/logo.svg",
+    icon: "/vincons_logo.png",
+    apple: "/vincons_logo.png",
   },
   themeColor: "#1e3a8a",
 };
