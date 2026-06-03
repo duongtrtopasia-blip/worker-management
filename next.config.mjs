@@ -13,6 +13,17 @@ const nextConfig = {
       bodySizeLimit: '50mb',
     },
   },
+  // Cho phép Next.js phục vụ ảnh qua route proxy nội bộ
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.supabase.co',
+      },
+    ],
+    // Cho phép unoptimized img tag (dùng <img> trực tiếp thay vì <Image>)
+    unoptimized: true,
+  },
 };
 
 export default nextConfig;
