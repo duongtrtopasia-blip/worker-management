@@ -4,38 +4,11 @@ import { sendTelegramMessage } from '@/lib/telegram';
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { createNotification } from './notification';
+import { uploadToOneDrive } from '@/lib/onedrive';
 
 export async function uploadToFlaskAPI(file: File): Promise<string> {
-  const formData = new FormData();
-  formData.append('file', file, file.name || 'upload.jpg');
-  console.log('Uploading file to Flask:', file.name, file.size);
-
-  try {
-    const res = await fetch('http://127.0.0.1:5000/upload-onedrive', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error('Lỗi từ Flask API:', errorText);
-      return '';
-    }
-
-    const data = await res.json();
-    let finalUrl = data.url || '';
-    
-    // Đảm bảo URL luôn đi qua proxy của Next.js (hỗ trợ mobile & deploy)
-    if (finalUrl.startsWith('http://localhost:5000/image/')) {
-      finalUrl = finalUrl.replace('http://localhost:5000/image/', '/api/proxy-image/');
-    }
-    
-    return finalUrl;
-  } catch (error) {
-    // Flask không chạy → bỏ qua, tiếp tục lưu DB
-    console.warn('Flask API không khả dụng, bỏ qua upload ảnh:', error);
-    return '';
-  }
+  // Đã chuyển sang dùng trực tiếp Next.js upload thay vì Flask API để tương thích Vercel
+  return await uploadToOneDrive(file);
 }
 
 export async function addWorkerAction(formData: FormData) {
