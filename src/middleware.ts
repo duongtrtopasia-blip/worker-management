@@ -12,7 +12,10 @@ export async function middleware(req: NextRequest) {
   // Loại trừ các API nội bộ và Webhook của Telegram khỏi yêu cầu đăng nhập
   const isPublicRoute = req.nextUrl.pathname.startsWith('/scan') || 
                         req.nextUrl.pathname.startsWith('/api/telegram/webhook') ||
-                        req.nextUrl.pathname.startsWith('/api/qr');
+                        req.nextUrl.pathname.startsWith('/api/qr') ||
+                        req.nextUrl.pathname.startsWith('/api/proxy-image') ||
+                        req.nextUrl.pathname.startsWith('/api/cron') ||
+                        req.nextUrl.pathname.startsWith('/api/test-onedrive');
 
   if (!isAdminLoggedIn && !isAuthRoute && !isPublicRoute) {
     const redirectUrl = req.nextUrl.clone();
