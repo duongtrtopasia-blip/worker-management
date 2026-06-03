@@ -8,6 +8,11 @@ const nextConfig = {
     // Bỏ qua lỗi TypeScript khi build trên Vercel
     ignoreBuildErrors: true,
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '50mb',
+    },
+  },
 };
 
 export default nextConfig;

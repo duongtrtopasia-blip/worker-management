@@ -119,7 +119,11 @@ export default function EditWorkerPage({ params }: { params: { id: string } }) {
     const formData = new FormData(e.currentTarget);
     const file = fileInputRef.current?.files?.[0];
     if (file) formData.append('portrait', file);
-    if (worker?.portrait_url) formData.append('existing_portrait_url', worker.portrait_url);
+    if (imagePreview && imagePreview === worker?.portrait_url) {
+      formData.append('existing_portrait_url', worker.portrait_url);
+    } else {
+      formData.append('existing_portrait_url', '');
+    }
     try {
       const res = await updateWorkerAction(params.id, formData);
       if (res.success) {
