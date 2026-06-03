@@ -4,19 +4,19 @@ export async function getAccessToken() {
   const clientSecret = process.env.ONEDRIVE_CLIENT_SECRET || '';
   const refreshToken = process.env.ONEDRIVE_REFRESH_TOKEN || '';
 
-  if (!refreshToken || !clientId || !clientSecret) {
+  if (!refreshToken || !clientId) {
     console.error('Missing OneDrive credentials in .env');
     return null;
   }
 
   const tokenUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
-  
-  const params = new URLSearchParams({
-    client_id: clientId,
-    client_secret: clientSecret,
-    refresh_token: refreshToken,
-    grant_type: 'refresh_token'
-  });
+  const params = new URLSearchParams();
+  params.append('client_id', clientId);
+  if (clientSecret) {
+    params.append('client_secret', clientSecret);
+  }
+  params.append('refresh_token', refreshToken);
+  params.append('grant_type', 'refresh_token');
 
   try {
     const response = await fetch(tokenUrl, {
