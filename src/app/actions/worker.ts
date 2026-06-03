@@ -7,7 +7,8 @@ import { createNotification } from './notification';
 
 export async function uploadToFlaskAPI(file: File): Promise<string> {
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append('file', file, file.name || 'upload.jpg');
+  console.log('Uploading file to Flask:', file.name, file.size);
 
   try {
     const res = await fetch('http://127.0.0.1:5000/upload-onedrive', {
@@ -22,7 +23,14 @@ export async function uploadToFlaskAPI(file: File): Promise<string> {
     }
 
     const data = await res.json();
-    return data.url || '';
+    let finalUrl = data.url || '';
+    
+    // Đảm bảo URL luôn đi qua proxy của Next.js (hỗ trợ mobile & deploy)
+    if (finalUrl.startsWith('http://localhost:5000/image/')) {
+      finalUrl = finalUrl.replace('http://localhost:5000/image/', '/api/proxy-image/');
+    }
+    
+    return finalUrl;
   } catch (error) {
     // Flask không chạy → bỏ qua, tiếp tục lưu DB
     console.warn('Flask API không khả dụng, bỏ qua upload ảnh:', error);

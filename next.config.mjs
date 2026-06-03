@@ -13,6 +13,14 @@ const nextConfig = {
       bodySizeLimit: '50mb',
     },
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/proxy-image/:path*',
+        destination: 'http://127.0.0.1:5000/image/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;
