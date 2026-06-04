@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { sendTelegramMessage, getTelegramFileUrl } from '@/lib/telegram';
+import { sendTelegramMessage, getTelegramFileUrl, answerCallbackQuery, editTelegramMessage } from '@/lib/telegram';
 import { supabase } from '@/lib/supabase';
 
 /**
@@ -8,8 +8,91 @@ import { supabase } from '@/lib/supabase';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    
-    // Telegram gửi thông điệp trong đối tượng 'message'
+
+    // ── CALLBACK QUERY: Xử lý khi Admin nhấn nút Phê duyệt / Từ chối ──────
+    if (body.callback_query) {
+      const callbackQuery = body.callback_query;
+      const callbackId    = callbackQuery.id;
+      const callbackData  = callbackQuery.data as string;  // vd: "approve_card:uuid-..."
+      const chatId        = callbackQuery.message?.chat?.id;
+      const messageId     = callbackQuery.message?.message_id;
+      const adminName     = callbackQuery.from?.first_name || 'Admin';
+
+      if (callbackData?.startsWith('approve_card:') || callbackData?.startsWith('reject_card:')) {
+        const isApprove = callbackData.startsWith('approve_card:');
+        const workerId  = callbackData.split(':')[1];
+
+        // Lấy thông tin công nhân
+        const { data: worker, error: wErr } = await supabase
+          .from('workers')
+          .select('full_name, mnv, card_status')
+          .eq('id', workerId)
+          .single();
+
+        if (wErr || !worker) {
+          await answerCallbackQuery(callbackId, '❌ Không tìm thấy công nhân!');
+          return NextResponse.json({ ok: true });
+        }
+
+        // Kiểm tra xem đã xử lý chưa (tránh nhấn 2 lần)
+        if (worker.card_status !== 'pending') {
+          await answerCallbackQuery(callbackId, '⚠️ Yêu cầu này đã được xử lý rồi!');
+          return NextResponse.json({ ok: true });
+        }
+
+        const newStatus = isApprove ? 'approved' : 'rejected';
+
+        // Cập nhật trạng thái thẻ trong DB
+        const { error: updateErr } = await supabase
+          .from('workers')
+          .update({ card_status: newStatus })
+          .eq('id', workerId);
+
+        if (updateErr) {
+          await answerCallbackQuery(callbackId, '❌ Lỗi cập nhật database!');
+          return NextResponse.json({ ok: true });
+        }
+
+        // Ghi audit log
+        await supabase.from('audit_logs').insert({
+          actor: adminName,
+          role: 'admin',
+          action: isApprove ? 'APPROVE_CARD' : 'REJECT_CARD',
+          target: `${worker.full_name} (${worker.mnv})`,
+          details: isApprove
+            ? 'Phê duyệt thẻ qua Telegram'
+            : 'Từ chối cấp thẻ qua Telegram',
+        });
+
+        // Thông báo xác nhận cho Admin
+        await answerCallbackQuery(
+          callbackId,
+          isApprove ? `✅ Đã phê duyệt thẻ cho ${worker.full_name}!` : `❌ Đã từ chối cấp thẻ cho ${worker.full_name}`
+        );
+
+        // Chỉnh sửa tin nhắn gốc — thay nút bằng kết quả
+        const resultText = isApprove
+          ? `✅ <b>ĐÃ PHÊ DUYỆT</b>\n\n` +
+            `👤 Họ tên: <b>${worker.full_name}</b>\n` +
+            `🔢 MNV: <code>${worker.mnv}</code>\n\n` +
+            `👮 Người duyệt: <b>${adminName}</b>\n` +
+            `⏰ Thời gian: ${new Date().toLocaleString('vi-VN')}\n\n` +
+            `<i>Thẻ đã được chuyển sang hàng đợi in.</i>`
+          : `❌ <b>ĐÃ TỪ CHỐI</b>\n\n` +
+            `👤 Họ tên: <b>${worker.full_name}</b>\n` +
+            `🔢 MNV: <code>${worker.mnv}</code>\n\n` +
+            `👮 Người từ chối: <b>${adminName}</b>\n` +
+            `⏰ Thời gian: ${new Date().toLocaleString('vi-VN')}`;
+
+        if (chatId && messageId) {
+          await editTelegramMessage(chatId, messageId, resultText);
+        }
+
+        return NextResponse.json({ ok: true });
+      }
+    }
+
+    // ── MESSAGE: Xử lý tin nhắn text / file / photo ──────────────────────
     if (body.message) {
       const chatId = body.message.chat.id;
       const text = body.message.text;
@@ -17,6 +100,7 @@ export async function POST(request: Request) {
       const photo = body.message.photo; // Dành cho upload Ảnh chân dung
       
       console.log(`Nhận được tin nhắn từ Telegram Chat ID [${chatId}]`);
+
 
       // 1. Xử lý Lệnh Text thông thường
       if (text) {

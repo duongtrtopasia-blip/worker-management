@@ -1,6 +1,6 @@
 'use server';
 
-import { sendTelegramMessage } from '@/lib/telegram';
+import { sendTelegramMessage, sendCardApprovalRequest } from '@/lib/telegram';
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { createNotification } from './notification';
@@ -266,6 +266,24 @@ export async function updateCardStatusAction(workerId: string, newStatus: string
   // Gửi thông báo trong hệ thống
   if (newStatus === 'pending') {
     await createNotification('Yêu cầu cấp thẻ', `${username} vừa yêu cầu cấp thẻ cho ${worker.full_name}`, 'admin', '/cards');
+    // Gửi Telegram kèm nút bấm phê duyệt nhanh
+    try {
+      const { data: workerDetail } = await supabase
+        .from('workers')
+        .select('team, area')
+        .eq('id', workerId)
+        .single();
+      await sendCardApprovalRequest({
+        workerId,
+        workerName: worker.full_name,
+        mnv: worker.mnv,
+        team: workerDetail?.team || '',
+        area: workerDetail?.area || '',
+        requestedBy: username,
+      });
+    } catch (e) {
+      console.warn('Không gửi được Telegram approval request:', e);
+    }
   } else if (newStatus === 'approved') {
     await createNotification('Thẻ đã được duyệt', `Yêu cầu cấp thẻ cho ${worker.full_name} đã được phê duyệt`, 'editor', '/cards');
   } else if (newStatus === 'rejected') {
