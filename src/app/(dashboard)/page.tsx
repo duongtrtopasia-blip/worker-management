@@ -22,13 +22,33 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const { data, error } = await supabase.from('workers').select('*');
-      if (error || !data) {
+      // Dùng count() để lấy tổng số chính xác ngay
+      const { count: totalCount } = await supabase
+        .from('workers')
+        .select('*', { count: 'exact', head: true });
+
+      // Lấy tất cả dữ liệu bằng vòng lặp pagination
+      let allData: any[] = [];
+      let from = 0;
+      const step = 1000;
+      while (true) {
+        const { data: chunk, error } = await supabase
+          .from('workers')
+          .select('area, portrait_url, start_date, created_at, mnv, full_name')
+          .range(from, from + step - 1);
+        if (error || !chunk || chunk.length === 0) break;
+        allData = allData.concat(chunk);
+        if (chunk.length < step) break;
+        from += step;
+      }
+
+      const data = allData;
+      if (!data) {
         setLoading(false);
         return;
       }
       
-      const total = data.length;
+      const total = totalCount ?? data.length;
       const missingDocsList = data.filter(w => !w.portrait_url);
       const missingDocs = missingDocsList.length;
       

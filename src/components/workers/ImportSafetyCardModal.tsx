@@ -3,41 +3,22 @@
 import React, { useState, useRef, useCallback } from 'react';
 import * as XLSX from 'xlsx';
 import toast from 'react-hot-toast';
-import { Upload, X, FileSpreadsheet, AlertCircle, CheckCircle2, Download, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
-import { importWorkersAction, checkDuplicateWorkersAction, type ImportRow, type ImportResult } from '@/app/actions/worker';
+import { Upload, X, FileSpreadsheet, AlertCircle, CheckCircle2, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { importSafetyCardsAction, type SafetyCardImportRow } from '@/app/actions/worker';
+import type { ImportResult } from '@/app/actions/worker';
 
 // Mapping header Excel → field name
-const HEADER_MAP: Record<string, keyof ImportRow> = {
-  'họ và tên (*)':            'full_name',
-  'họ và tên':                'full_name',
-  'họ tên':                   'full_name',
-  'tên':                      'full_name',
-  'mã nhân viên - mnv (*)':   'employee_id',
-  'mã nhân viên - mnv':       'employee_id',
-  'mã nhân viên':             'employee_id',
-  'mnv':                      'employee_id',
+const HEADER_MAP: Record<string, keyof SafetyCardImportRow> = {
   'số cccd (*)':               'cccd',
   'số cccd':                  'cccd',
   'cccd':                     'cccd',
-  'ngày tháng năm sinh':      'date_of_birth',
-  'ngày sinh':                'date_of_birth',
-  'giới tính':                'gender',
-  'số điện thoại':            'phone',
-  'sđt':                      'phone',
-  'địa chỉ thường trú':       'address',
-  'địa chỉ':                  'address',
-  'tổ đội (*)':               'team',
-  'tổ đội':                   'team',
-  'khu vực (*)':              'area',
-  'khu vực':                  'area',
-  'chức vụ / nghề':           'position',
-  'chức vụ':                  'position',
-  'ngày vào làm':             'start_date',
-  'tình trạng làm việc':      'work_status',
-  'tình trạng':               'work_status',
-  'trạng thái':               'work_status',
-  'biển số xe':               'vehicle_plate',
-  'loại xe':                  'vehicle_type',
+  'cccd (*)':                 'cccd',
+  'số thẻ':                   'safety_card_number',
+  'số thẻ atlđ':              'safety_card_number',
+  'ngày cấp':                 'safety_card_date',
+  'ngày cấp thẻ':             'safety_card_date',
+  'trạng thái':               'card_status_text',
+  'trạng thái thẻ':           'card_status_text',
 };
 
 interface Props {
@@ -48,15 +29,12 @@ interface Props {
 
 type Step = 'upload' | 'preview' | 'result';
 
-export default function ImportExcelModal({ open, onClose, onImported }: Props) {
+export default function ImportSafetyCardModal({ open, onClose, onImported }: Props) {
   const [step, setStep] = useState<Step>('upload');
   const [isDragging, setIsDragging] = useState(false);
-  const [rows, setRows] = useState<ImportRow[]>([]);
+  const [rows, setRows] = useState<SafetyCardImportRow[]>([]);
   const [fileName, setFileName] = useState('');
   const [importing, setImporting] = useState(false);
-  const [checkingDuplicates, setCheckingDuplicates] = useState(false);
-  const [duplicatePrompt, setDuplicatePrompt] = useState({ show: false, count: 0 });
-  const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [showErrors, setShowErrors] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -88,11 +66,7 @@ export default function ImportExcelModal({ open, onClose, onImported }: Props) {
         const data = new Uint8Array(e.target!.result as ArrayBuffer);
         const wb = XLSX.read(data, { type: 'array' });
 
-        // Lấy sheet đầu tiên có tên "Nhập Dữ Liệu" hoặc sheet đầu tiên
-        const sheetName = wb.SheetNames.includes('Nhập Dữ Liệu')
-          ? 'Nhập Dữ Liệu'
-          : wb.SheetNames[0];
-        const ws = wb.Sheets[sheetName];
+        const ws = wb.Sheets[wb.SheetNames[0]];
         const raw: string[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
 
         if (raw.length < 2) {
@@ -100,7 +74,6 @@ export default function ImportExcelModal({ open, onClose, onImported }: Props) {
           return;
         }
 
-        // Tìm dòng chứa header (quét tối đa 5 dòng đầu)
         let headerRowIndex = 0;
         let headerRow: string[] = [];
         let maxMatchCount = 0;
@@ -119,15 +92,14 @@ export default function ImportExcelModal({ open, onClose, onImported }: Props) {
         }
 
         if (maxMatchCount === 0) {
-          toast.error('Không tìm thấy dữ liệu hợp lệ. Vui lòng đảm bảo file có các cột như "Họ và tên", "MNV", "CCCD"...');
+          toast.error('Không tìm thấy cột CCCD hợp lệ. Vui lòng đảm bảo file có cột "Số CCCD".');
           return;
         }
 
-        const parsed: ImportRow[] = [];
+        const parsed: SafetyCardImportRow[] = [];
 
         for (let i = headerRowIndex + 1; i < raw.length; i++) {
           const cells = raw[i] as string[];
-          // Bỏ qua dòng rỗng
           if (!cells || cells.every(c => !String(c).trim())) continue;
 
           const obj: any = {};
@@ -136,15 +108,15 @@ export default function ImportExcelModal({ open, onClose, onImported }: Props) {
             if (field) obj[field] = String(cells[ci] ?? '').trim();
           });
 
-          // Chỉ thêm nếu có ít nhất full_name và không phải là dòng hướng dẫn
-          const nameLower = obj.full_name?.toLowerCase() || '';
-          if (nameLower && nameLower !== 'bắt buộc' && nameLower !== 'văn bản') {
-            parsed.push(obj as ImportRow);
+          // Chỉ thêm nếu có cccd
+          const cccdVal = obj.cccd?.trim() || '';
+          if (cccdVal && cccdVal.length > 5) {
+            parsed.push(obj as SafetyCardImportRow);
           }
         }
 
         if (parsed.length === 0) {
-          toast.error('Không tìm thấy dữ liệu hợp lệ. Kiểm tra header file Excel.');
+          toast.error('Không tìm thấy dữ liệu hợp lệ.');
           return;
         }
 
@@ -169,51 +141,13 @@ export default function ImportExcelModal({ open, onClose, onImported }: Props) {
     if (file) parseExcel(file);
   };
 
-  const startImportFlow = async () => {
-    setCheckingDuplicates(true);
-    try {
-      const count = await checkDuplicateWorkersAction(rows);
-      if (count > 0) {
-        setDuplicatePrompt({ show: true, count });
-      } else {
-        await executeImport(false);
-      }
-    } catch (e) {
-      toast.error('Lỗi kiểm tra dữ liệu trùng lặp');
-    } finally {
-      setCheckingDuplicates(false);
-    }
-  };
-
-  const executeImport = async (updateDuplicates: boolean) => {
-    setDuplicatePrompt({ show: false, count: 0 });
+  const handleImport = async () => {
     setImporting(true);
-    setProgress(0);
-    const CHUNK_SIZE = 500;
-    const totalChunks = Math.ceil(rows.length / CHUNK_SIZE);
-
-    let totalSuccess = 0;
-    let totalFailed = 0;
-    let totalErrors: any[] = [];
-
     try {
-      for (let i = 0; i < totalChunks; i++) {
-        const chunk = rows.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
-        const isFinalChunk = i === totalChunks - 1;
-        
-        // Gọi server action và tính progress
-        const res = await importWorkersAction(chunk, isFinalChunk, updateDuplicates);
-        
-        totalSuccess += res.success;
-        totalFailed += res.failed;
-        totalErrors = [...totalErrors, ...res.errors];
-
-        setProgress(Math.round(((i + 1) / totalChunks) * 100));
-      }
-
-      setResult({ success: totalSuccess, failed: totalFailed, errors: totalErrors });
+      const res = await importSafetyCardsAction(rows);
+      setResult(res);
       setStep('result');
-      if (totalSuccess > 0) onImported();
+      if (res.success > 0) onImported();
     } catch (err: any) {
       toast.error('Lỗi khi import: ' + (err?.message || 'Không xác định'));
     } finally {
@@ -225,35 +159,7 @@ export default function ImportExcelModal({ open, onClose, onImported }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(15,31,92,0.5)', backdropFilter: 'blur(4px)' }}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] relative">
-
-        {duplicatePrompt.show && (
-          <div className="absolute inset-0 z-50 bg-white/90 backdrop-blur-sm flex items-center justify-center p-6">
-            <div className="bg-white p-6 rounded-2xl shadow-xl border border-blue-100 max-w-md w-full text-center">
-              <div className="mx-auto w-12 h-12 bg-amber-100 text-amber-600 flex items-center justify-center rounded-full mb-4">
-                <AlertCircle className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Phát hiện dữ liệu trùng lặp</h3>
-              <p className="text-sm text-gray-600 mb-6">
-                Có <strong>{duplicatePrompt.count}</strong> công nhân trong file Excel đã tồn tại trong hệ thống. Bạn muốn cập nhật thông tin mới nhất cho họ hay bỏ qua?
-              </p>
-              <div className="flex gap-3 justify-center">
-                <button
-                  onClick={() => executeImport(false)}
-                  className="px-4 py-2 rounded-xl text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
-                >
-                  Bỏ qua
-                </button>
-                <button
-                  onClick={() => executeImport(true)}
-                  className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
-                >
-                  Cập nhật thông tin
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
@@ -262,11 +168,9 @@ export default function ImportExcelModal({ open, onClose, onImported }: Props) {
               <FileSpreadsheet className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-gray-900">Import Công Nhân Hàng Loạt</h2>
+              <h2 className="text-sm font-bold text-gray-900">Cập Nhật Thẻ ATLĐ Hàng Loạt</h2>
               <p className="text-xs text-gray-500 mt-0.5">
-                {step === 'upload' && 'Tải lên file Excel theo mẫu'}
-                {step === 'preview' && `Xem trước ${rows.length} bản ghi`}
-                {step === 'result' && 'Kết quả import'}
+                Dựa trên cột Số CCCD để cập nhật thông tin thẻ
               </p>
             </div>
           </div>
@@ -290,22 +194,6 @@ export default function ImportExcelModal({ open, onClose, onImported }: Props) {
           {/* ── Step 1: Upload ── */}
           {step === 'upload' && (
             <div className="space-y-4">
-              {/* Download template */}
-              <a
-                href="/Mau_Nhap_Cong_Nhan.xlsx"
-                download
-                className="flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-green-200 bg-green-50/60 hover:bg-green-50 hover:border-green-300 transition-all group"
-              >
-                <div className="p-2 rounded-lg bg-green-100 group-hover:bg-green-200 transition-colors">
-                  <Download className="w-4 h-4 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-green-800">Tải file mẫu Excel</p>
-                  <p className="text-xs text-green-600 mt-0.5">Mau_Nhap_Cong_Nhan.xlsx — gồm hướng dẫn & dữ liệu mẫu</p>
-                </div>
-                <span className="ml-auto text-xs text-green-500 font-medium">Tải xuống →</span>
-              </a>
-
               {/* Drop zone */}
               <div
                 onClick={() => inputRef.current?.click()}
@@ -322,9 +210,9 @@ export default function ImportExcelModal({ open, onClose, onImported }: Props) {
                 </div>
                 <div className="text-center">
                   <p className="text-sm font-semibold text-gray-700">
-                    {isDragging ? 'Thả file vào đây...' : 'Kéo thả file hoặc click để chọn'}
+                    {isDragging ? 'Thả file vào đây...' : 'Kéo thả file Excel chứa danh sách thẻ'}
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">Hỗ trợ .xlsx, .xls, .csv</p>
+                  <p className="text-xs text-gray-400 mt-1">Yêu cầu phải có cột &quot;Số CCCD&quot;</p>
                 </div>
                 <input
                   ref={inputRef}
@@ -336,7 +224,7 @@ export default function ImportExcelModal({ open, onClose, onImported }: Props) {
               </div>
 
               <p className="text-xs text-gray-400 text-center">
-                💡 File phải có header đúng như file mẫu. Xem sheet <strong>Hướng Dẫn</strong> trong file mẫu.
+                💡 Cột hỗ trợ: <strong>Số CCCD, Số Thẻ, Ngày cấp, Trạng thái</strong> (Đang chờ cấp / Đã đào tạo / Đã cấp)
               </p>
             </div>
           )}
@@ -348,7 +236,7 @@ export default function ImportExcelModal({ open, onClose, onImported }: Props) {
                 <FileSpreadsheet className="w-4 h-4 text-blue-500 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-blue-800 truncate">{fileName}</p>
-                  <p className="text-xs text-blue-600">{rows.length} bản ghi sẽ được nhập</p>
+                  <p className="text-xs text-blue-600">{rows.length} bản ghi sẽ được cập nhật</p>
                 </div>
                 <button onClick={resetState} className="text-xs text-blue-500 hover:text-blue-700 underline shrink-0">Đổi file</button>
               </div>
@@ -359,48 +247,26 @@ export default function ImportExcelModal({ open, onClose, onImported }: Props) {
                     <thead className="bg-gray-50 sticky top-0">
                       <tr>
                         <th className="px-3 py-2 text-left text-gray-500 font-semibold border-b border-gray-200">#</th>
-                        <th className="px-3 py-2 text-left text-gray-500 font-semibold border-b border-gray-200">Họ Tên</th>
-                        <th className="px-3 py-2 text-left text-gray-500 font-semibold border-b border-gray-200">MNV</th>
-                        <th className="px-3 py-2 text-left text-gray-500 font-semibold border-b border-gray-200">CCCD</th>
-                        <th className="px-3 py-2 text-left text-gray-500 font-semibold border-b border-gray-200">Tổ Đội</th>
-                        <th className="px-3 py-2 text-left text-gray-500 font-semibold border-b border-gray-200">Khu Vực</th>
-                        <th className="px-3 py-2 text-left text-gray-500 font-semibold border-b border-gray-200">Xe</th>
+                        <th className="px-3 py-2 text-left text-gray-500 font-semibold border-b border-gray-200">Số CCCD</th>
+                        <th className="px-3 py-2 text-left text-gray-500 font-semibold border-b border-gray-200">Số Thẻ</th>
+                        <th className="px-3 py-2 text-left text-gray-500 font-semibold border-b border-gray-200">Ngày Cấp</th>
+                        <th className="px-3 py-2 text-left text-gray-500 font-semibold border-b border-gray-200">Trạng Thái</th>
                       </tr>
                     </thead>
                     <tbody>
                       {rows.map((r, i) => (
                         <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
                           <td className="px-3 py-2 text-gray-400">{i + 2}</td>
-                          <td className="px-3 py-2 font-medium text-gray-800">{r.full_name}</td>
-                          <td className="px-3 py-2 text-gray-600">{r.employee_id}</td>
-                          <td className="px-3 py-2 text-gray-600">{r.cccd}</td>
-                          <td className="px-3 py-2 text-gray-600">{r.team}</td>
-                          <td className="px-3 py-2 text-gray-600">{r.area}</td>
-                          <td className="px-3 py-2 text-gray-500">{r.vehicle_plate || '—'}</td>
+                          <td className="px-3 py-2 font-medium text-gray-800">{r.cccd}</td>
+                          <td className="px-3 py-2 text-gray-600">{r.safety_card_number || '—'}</td>
+                          <td className="px-3 py-2 text-gray-600">{r.safety_card_date || '—'}</td>
+                          <td className="px-3 py-2 text-gray-600">{r.card_status_text || '—'}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               </div>
-
-              {/* Progress Bar */}
-              {importing && (
-                <div className="w-full mt-4 p-4 rounded-xl border border-blue-100 bg-blue-50/50">
-                  <div className="flex justify-between items-center text-xs font-semibold text-blue-800 mb-2">
-                    <span>Đang tải lên hệ thống...</span>
-                    <span>{progress}%</span>
-                  </div>
-                  <div className="w-full bg-blue-100 rounded-full h-2.5 overflow-hidden">
-                    <div 
-                      className="bg-brand-blue h-2.5 rounded-full transition-all duration-300 ease-out relative" 
-                      style={{ width: `${progress}%`, background: 'linear-gradient(90deg, #3b82f6, #1e3a8a)' }}
-                    >
-                      <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
@@ -424,15 +290,6 @@ export default function ImportExcelModal({ open, onClose, onImported }: Props) {
                   </div>
                 </div>
               </div>
-
-              {result.success > 0 && (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-green-50 border border-green-100">
-                  <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
-                  <p className="text-xs text-green-700">
-                    Đã thêm <strong>{result.success}</strong> công nhân vào hệ thống thành công!
-                  </p>
-                </div>
-              )}
 
               {/* Error details */}
               {result.errors.length > 0 && (
@@ -477,15 +334,15 @@ export default function ImportExcelModal({ open, onClose, onImported }: Props) {
 
           {step === 'preview' && (
             <button
-              onClick={startImportFlow}
-              disabled={importing || checkingDuplicates}
+              onClick={handleImport}
+              disabled={importing}
               className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60"
-              style={{ background: importing || checkingDuplicates ? '#6b7280' : 'linear-gradient(135deg,#1e3a8a,#970731)', boxShadow: importing || checkingDuplicates ? 'none' : '0 4px 14px rgba(30,58,138,0.3)' }}
+              style={{ background: importing ? '#6b7280' : 'linear-gradient(135deg,#1e3a8a,#970731)', boxShadow: importing ? 'none' : '0 4px 14px rgba(30,58,138,0.3)' }}
             >
-              {importing || checkingDuplicates ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Đang xử lý...</>
+              {importing ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Đang cập nhật...</>
               ) : (
-                <><Upload className="w-4 h-4" /> Nhập {rows.length} bản ghi</>
+                <><Upload className="w-4 h-4" /> Cập nhật {rows.length} bản ghi</>
               )}
             </button>
           )}
@@ -495,7 +352,7 @@ export default function ImportExcelModal({ open, onClose, onImported }: Props) {
               onClick={resetState}
               className="px-4 py-2 rounded-xl text-sm font-medium text-blue-700 border-2 border-blue-200 hover:bg-blue-50 transition-all"
             >
-              Import thêm
+              Import lại
             </button>
           )}
         </div>

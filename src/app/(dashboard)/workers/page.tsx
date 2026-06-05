@@ -9,6 +9,7 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import ImportExcelModal from '@/components/workers/ImportExcelModal';
+import ImportSafetyCardModal from '@/components/workers/ImportSafetyCardModal';
 
 import { updateCardStatusAction, updateCardStatusBulkAction } from '@/app/actions/worker';
 
@@ -88,6 +89,7 @@ export default function WorkersPage() {
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [importOpen, setImportOpen] = useState(false);
+  const [importSafetyOpen, setImportSafetyOpen] = useState(false);
   const [profileFilter, setProfileFilter] = useState<string>('Tất cả hồ sơ');
   const [cardFilter, setCardFilter] = useState<string>('Tất cả thẻ');
   const [teamFilter, setTeamFilter] = useState<string>('Tất cả tổ đội');
@@ -95,6 +97,8 @@ export default function WorkersPage() {
   const [areaFilter, setAreaFilter] = useState<string>('Tất cả khu vực');
   const [searchQuery, setSearchQuery] = useState('');
   const [userRole, setUserRole] = useState('admin');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(50);
 
   useEffect(() => {
     const roleMatch = document.cookie.match(new RegExp('(^| )user_role=([^;]+)'));
@@ -102,26 +106,68 @@ export default function WorkersPage() {
     fetchWorkers();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, profileFilter, cardFilter, teamFilter, positionFilter, areaFilter]);
+
   const fetchWorkers = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('workers')
-      .select('*')
-      .order('created_at', { ascending: false });
+
+    let allWorkers: any[] = [];
+    let from = 0;
+    const step = 1000;
+    let hasMore = true;
+
+    while (hasMore) {
+      const { data, error } = await supabase
+        .from('workers')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .range(from, from + step - 1);
+      
+      if (error) {
+        toast.error('Lỗi khi tải danh sách công nhân');
+        setLoading(false);
+        return;
+      }
+      
+      if (data && data.length > 0) {
+        allWorkers = allWorkers.concat(data);
+        if (data.length < step) hasMore = false;
+        else from += step;
+      } else {
+        hasMore = false;
+      }
+    }
 
     let docsData: any[] = [];
-    const { data: dData, error: dError } = await supabase.from('documents').select('worker_id, doc_type');
-    if (!dError && dData) docsData = dData;
-
-    if (error) {
-      toast.error('Lỗi khi tải danh sách công nhân');
-    } else {
-      const workersWithDocs = (data || []).map(w => {
-        w.documents = docsData.filter(d => d.worker_id === w.id);
-        return w;
-      });
-      setWorkers(workersWithDocs);
+    let dFrom = 0;
+    let dHasMore = true;
+    while (dHasMore) {
+      const { data: dData, error: dError } = await supabase.from('documents').select('worker_id, doc_type').range(dFrom, dFrom + step - 1);
+      if (dError) {
+        break;
+      }
+      if (dData && dData.length > 0) {
+        docsData = docsData.concat(dData);
+        if (dData.length < step) dHasMore = false;
+        else dFrom += step;
+      } else {
+        dHasMore = false;
+      }
     }
+
+    const docsMap = new Map();
+    docsData.forEach(d => {
+      if (!docsMap.has(d.worker_id)) docsMap.set(d.worker_id, []);
+      docsMap.get(d.worker_id).push(d);
+    });
+    const workersWithDocs = allWorkers.map(w => {
+      w.documents = docsMap.get(w.id) || [];
+      return w;
+    });
+    
+    setWorkers(workersWithDocs);
     setLoading(false);
   };
 
@@ -156,6 +202,10 @@ export default function WorkersPage() {
     if (areaFilter !== 'Tất cả khu vực' && w.area !== areaFilter) return false;
     return true;
   });
+
+  const totalItems = filteredWorkers.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+  const paginatedWorkers = filteredWorkers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleDelete = async (worker: any) => {
     const confirmed = window.confirm(`Bạn có chắc muốn xóa công nhân "${worker.full_name}" (MNV: ${worker.mnv}) không?\nThao tác này không thể hoàn tác.`);
@@ -237,6 +287,39 @@ export default function WorkersPage() {
           </a>
           <Button variant="outline" size="sm" className="text-brand-blue border-brand-blue/40 hover:bg-brand-blue/5 gap-1.5" onClick={() => setImportOpen(true)}>
             <Upload className="h-4 w-4" /> Import Excel
+          </Button>
+          <Button variant="outline" size="sm" className="text-indigo-600 border-indigo-300 hover:bg-indigo-50 gap-1.5" onClick={() => setImportSafetyOpen(true)}>
+            <Upload className="h-4 w-4" /> Cập nhật Thẻ
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-orange-600 border-orange-300 hover:bg-orange-50 gap-1.5" 
+            onClick={async () => {
+              const toastId = toast.loading('Đang tạo file Excel...');
+              try {
+                const res = await fetch('/api/export-training', { 
+                  method: 'POST', 
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ workerIds: Array.from(checkedIds) }) 
+                });
+                if (!res.ok) throw new Error('Export failed');
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `DanhSachHL_Nhom3_${new Date().toISOString().slice(0,10).replace(/-/g, '')}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                toast.success('Xuất file thành công!', { id: toastId });
+              } catch (e) {
+                toast.error('Có lỗi khi xuất file', { id: toastId });
+              }
+            }}
+          >
+            <Download className="h-4 w-4" /> Xuất DS Huấn Luyện
           </Button>
           <Link href="/workers/new">
             <Button size="sm" className="gap-1.5 text-white" style={{ background: 'linear-gradient(135deg, #1e3a8a, #970731)' }}>
@@ -345,7 +428,6 @@ export default function WorkersPage() {
               <TableHead className="w-10 pl-4">
                 <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-gray-300 text-brand-blue cursor-pointer" />
               </TableHead>
-              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Ảnh</TableHead>
               <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">MNV</TableHead>
               <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Họ & Tên</TableHead>
               <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">CCCD</TableHead>
@@ -359,16 +441,16 @@ export default function WorkersPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center py-16">
+                <TableCell colSpan={9} className="text-center py-16">
                   <div className="flex flex-col items-center gap-2 text-gray-400">
                     <div className="w-8 h-8 border-2 border-brand-blue border-t-transparent rounded-full animate-spin" />
                     <span className="text-sm">Đang tải dữ liệu...</span>
                   </div>
                 </TableCell>
               </TableRow>
-            ) : filteredWorkers.length === 0 ? (
+            ) : paginatedWorkers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center py-16">
+                <TableCell colSpan={9} className="text-center py-16">
                   <div className="flex flex-col items-center gap-2 text-gray-400">
                     <Users className="w-10 h-10 text-gray-200" />
                     <span className="text-sm">Không tìm thấy công nhân phù hợp</span>
@@ -376,24 +458,24 @@ export default function WorkersPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredWorkers.map((worker) => (
+              paginatedWorkers.map((worker) => (
                 <React.Fragment key={worker.id}>
                 {/* --- DESKTOP VIEW --- */}
                 <TableRow className={`hidden md:table-row border-b border-gray-50 transition-colors ${checkedIds.has(worker.id) ? 'bg-blue-50/60' : 'hover:bg-gray-50/80'}`}>
                   <TableCell className="pl-4">
                     <input type="checkbox" checked={checkedIds.has(worker.id)} onChange={(e) => toggleCheck(worker.id, e as any)} onClick={(e) => e.stopPropagation()} className="w-4 h-4 rounded border-gray-300 text-brand-blue cursor-pointer" />
                   </TableCell>
-                  <TableCell>
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-blue to-brand-red overflow-hidden flex items-center justify-center border-2 border-white shadow-sm">
-                      {worker.portrait_url ? (
-                        <img src={worker.portrait_url} alt={worker.full_name} className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-white text-xs font-bold">{worker.full_name?.charAt(0)}</span>
-                      )}
-                    </div>
-                  </TableCell>
                   <TableCell className="font-mono text-sm font-semibold text-brand-blue">{worker.mnv}</TableCell>
-                  <TableCell className="font-medium text-gray-900">{worker.full_name}</TableCell>
+                  <TableCell>
+                    <div className="group relative flex items-center gap-1.5 w-fit font-medium text-gray-900 cursor-default">
+                            <p className="font-bold text-gray-900 truncate">{worker.full_name}</p>
+                            {worker.portrait_url && (
+                              <span title="Đã có ảnh đại diện">
+                                <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+                              </span>
+                            )}
+                          </div>
+                  </TableCell>
                   <TableCell className="text-sm text-gray-500 font-mono">{worker.cccd}</TableCell>
                   <TableCell className="text-sm text-gray-600">{worker.team}</TableCell>
                   <TableCell className="text-sm text-gray-600">{worker.area}</TableCell>
@@ -455,16 +537,16 @@ export default function WorkersPage() {
                       <div className="pt-1">
                         <input type="checkbox" checked={checkedIds.has(worker.id)} onChange={(e) => toggleCheck(worker.id, e as any)} className="w-5 h-5 rounded border-gray-300 text-brand-blue" />
                       </div>
-                      <div className="w-12 h-12 shrink-0 rounded-full bg-gradient-to-br from-brand-blue to-brand-red overflow-hidden flex items-center justify-center border border-gray-200">
-                        {worker.portrait_url ? (
-                          <img src={worker.portrait_url} alt={worker.full_name} className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-white text-sm font-bold">{worker.full_name?.charAt(0)}</span>
-                        )}
-                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start mb-1">
-                          <p className="font-bold text-gray-900 truncate">{worker.full_name}</p>
+                          <div className="group relative flex items-center gap-1.5 w-fit">
+                            <p className="font-bold text-gray-900 truncate">{worker.full_name}</p>
+                            {worker.portrait_url && (
+                              <span title="Đã có ảnh đại diện">
+                                <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+                              </span>
+                            )}
+                          </div>
                           <span className="font-mono text-xs font-semibold text-brand-blue shrink-0">{worker.mnv}</span>
                         </div>
                         <p className="text-xs text-gray-500 font-mono mb-2">CCCD: {worker.cccd}</p>
@@ -513,10 +595,63 @@ export default function WorkersPage() {
         </Table>
       </div>
 
-      <ImportExcelModal
-        open={importOpen}
-        onClose={() => setImportOpen(false)}
-        onImported={() => { fetchWorkers(); setImportOpen(false); }}
+      {/* Pagination Bar */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-gray-100 bg-white rounded-b-2xl">
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <span>Hiển thị</span>
+            <select 
+              value={itemsPerPage} 
+              onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+              className="border border-gray-200 rounded-md px-2 py-1 focus:ring-2 focus:ring-brand-blue"
+            >
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+              <option value={200}>200</option>
+            </select>
+            <span>công nhân / trang</span>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            >
+              Trang trước
+            </Button>
+            <span className="text-sm font-medium px-4">
+              {currentPage} / {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            >
+              Trang sau
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <ImportExcelModal 
+        open={importOpen} 
+        onClose={() => setImportOpen(false)} 
+        onImported={() => {
+          setImportOpen(false);
+          fetchWorkers();
+        }} 
+      />
+
+      <ImportSafetyCardModal 
+        open={importSafetyOpen} 
+        onClose={() => setImportSafetyOpen(false)} 
+        onImported={() => {
+          setImportSafetyOpen(false);
+          fetchWorkers();
+        }} 
       />
     </div>
   );

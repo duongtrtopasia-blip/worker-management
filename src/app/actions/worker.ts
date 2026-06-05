@@ -156,6 +156,10 @@ export type ImportRow = {
   vehicle_type?: string;
   phone?: string;
   start_date?: string;
+  date_of_birth?: string;
+  gender?: string;
+  address?: string;
+  work_status?: string;
 };
 
 export type ImportResult = {
@@ -164,8 +168,54 @@ export type ImportResult = {
   errors: { row: number; name: string; reason: string }[];
 };
 
-export async function importWorkersAction(rows: ImportRow[]): Promise<ImportResult> {
+async function fetchAllWorkersMinimal() {
+  let allData: any[] = [];
+  let from = 0;
+  const limit = 1000;
+  while (true) {
+    const { data, error } = await supabase.from('workers').select('id, mnv, cccd').range(from, from + limit - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    allData = allData.concat(data);
+    if (data.length < limit) break;
+    from += limit;
+  }
+  return allData;
+}
+
+export async function checkDuplicateWorkersAction(rows: ImportRow[]) {
+  const existingWorkers = await fetchAllWorkersMinimal();
+  const existingMnvs = new Set(existingWorkers.map(w => w.mnv));
+  const existingCccds = new Set(existingWorkers.map(w => w.cccd));
+  
+  let duplicateCount = 0;
+  for (const row of rows) {
+    if (!row.cccd || !row.employee_id) continue;
+    const cccdClean = row.cccd.trim().replace(/\s/g, '');
+    const mnvClean = row.employee_id.trim();
+    if (existingMnvs.has(mnvClean) || existingCccds.has(cccdClean)) {
+      duplicateCount++;
+    }
+  }
+  return duplicateCount;
+}
+
+export async function importWorkersAction(rows: ImportRow[], sendNotification = true, updateDuplicates = false): Promise<ImportResult> {
   const result: ImportResult = { success: 0, failed: 0, errors: [] };
+
+  // 1. Fetch all existing MNV and CCCD to check duplicates in memory
+  let existingWorkers: any[];
+  try {
+    existingWorkers = await fetchAllWorkersMinimal();
+  } catch (fetchErr: any) {
+    return { success: 0, failed: rows.length, errors: [{ row: 0, name: 'System', reason: `Lỗi kết nối DB: ${fetchErr.message}` }] };
+  }
+
+  const mnvMap = new Map(existingWorkers.map(w => [w.mnv, w.id]));
+  const cccdMap = new Map(existingWorkers.map(w => [w.cccd, w.id]));
+
+  const insertBatch = [];
+  const updateBatch = [];
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
@@ -194,8 +244,47 @@ export async function importWorkersAction(rows: ImportRow[]): Promise<ImportResu
       continue;
     }
 
-    const { error } = await supabase.from('workers').insert({
-      mnv:           row.employee_id.trim(),
+    const mnvClean = row.employee_id.trim();
+
+    const parseDateStr = (dateStr: string | null | undefined) => {
+      if (!dateStr) return null;
+      const str = dateStr.trim();
+      if (!str) return null;
+      
+      // Nếu là số (Excel serial date)
+      if (/^\d+$/.test(str)) {
+        const serial = parseInt(str, 10);
+        // Excel epoch is Dec 30, 1899 due to 1900 leap year bug
+        const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+        const jsDate = new Date(excelEpoch.getTime() + serial * 86400000);
+        return jsDate.toISOString().split('T')[0];
+      }
+
+      // Nếu chứa '/' (vd: DD/MM/YYYY)
+      if (str.includes('/')) {
+        const parts = str.split('/');
+        if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+
+      // Nếu chứa '-' (vd: DD-MM-YYYY hoặc YYYY-MM-DD)
+      if (str.includes('-')) {
+        const parts = str.split('-');
+        if (parts.length === 3 && parts[0].length === 2) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+      
+      return str;
+    };
+
+    let dob = parseDateStr(row.date_of_birth);
+    let startDate = parseDateStr(row.start_date);
+
+    let status = 'active';
+    const st = row.work_status?.toLowerCase().trim() || '';
+    if (st.includes('nghỉ') || st.includes('thôi việc') || st.includes('inactive')) status = 'inactive';
+    if (st.includes('tạm hoãn') || st.includes('suspended')) status = 'suspended';
+
+    const rowData = {
+      mnv:           mnvClean,
       full_name:     row.full_name.trim(),
       cccd:          cccdClean,
       team:          row.team.trim(),
@@ -203,28 +292,91 @@ export async function importWorkersAction(rows: ImportRow[]): Promise<ImportResu
       position:      row.position?.trim() || null,
       vehicle_plate: row.vehicle_plate?.trim() || null,
       vehicle_type:  row.vehicle_type?.trim() || null,
-      status:        'active',
-    });
+      phone:         row.phone?.trim() || null,
+      address:       row.address?.trim() || null,
+      gender:        row.gender?.trim() || null,
+      date_of_birth: dob,
+      start_date:    startDate,
+      status:        status,
+    };
 
+    // Check trùng lặp
+    const workerId = cccdMap.get(cccdClean) || mnvMap.get(mnvClean);
+    if (workerId) {
+      if (!updateDuplicates || workerId === 'new') {
+        result.failed++;
+        result.errors.push({
+          row: rowNum,
+          name: row.full_name,
+          reason: 'MNV hoặc CCCD đã tồn tại trong hệ thống (hoặc bị trùng lặp trong file)',
+        });
+        continue;
+      } else {
+        updateBatch.push({
+          id: workerId,
+          data: rowData,
+          rowNum: rowNum,
+          name: row.full_name.trim()
+        });
+        // Ngăn chặn update 2 lần trong cùng 1 file
+        mnvMap.set(mnvClean, 'new');
+        cccdMap.set(cccdClean, 'new');
+        continue;
+      }
+    }
+
+    // Đưa vào mảng insert và cập nhật Map để tránh trùng lặp giữa các dòng trong cùng 1 file
+    insertBatch.push({
+      data: rowData,
+      rowNum: rowNum,
+      name: row.full_name.trim()
+    });
+    mnvMap.set(mnvClean, 'new');
+    cccdMap.set(cccdClean, 'new');
+  }
+
+  // Thực hiện Bulk Insert
+  if (insertBatch.length > 0) {
+    const rowsToInsert = insertBatch.map(item => item.data);
+    const { error } = await supabase.from('workers').insert(rowsToInsert);
     if (error) {
-      result.failed++;
-      let reason = error.message;
-      if (error.code === '23505') reason = 'MNV hoặc CCCD đã tồn tại';
-      result.errors.push({ row: rowNum, name: row.full_name, reason });
+      // Nếu insert lô thất bại, fallback sang insert từng dòng để cứu các dòng đúng và lấy lỗi chi tiết
+      for (const item of insertBatch) {
+        const { error: singleError } = await supabase.from('workers').insert(item.data);
+        if (singleError) {
+          result.failed++;
+          result.errors.push({ row: item.rowNum, name: item.name, reason: `Lỗi CSDL: ${singleError.message}` });
+        } else {
+          result.success++;
+        }
+      }
     } else {
-      result.success++;
+      result.success += insertBatch.length;
+    }
+  }
+
+  // Thực hiện Update
+  for (const item of updateBatch) {
+    const { error } = await supabase.from('workers').update(item.data).eq('id', item.id);
+    if (error) {
+       result.failed++;
+       result.errors.push({ row: item.rowNum, name: item.name, reason: `Lỗi cập nhật CSDL: ${error.message}` });
+    } else {
+       result.success++;
     }
   }
 
   // Thông báo Telegram tổng kết
-  try {
-    if (result.success > 0) {
-      await sendTelegramMessage(
-        `📥 <b>IMPORT EXCEL HOÀN TẤT</b>\n✅ Thành công: ${result.success}\n❌ Thất bại: ${result.failed}`,
-        'HTML'
-      );
-    }
-  } catch (_) {}
+  if (sendNotification) {
+    try {
+      if (result.success > 0) {
+        await sendTelegramMessage(
+          `📥 <b>IMPORT EXCEL HOÀN TẤT</b>\n✅ Thành công: ${result.success}\n❌ Thất bại: ${result.failed}`,
+          'HTML'
+        );
+      }
+    } catch (_) {}
+  }
 
   return result;
 }
@@ -403,4 +555,75 @@ export async function uploadBulkImagesAction(formData: FormData) {
   }
 
   return results;
+}
+
+// ── Import hàng loạt Thẻ An Toàn ─────────────────────────────────────────────
+export type SafetyCardImportRow = {
+  cccd: string;
+  safety_card_number?: string;
+  safety_card_date?: string;
+  card_status_text?: string;
+};
+
+export async function importSafetyCardsAction(rows: SafetyCardImportRow[]): Promise<ImportResult> {
+  const result: ImportResult = { success: 0, failed: 0, errors: [] };
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const rowNum = i + 2;
+
+    if (!row.cccd?.trim()) {
+      result.failed++;
+      result.errors.push({ row: rowNum, name: 'Không xác định', reason: 'Thiếu số CCCD' });
+      continue;
+    }
+
+    const cccdClean = row.cccd.trim().replace(/\s/g, '');
+
+    // Convert status text to card_status enum
+    let mappedStatus = undefined;
+    const st = row.card_status_text?.toLowerCase().trim() || '';
+    if (st.includes('đang chờ cấp') || st.includes('chờ duyệt') || st.includes('pending')) mappedStatus = 'pending';
+    else if (st.includes('đã đào tạo') || st.includes('chưa được cấp') || st.includes('chờ in') || st.includes('approved')) mappedStatus = 'approved';
+    else if (st.includes('đã cấp') || st.includes('issued')) mappedStatus = 'issued';
+    else if (st.includes('none')) mappedStatus = 'none';
+
+    const updatePayload: any = {};
+    if (row.safety_card_number && row.safety_card_number.trim() !== '') updatePayload.safety_card_number = row.safety_card_number.trim();
+    if (row.safety_card_date && row.safety_card_date.trim() !== '') {
+      // Format from Excel might be string dd/mm/yyyy
+      const dateParts = row.safety_card_date.trim().split('/');
+      if (dateParts.length === 3) {
+        updatePayload.safety_card_date = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+      } else {
+        updatePayload.safety_card_date = row.safety_card_date.trim();
+      }
+    }
+    if (mappedStatus) updatePayload.card_status = mappedStatus;
+
+    if (Object.keys(updatePayload).length === 0) {
+      result.failed++;
+      result.errors.push({ row: rowNum, name: cccdClean, reason: 'Không có dữ liệu Thẻ để cập nhật' });
+      continue;
+    }
+
+    const { data: worker, error: selectErr } = await supabase.from('workers').select('id, full_name').eq('cccd', cccdClean).single();
+    
+    if (selectErr || !worker) {
+      result.failed++;
+      result.errors.push({ row: rowNum, name: cccdClean, reason: 'Không tìm thấy công nhân mang CCCD này' });
+      continue;
+    }
+
+    const { error: updateErr } = await supabase.from('workers').update(updatePayload).eq('id', worker.id);
+
+    if (updateErr) {
+      result.failed++;
+      result.errors.push({ row: rowNum, name: worker.full_name, reason: updateErr.message });
+    } else {
+      result.success++;
+    }
+  }
+
+  return result;
 }
