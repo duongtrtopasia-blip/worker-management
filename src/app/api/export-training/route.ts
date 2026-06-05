@@ -12,19 +12,36 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}));
     const workerIds: string[] = body.workerIds || [];
 
-    // Fetch workers
-    let query = supabase.from('workers').select('*').in('status', ['active']);
-    if (workerIds.length > 0) {
-      query = query.in('id', workerIds);
-    }
-    
-    const { data: workers, error } = await query.order('created_at', { ascending: false });
-    if (error) throw error;
+    // Fetch workers with pagination to bypass 1000-row limit
+    let finalWorkers: any[] = [];
 
-    // If no specific workerIds are provided, only export those who have not been issued a safety card
-    let finalWorkers = workers || [];
-    if (workerIds.length === 0) {
-      finalWorkers = finalWorkers.filter(w => w.card_status !== 'issued');
+    if (workerIds.length > 0) {
+      // Specific workers selected
+      const { data, error } = await supabase
+        .from('workers')
+        .select('id, full_name, gender, date_of_birth, cccd, address, position, area, card_status, portrait_url, work_status')
+        .in('id', workerIds)
+        .order('full_name', { ascending: true });
+      if (error) throw new Error(`DB error: ${error.message}`);
+      finalWorkers = data || [];
+    } else {
+      // All active workers not yet issued a card
+      let from = 0;
+      const step = 1000;
+      while (true) {
+        const { data: chunk, error } = await supabase
+          .from('workers')
+          .select('id, full_name, gender, date_of_birth, cccd, address, position, area, card_status, portrait_url, work_status')
+          .eq('work_status', 'active')
+          .neq('card_status', 'issued')
+          .order('full_name', { ascending: true })
+          .range(from, from + step - 1);
+        if (error) throw new Error(`DB error: ${error.message}`);
+        if (!chunk || chunk.length === 0) break;
+        finalWorkers = finalWorkers.concat(chunk);
+        if (chunk.length < step) break;
+        from += step;
+      }
     }
 
     // Initialize ExcelJS
