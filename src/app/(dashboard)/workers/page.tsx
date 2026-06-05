@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Search, Plus, Upload, Printer, Download, Edit, Trash2, CheckCircle2, AlertCircle, Users, Filter } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import ImportExcelModal from '@/components/workers/ImportExcelModal';
@@ -14,25 +15,31 @@ import ImportSafetyCardModal from '@/components/workers/ImportSafetyCardModal';
 import { updateCardStatusAction, updateCardStatusBulkAction } from '@/app/actions/worker';
 
 /* ── Custom Filter Select ─────────────────────────────────── */
-function FilterSelect({ value, onChange, options, defaultLabel }: {
+function FilterSelect({ value, onChange, options, defaultLabel, searchable = true }: {
   value: string;
   onChange: (v: string) => void;
   defaultLabel: string;
   options: { value: string; label: string }[];
+  searchable?: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
+  const [search, setSearch] = React.useState('');
   const ref = React.useRef<HTMLDivElement>(null);
   const isActive = value !== defaultLabel;
 
   React.useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+        setSearch(''); // clear search when closing outside
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
   const allOptions = [{ value: defaultLabel, label: defaultLabel }, ...options];
+  const filteredOptions = allOptions.filter(opt => opt.label.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div ref={ref} className="relative">
@@ -53,31 +60,52 @@ function FilterSelect({ value, onChange, options, defaultLabel }: {
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-1.5 bg-white rounded-xl border border-gray-100 shadow-xl z-[200] py-1.5 min-w-[170px] overflow-hidden"
+        <div className="absolute top-full left-0 mt-1.5 bg-white rounded-xl border border-gray-100 shadow-xl z-[200] py-1.5 min-w-[200px] flex flex-col"
           style={{ boxShadow: '0 8px 30px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)' }}
         >
-          {allOptions.map(opt => {
-            const selected = opt.value === value;
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => { onChange(opt.value); setOpen(false); }}
-                className={`w-full text-left px-3.5 py-2 text-sm flex items-center justify-between gap-3 transition-colors ${
-                  selected
-                    ? 'font-semibold text-brand-blue bg-brand-blue/5'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <span>{opt.label}</span>
-                {selected && (
-                  <svg className="w-3.5 h-3.5 text-brand-blue shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </button>
-            );
-          })}
+          {searchable && options.length > 5 && (
+            <div className="px-2 pb-1.5 border-b border-gray-50/80 mb-1">
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full text-xs pl-7 pr-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-blue/30 focus:border-brand-blue/30 transition-shadow"
+                  autoFocus
+                />
+              </div>
+            </div>
+          )}
+          <div className="max-h-[260px] overflow-y-auto">
+            {filteredOptions.length > 0 ? filteredOptions.map(opt => {
+              const selected = opt.value === value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => { onChange(opt.value); setOpen(false); setSearch(''); }}
+                  className={`w-full text-left px-3.5 py-2 text-sm flex items-center justify-between gap-3 transition-colors ${
+                    selected
+                      ? 'font-semibold text-brand-blue bg-brand-blue/5'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="truncate">{opt.label}</span>
+                  {selected && (
+                    <svg className="w-3.5 h-3.5 text-brand-blue shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </button>
+              );
+            }) : (
+              <div className="px-3.5 py-3 text-xs text-center text-gray-500">
+                Không tìm thấy kết quả
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -85,6 +113,7 @@ function FilterSelect({ value, onChange, options, defaultLabel }: {
 }
 
 export default function WorkersPage() {
+  const router = useRouter();
   const [workers, setWorkers] = useState<any[]>([]);
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -461,7 +490,10 @@ export default function WorkersPage() {
               paginatedWorkers.map((worker) => (
                 <React.Fragment key={worker.id}>
                 {/* --- DESKTOP VIEW --- */}
-                <TableRow className={`hidden md:table-row border-b border-gray-50 transition-colors ${checkedIds.has(worker.id) ? 'bg-blue-50/60' : 'hover:bg-gray-50/80'}`}>
+                <TableRow 
+                  onClick={() => router.push(`/workers/${worker.id}/edit`)}
+                  className={`hidden md:table-row border-b border-gray-50 transition-colors cursor-pointer ${checkedIds.has(worker.id) ? 'bg-blue-50/60' : 'hover:bg-gray-50/80'}`}
+                >
                   <TableCell className="pl-4">
                     <input type="checkbox" checked={checkedIds.has(worker.id)} onChange={(e) => toggleCheck(worker.id, e as any)} onClick={(e) => e.stopPropagation()} className="w-4 h-4 rounded border-gray-300 text-brand-blue cursor-pointer" />
                   </TableCell>
@@ -493,7 +525,7 @@ export default function WorkersPage() {
                   <TableCell>
                     {!worker.card_status || worker.card_status === 'none' ? (
                       userRole === 'editor' ? (
-                        <Button variant="outline" size="sm" onClick={() => handleCardRequest(worker.id, 'pending')} className="text-xs h-7 text-blue-600 border-blue-200 hover:bg-blue-50">
+                        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleCardRequest(worker.id, 'pending'); }} className="text-xs h-7 text-blue-600 border-blue-200 hover:bg-blue-50">
                           Trình duyệt
                         </Button>
                       ) : (
@@ -501,7 +533,7 @@ export default function WorkersPage() {
                       )
                     ) : worker.card_status === 'pending' ? (
                       userRole === 'admin' ? (
-                        <Button size="sm" onClick={() => handleCardRequest(worker.id, 'approved')} className="text-xs h-7 bg-emerald-600 hover:bg-emerald-700 text-white">
+                        <Button size="sm" onClick={(e) => { e.stopPropagation(); handleCardRequest(worker.id, 'approved'); }} className="text-xs h-7 bg-emerald-600 hover:bg-emerald-700 text-white">
                           Phê duyệt
                         </Button>
                       ) : (
@@ -513,16 +545,16 @@ export default function WorkersPage() {
                   </TableCell>
                   <TableCell className="pr-4">
                     <div className="flex items-center justify-end gap-1.5">
-                      <Button variant="ghost" size="sm" title="In hồ sơ" onClick={() => window.open(`/workers/${worker.id}/print`, '_blank')} className="h-8 w-8 p-0 hover:bg-gray-100 hover:text-brand-blue">
+                      <Button variant="ghost" size="sm" title="In hồ sơ" onClick={(e) => { e.stopPropagation(); window.open(`/workers/${worker.id}/print`, '_blank'); }} className="h-8 w-8 p-0 hover:bg-gray-100 hover:text-brand-blue">
                         <Printer className="h-3.5 w-3.5" />
                       </Button>
-                      <Link href={`/workers/${worker.id}/edit`}>
+                      <Link href={`/workers/${worker.id}/edit`} onClick={(e) => e.stopPropagation()}>
                         <Button variant="ghost" size="sm" title="Sửa" className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-brand-blue">
                           <Edit className="h-3.5 w-3.5" />
                         </Button>
                       </Link>
                       {userRole === 'admin' && (
-                        <Button variant="ghost" size="sm" title="Xóa" onClick={() => handleDelete(worker)} className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600">
+                        <Button variant="ghost" size="sm" title="Xóa" onClick={(e) => { e.stopPropagation(); handleDelete(worker); }} className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600">
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       )}
@@ -531,7 +563,10 @@ export default function WorkersPage() {
                 </TableRow>
 
                 {/* --- MOBILE VIEW --- */}
-                <tr className="md:hidden border-b border-gray-100 bg-white">
+                <tr 
+                  onClick={() => router.push(`/workers/${worker.id}/edit`)}
+                  className="md:hidden border-b border-gray-100 bg-white cursor-pointer hover:bg-gray-50/80 transition-colors"
+                >
                   <td colSpan={9} className="p-4">
                     <div className="flex items-start gap-3">
                       <div className="pt-1">
@@ -560,13 +595,13 @@ export default function WorkersPage() {
                           <div className="scale-90 origin-left">
                             {!worker.card_status || worker.card_status === 'none' ? (
                               userRole === 'editor' ? (
-                                <Button variant="outline" size="sm" onClick={() => handleCardRequest(worker.id, 'pending')} className="text-[10px] h-6 px-2 text-blue-600 border-blue-200 hover:bg-blue-50">
+                                <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleCardRequest(worker.id, 'pending'); }} className="text-[10px] h-6 px-2 text-blue-600 border-blue-200 hover:bg-blue-50">
                                   Trình duyệt
                                 </Button>
                               ) : cardStatusBadge('none')
                             ) : worker.card_status === 'pending' ? (
                               userRole === 'admin' ? (
-                                <Button size="sm" onClick={() => handleCardRequest(worker.id, 'approved')} className="text-[10px] h-6 px-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+                                <Button size="sm" onClick={(e) => { e.stopPropagation(); handleCardRequest(worker.id, 'approved'); }} className="text-[10px] h-6 px-2 bg-emerald-600 hover:bg-emerald-700 text-white">
                                   Phê duyệt
                                 </Button>
                               ) : cardStatusBadge('pending')
@@ -574,10 +609,10 @@ export default function WorkersPage() {
                           </div>
 
                           <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={() => window.open(`/workers/${worker.id}/print`, '_blank')} className="h-7 w-7 p-0 border-gray-200 rounded-full">
+                            <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); window.open(`/workers/${worker.id}/print`, '_blank'); }} className="h-7 w-7 p-0 border-gray-200 rounded-full">
                               <Printer className="h-3 w-3 text-gray-500" />
                             </Button>
-                            <Link href={`/workers/${worker.id}/edit`}>
+                            <Link href={`/workers/${worker.id}/edit`} onClick={(e) => e.stopPropagation()}>
                               <Button variant="outline" size="sm" className="h-7 w-7 p-0 border-gray-200 rounded-full">
                                 <Edit className="h-3 w-3 text-brand-blue" />
                               </Button>

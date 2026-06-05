@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getAccessToken } from '@/lib/onedrive';
 
@@ -13,14 +15,30 @@ export async function GET(req: NextRequest, { params }: { params: { filename: st
       return new NextResponse('Unauthorized: Cannot get OneDrive token', { status: 401 });
     }
 
-    const downloadUrl = `https://graph.microsoft.com/v1.0/me/drive/root:/App_Uploads/${filename}:/content`;
-    
-    const response = await fetch(downloadUrl, {
+    // Request metadata from Graph API to get the pre-authenticated download URL
+    const metadataUrl = `https://graph.microsoft.com/v1.0/me/drive/root:/App_Uploads/${filename}`;
+    const metadataResponse = await fetch(metadataUrl, {
+      cache: 'no-store',
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
+    if (!metadataResponse.ok) {
+      console.error('OneDrive metadata fetch failed for', filename, metadataResponse.status, await metadataResponse.text());
+      return new NextResponse('Image not found', { status: 404 });
+    }
+
+    const metadata = await metadataResponse.json();
+    const downloadUrl = metadata['@microsoft.graph.downloadUrl'];
+
+    if (!downloadUrl) {
+      return new NextResponse('Download URL not found', { status: 500 });
+    }
+
+    // Now proxy the bytes from the pre-authenticated download URL
+    const response = await fetch(downloadUrl);
+
     if (!response.ok) {
-      console.error('OneDrive fetch failed for', filename, await response.text());
+      console.error('OneDrive byte fetch failed for', filename, response.status, await response.text());
       return new NextResponse('Image not found', { status: 404 });
     }
 
