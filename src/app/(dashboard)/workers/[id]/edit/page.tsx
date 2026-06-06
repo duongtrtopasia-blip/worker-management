@@ -158,8 +158,15 @@ export default function EditWorkerPage({ params }: { params: { id: string } }) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const formData = new FormData(e.currentTarget);
+    
     const file = fileInputRef.current?.files?.[0];
+    if (file && file.size > 5 * 1024 * 1024) {
+      toast.error('Kích thước ảnh quá lớn, vui lòng chọn ảnh dưới 5MB');
+      setIsSubmitting(false);
+      return;
+    }
+
+    const formData = new FormData(e.currentTarget);
     if (file) formData.append('portrait', file);
     if (imagePreview && imagePreview === worker?.portrait_url) {
       formData.append('existing_portrait_url', worker.portrait_url);
@@ -172,8 +179,8 @@ export default function EditWorkerPage({ params }: { params: { id: string } }) {
         toast.success('Đã cập nhật hồ sơ công nhân!');
         setTimeout(() => { router.push('/workers'); router.refresh(); }, 1000);
       }
-    } catch {
-      toast.error('Lỗi khi cập nhật hồ sơ');
+    } catch (e: any) {
+      toast.error(e.message || 'Lỗi khi cập nhật hồ sơ');
     } finally {
       setIsSubmitting(false);
     }

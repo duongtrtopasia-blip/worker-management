@@ -316,8 +316,15 @@ export default function NewWorkerPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const formData = new FormData(e.currentTarget);
+    
     const file = fileInputRef.current?.files?.[0];
+    if (file && file.size > 5 * 1024 * 1024) {
+      toast.error('Kích thước ảnh quá lớn, vui lòng chọn ảnh dưới 5MB');
+      setIsSubmitting(false);
+      return;
+    }
+
+    const formData = new FormData(e.currentTarget);
     if (file) formData.append('portrait', file);
     try {
       const res = await addWorkerAction(formData);
