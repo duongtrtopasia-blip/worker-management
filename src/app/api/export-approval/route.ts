@@ -47,83 +47,149 @@ export async function POST(request: Request) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Danh sach xin phe duyet');
 
-    // Add general headers
-    worksheet.mergeCells('A1:I1');
-    worksheet.getCell('A1').value = 'DANH SÁCH ĐỀ NGHỊ CẤP THẺ RA VÀO / THẺ XE';
-    worksheet.getCell('A1').font = { bold: true, size: 14 };
-    worksheet.getCell('A1').alignment = { horizontal: 'center' };
+    worksheet.views = [{ showGridLines: false }];
 
     // Set columns width
     worksheet.columns = [
       { key: 'stt', width: 6 },
-      { key: 'name', width: 25 },
+      { key: 'name', width: 30 },
+      { key: 'yob', width: 22 },
       { key: 'cccd', width: 20 },
-      { key: 'position', width: 20 },
-      { key: 'team', width: 20 },
-      { key: 'area', width: 15 },
-      { key: 'vehicle_type', width: 15 },
       { key: 'vehicle_plate', width: 20 },
-      { key: 'note', width: 20 },
+      { key: 'position', width: 15 },
     ];
 
-    // Header Row
-    worksheet.getRow(3).values = ['STT', 'HỌ VÀ TÊN', 'SỐ CCCD', 'CHỨC DANH', 'TỔ ĐỘI/NHÀ THẦU', 'KHU VỰC', 'LOẠI XE', 'BIỂN SỐ XE', 'GHI CHÚ'];
-    worksheet.getRow(3).font = { bold: true };
-    worksheet.getRow(3).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+    // Project and Company Name (Row 1, 2)
+    worksheet.mergeCells('C1:F1');
+    worksheet.getCell('C1').value = 'DỰ ÁN: KHU DU LỊCH NGHỈ DƯỠNG MỸ LÂM - TUYÊN QUANG';
+    worksheet.getCell('C1').font = { bold: true, size: 12, color: { argb: 'FF002060' } };
+    worksheet.getCell('C1').alignment = { horizontal: 'center', vertical: 'middle' };
+
+    worksheet.mergeCells('C2:F2');
+    worksheet.getCell('C2').value = 'CÔNG TY CP PT VÀ ĐẦU TƯ XÂY DỰNG VINCONS';
+    worksheet.getCell('C2').font = { bold: true, size: 12, color: { argb: 'FF002060' } };
+    worksheet.getCell('C2').alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // Form title (Row 3, 4)
+    worksheet.mergeCells('C3:F3');
+    worksheet.getCell('C3').value = 'GIẤY ĐỀ NGHỊ CẤP THẺ XE RA/VÀO DỰ ÁN';
+    worksheet.getCell('C3').font = { bold: true, size: 12 };
+    worksheet.getCell('C3').alignment = { horizontal: 'center', vertical: 'middle' };
+
+    worksheet.mergeCells('C4:F4');
+    worksheet.getCell('C4').value = 'Kính gửi: BAN QLXD VINHOMES MỸ LÂM - TUYÊN QUANG';
+    worksheet.getCell('C4').font = { bold: true, size: 12 };
+    worksheet.getCell('C4').alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // Info (Row 6)
+    const todayStr = format(new Date(), 'dd.MM.yyyy');
+    worksheet.mergeCells('A6:F6');
+    worksheet.getCell('A6').value = `Họ và tên: Trần Văn Dương     Chức vụ: CV.ATLĐ     SĐT: 083.735.5678               Từ: ${todayStr}   Thời hạn: 6 tháng`;
+    worksheet.getCell('A6').font = { size: 11 };
+    worksheet.getCell('A6').alignment = { horizontal: 'left', vertical: 'middle' };
     
-    // Style headers
-    worksheet.getRow(3).eachCell((cell) => {
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9D9D9' } };
+    // Apply bold to specific parts using rich text
+    worksheet.getCell('A6').value = {
+      richText: [
+        { text: 'Họ và tên: ', font: { size: 11 } },
+        { text: 'Trần Văn Dương     ', font: { size: 11, bold: true } },
+        { text: 'Chức vụ: CV.ATLĐ     SĐT: 083.735.5678               ', font: { size: 11 } },
+        { text: `Từ: ${todayStr}   Thời hạn: 6 tháng`, font: { size: 11 } }
+      ]
+    };
+
+    // Category (Row 7)
+    worksheet.mergeCells('A7:F7');
+    worksheet.getCell('A7').value = 'Hạng mục thi công: Dự án Mỹ Lâm - Tuyên Quang';
+    worksheet.getCell('A7').font = { size: 11 };
+    worksheet.getCell('A7').alignment = { horizontal: 'left', vertical: 'middle' };
+    
+    // Bottom border for Row 7
+    worksheet.getCell('A7').border = { bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } } };
+
+    // Subtitle (Row 8)
+    worksheet.mergeCells('A8:F8');
+    worksheet.getCell('A8').value = 'DANH SÁCH ĐỀ NGHỊ CẤP THẺ XE';
+    worksheet.getCell('A8').font = { bold: true, size: 12, underline: 'single', color: { argb: 'FF002060' } };
+    worksheet.getCell('A8').alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // Table Header (Row 10)
+    worksheet.getRow(10).values = ['TT', 'HỌ VÀ TÊN', 'NGÀY THÁNG NĂM SINH', 'CCCD', 'BIỂN KIỂM SOÁT', 'CHỨC DANH'];
+    worksheet.getRow(10).height = 25;
+    worksheet.getRow(10).eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF002B49' } };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
       cell.border = {
-        top: { style: 'thin' }, left: { style: 'thin' },
-        bottom: { style: 'thin' }, right: { style: 'thin' }
+        top: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        left: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        right: { style: 'thin', color: { argb: 'FFCCCCCC' } }
       };
     });
 
     // Add Data
     for (let i = 0; i < finalWorkers.length; i++) {
       const w = finalWorkers[i];
+      let yob = '';
+      if (w.date_of_birth) {
+        // convert YYYY-MM-DD to DD/MM/YYYY safely
+        const parts = w.date_of_birth.split('-');
+        if (parts.length === 3) {
+          yob = `${parts[2]}/${parts[1]}/${parts[0]}`;
+        } else {
+          yob = w.date_of_birth;
+        }
+      }
+      
       const row = worksheet.addRow({
         stt: i + 1,
         name: w.full_name || '',
+        yob: yob,
         cccd: w.cccd || '',
-        position: w.position || '',
-        team: w.team || '',
-        area: w.area || '',
-        vehicle_type: w.vehicle_type || '',
         vehicle_plate: w.vehicle_plate || '',
-        note: ''
+        position: w.position || 'CNCH'
       });
       
-      row.height = 30;
+      row.height = 25;
       
       // Add borders and alignment
       row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
         cell.border = {
-          top: { style: 'thin' }, left: { style: 'thin' },
-          bottom: { style: 'thin' }, right: { style: 'thin' }
+          top: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+          left: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+          bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+          right: { style: 'thin', color: { argb: 'FFCCCCCC' } }
         };
-        cell.alignment = { vertical: 'middle', horizontal: colNumber === 2 ? 'left' : 'center', wrapText: true };
+        cell.alignment = { vertical: 'middle', horizontal: colNumber === 2 ? 'left' : 'center' };
       });
+      
+      // Font settings for each column based on image
+      row.getCell(1).font = { bold: true, color: { argb: 'FF333333' } }; // TT
+      row.getCell(2).font = { bold: true, color: { argb: 'FF111111' } }; // HỌ VÀ TÊN
+      row.getCell(3).font = { bold: false, color: { argb: 'FF555555' } }; // NĂM SINH
+      row.getCell(4).font = { bold: false, color: { argb: 'FF555555' } }; // CCCD
+      row.getCell(5).font = { bold: true, color: { argb: 'FF333333' } }; // BIỂN KIỂM SOÁT
+      row.getCell(6).font = { bold: true, color: { argb: 'FF555555' } }; // CHỨC DANH
     }
 
     // Add Approval Signatures Section
-    const sigRowIndex = finalWorkers.length + 6;
+    const sigRowIndex = finalWorkers.length + 13;
     
-    worksheet.mergeCells(`A${sigRowIndex}:C${sigRowIndex}`);
+    worksheet.mergeCells(`A${sigRowIndex}:B${sigRowIndex}`);
     worksheet.getCell(`A${sigRowIndex}`).value = 'ĐẠI DIỆN BQLXD';
     worksheet.getCell(`A${sigRowIndex}`).font = { bold: true, size: 12 };
     worksheet.getCell(`A${sigRowIndex}`).alignment = { horizontal: 'center' };
 
-    worksheet.mergeCells(`D${sigRowIndex}:F${sigRowIndex}`);
-    worksheet.getCell(`D${sigRowIndex}`).value = 'ĐẠI DIỆN BPAN';
-    worksheet.getCell(`D${sigRowIndex}`).font = { bold: true, size: 12 };
-    worksheet.getCell(`D${sigRowIndex}`).alignment = { horizontal: 'center' };
+    worksheet.mergeCells(`C${sigRowIndex}:D${sigRowIndex}`);
+    worksheet.getCell(`C${sigRowIndex}`).value = 'ĐẠI DIỆN BPAN';
+    worksheet.getCell(`C${sigRowIndex}`).font = { bold: true, size: 12 };
+    worksheet.getCell(`C${sigRowIndex}`).alignment = { horizontal: 'center' };
 
-    worksheet.mergeCells(`G${sigRowIndex}:I${sigRowIndex}`);
-    worksheet.getCell(`G${sigRowIndex}`).value = 'ĐẠI DIỆN NHÀ THẦU';
-    worksheet.getCell(`G${sigRowIndex}`).font = { bold: true, size: 12 };
-    worksheet.getCell(`G${sigRowIndex}`).alignment = { horizontal: 'center' };
+    worksheet.mergeCells(`E${sigRowIndex}:F${sigRowIndex}`);
+    worksheet.getCell(`E${sigRowIndex}`).value = 'ĐẠI DIỆN NHÀ THẦU';
+    worksheet.getCell(`E${sigRowIndex}`).font = { bold: true, size: 12 };
+    worksheet.getCell(`E${sigRowIndex}`).alignment = { horizontal: 'center' };
 
     const buffer = await workbook.xlsx.writeBuffer();
     
@@ -131,7 +197,7 @@ export async function POST(request: Request) {
       status: 200,
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Content-Disposition': `attachment; filename="DanhSachPheDuyet_${format(new Date(), 'yyyyMMdd')}.xlsx"`
+        'Content-Disposition': `attachment; filename="DanhSachPheDuyetTheXe_${format(new Date(), 'yyyyMMdd')}.xlsx"`
       }
     });
 
