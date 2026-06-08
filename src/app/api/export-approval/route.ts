@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       // Specific workers selected
       const { data, error } = await supabase
         .from('workers')
-        .select('id, full_name, cccd, position, team, area, vehicle_type, vehicle_plate, date_of_birth, employee_id')
+        .select('id, full_name, cccd, position, team, area, vehicle_type, vehicle_plate, date_of_birth, mnv')
         .in('id', workerIds)
         .order('full_name', { ascending: true });
       if (error) throw new Error(`DB error: ${error.message}`);
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       while (true) {
         const { data: chunk, error } = await supabase
           .from('workers')
-          .select('id, full_name, cccd, position, team, area, vehicle_type, vehicle_plate, date_of_birth, employee_id')
+          .select('id, full_name, cccd, position, team, area, vehicle_type, vehicle_plate, date_of_birth, mnv')
           .eq('work_status', 'active')
           .order('full_name', { ascending: true })
           .range(from, from + step - 1);
@@ -143,7 +143,7 @@ export async function POST(request: Request) {
         }
       }
       
-      const cardNumber = w.employee_id ? `VCS-${w.employee_id}` : '';
+      const cardNumber = w.mnv ? `VCS-${w.mnv}` : '';
 
       const row = worksheet.addRow({
         stt: i + 1,
