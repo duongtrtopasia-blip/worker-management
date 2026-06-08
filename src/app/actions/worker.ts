@@ -24,6 +24,16 @@ export async function addWorkerAction(formData: FormData) {
   const vehiclePlate = (formData.get('vehicle_plate') as string)?.trim() || null;
   const vehicleType  = (formData.get('vehicle_type')  as string)?.trim() || null;
   const position     = (formData.get('position')      as string)?.trim() || null;
+  const phone        = (formData.get('phone')         as string)?.trim() || null;
+  const address      = (formData.get('address')       as string)?.trim() || null;
+  
+  // Xử lý ngày tháng nếu rỗng thì truyền null để tránh lỗi kiểu date
+  let dob = (formData.get('date_of_birth') as string)?.trim() || null;
+  let startDate = (formData.get('start_date') as string)?.trim() || null;
+  if (dob === '') dob = null;
+  if (startDate === '') startDate = null;
+
+  const workStatus = (formData.get('work_status') as string)?.trim() || 'active';
 
   // 3. Lưu vào Database Supabase
   const { data, error } = await supabase
@@ -39,7 +49,11 @@ export async function addWorkerAction(formData: FormData) {
         vehicle_plate: vehiclePlate,
         vehicle_type:  vehicleType,
         portrait_url:  portraitUrl || null,
-        status:        'active',
+        phone,
+        address,
+        date_of_birth: dob,
+        start_date: startDate,
+        work_status: workStatus,
       },
     ])
     .select();
@@ -51,15 +65,14 @@ export async function addWorkerAction(formData: FormData) {
   if (error) {
     console.error('Supabase insert error:', JSON.stringify(error, null, 2));
 
-    // Trả về lỗi cụ thể thay vì throw
+    // Trả về đối tượng thay vì throw Error để tránh Next.js mask lỗi trên Vercel
     if (error.code === '23505') {
-      // Unique constraint violation
-      throw new Error('CCCD hoặc Mã nhân viên đã tồn tại trong hệ thống');
+      return { success: false, error: 'CCCD hoặc Mã nhân viên đã tồn tại trong hệ thống' };
     }
     if (error.code === '23502') {
-      throw new Error(`Thiếu thông tin bắt buộc: ${error.message}`);
+      return { success: false, error: `Thiếu thông tin bắt buộc: ${error.message}` };
     }
-    throw new Error(`Lỗi Database: ${error.message}`);
+    return { success: false, error: `Lỗi Database: ${error.message}` };
   }
 
   // 4. Gửi thông báo Telegram (không block nếu thất bại)
@@ -89,6 +102,7 @@ export async function addWorkerAction(formData: FormData) {
   return { success: true, data };
 }
 
+
 export async function updateWorkerAction(id: string, formData: FormData) {
   let portraitUrl = (formData.get('existing_portrait_url') as string) || null;
 
@@ -102,6 +116,15 @@ export async function updateWorkerAction(id: string, formData: FormData) {
   const vehiclePlate = (formData.get('vehicle_plate') as string)?.trim() || null;
   const vehicleType  = (formData.get('vehicle_type')  as string)?.trim() || null;
   const position     = (formData.get('position')      as string)?.trim() || null;
+  const phone        = (formData.get('phone')         as string)?.trim() || null;
+  const address      = (formData.get('address')       as string)?.trim() || null;
+  
+  let dob = (formData.get('date_of_birth') as string)?.trim() || null;
+  let startDate = (formData.get('start_date') as string)?.trim() || null;
+  if (dob === '') dob = null;
+  if (startDate === '') startDate = null;
+
+  const workStatus = (formData.get('work_status') as string)?.trim() || 'active';
 
   // 2. Cập nhật Database
   const { data, error } = await supabase
@@ -116,6 +139,11 @@ export async function updateWorkerAction(id: string, formData: FormData) {
       vehicle_plate: vehiclePlate,
       vehicle_type:  vehicleType,
       portrait_url:  portraitUrl,
+      phone,
+      address,
+      date_of_birth: dob,
+      start_date: startDate,
+      work_status: workStatus,
     })
     .eq('id', id)
     .select();
@@ -123,9 +151,9 @@ export async function updateWorkerAction(id: string, formData: FormData) {
   if (error) {
     console.error('Supabase update error:', JSON.stringify(error, null, 2));
     if (error.code === '23505') {
-      throw new Error('CCCD hoặc Mã nhân viên đã tồn tại trong hệ thống');
+      return { success: false, error: 'CCCD hoặc Mã nhân viên đã tồn tại trong hệ thống' };
     }
-    throw new Error(`Lỗi cập nhật: ${error.message}`);
+    return { success: false, error: `Lỗi cập nhật: ${error.message}` };
   }
 
   const cookieStore = cookies();

@@ -178,6 +178,8 @@ export default function EditWorkerPage({ params }: { params: { id: string } }) {
       if (res.success) {
         toast.success('Đã cập nhật hồ sơ công nhân!');
         setTimeout(() => { router.push('/workers'); router.refresh(); }, 1000);
+      } else {
+        toast.error(`❌ ${res.error || 'Lỗi khi cập nhật hồ sơ'}`);
       }
     } catch (e: any) {
       toast.error(e.message || 'Lỗi khi cập nhật hồ sơ');

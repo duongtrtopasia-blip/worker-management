@@ -331,6 +331,8 @@ export default function NewWorkerPage() {
       if (res.success) {
         toast.success('✅ Đã lưu hồ sơ thành công!');
         setTimeout(() => { router.push('/workers'); router.refresh(); }, 1200);
+      } else {
+        toast.error(`❌ ${res.error || 'Lỗi khi lưu vào Database'}`);
       }
     } catch (err: any) {
       toast.error(`❌ ${err?.message || 'Lỗi khi lưu vào Database'}`);
