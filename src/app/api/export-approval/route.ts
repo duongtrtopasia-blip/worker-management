@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       // Specific workers selected
       const { data, error } = await supabase
         .from('workers')
-        .select('id, full_name, cccd, position, team, area, vehicle_type, vehicle_plate, date_of_birth')
+        .select('id, full_name, cccd, position, team, area, vehicle_type, vehicle_plate, date_of_birth, employee_id')
         .in('id', workerIds)
         .order('full_name', { ascending: true });
       if (error) throw new Error(`DB error: ${error.message}`);
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       while (true) {
         const { data: chunk, error } = await supabase
           .from('workers')
-          .select('id, full_name, cccd, position, team, area, vehicle_type, vehicle_plate, date_of_birth')
+          .select('id, full_name, cccd, position, team, area, vehicle_type, vehicle_plate, date_of_birth, employee_id')
           .eq('work_status', 'active')
           .order('full_name', { ascending: true })
           .range(from, from + step - 1);
@@ -55,35 +55,36 @@ export async function POST(request: Request) {
       { key: 'name', width: 30 },
       { key: 'yob', width: 22 },
       { key: 'cccd', width: 20 },
+      { key: 'card_number', width: 20 },
       { key: 'vehicle_plate', width: 20 },
       { key: 'position', width: 15 },
     ];
 
     // Project and Company Name (Row 1, 2)
-    worksheet.mergeCells('C1:F1');
+    worksheet.mergeCells('C1:G1');
     worksheet.getCell('C1').value = 'DỰ ÁN: KHU DU LỊCH NGHỈ DƯỠNG MỸ LÂM - TUYÊN QUANG';
     worksheet.getCell('C1').font = { bold: true, size: 12, color: { argb: 'FF002060' } };
     worksheet.getCell('C1').alignment = { horizontal: 'center', vertical: 'middle' };
 
-    worksheet.mergeCells('C2:F2');
+    worksheet.mergeCells('C2:G2');
     worksheet.getCell('C2').value = 'CÔNG TY CP PT VÀ ĐẦU TƯ XÂY DỰNG VINCONS';
     worksheet.getCell('C2').font = { bold: true, size: 12, color: { argb: 'FF002060' } };
     worksheet.getCell('C2').alignment = { horizontal: 'center', vertical: 'middle' };
 
     // Form title (Row 3, 4)
-    worksheet.mergeCells('C3:F3');
+    worksheet.mergeCells('C3:G3');
     worksheet.getCell('C3').value = 'GIẤY ĐỀ NGHỊ CẤP THẺ XE RA/VÀO DỰ ÁN';
     worksheet.getCell('C3').font = { bold: true, size: 12 };
     worksheet.getCell('C3').alignment = { horizontal: 'center', vertical: 'middle' };
 
-    worksheet.mergeCells('C4:F4');
+    worksheet.mergeCells('C4:G4');
     worksheet.getCell('C4').value = 'Kính gửi: BAN QLXD VINHOMES MỸ LÂM - TUYÊN QUANG';
     worksheet.getCell('C4').font = { bold: true, size: 12 };
     worksheet.getCell('C4').alignment = { horizontal: 'center', vertical: 'middle' };
 
     // Info (Row 6)
     const todayStr = format(new Date(), 'dd.MM.yyyy');
-    worksheet.mergeCells('A6:F6');
+    worksheet.mergeCells('A6:G6');
     worksheet.getCell('A6').value = `Họ và tên: Trần Văn Dương     Chức vụ: CV.ATLĐ     SĐT: 083.735.5678               Từ: ${todayStr}   Thời hạn: 6 tháng`;
     worksheet.getCell('A6').font = { size: 11 };
     worksheet.getCell('A6').alignment = { horizontal: 'left', vertical: 'middle' };
@@ -99,7 +100,7 @@ export async function POST(request: Request) {
     };
 
     // Category (Row 7)
-    worksheet.mergeCells('A7:F7');
+    worksheet.mergeCells('A7:G7');
     worksheet.getCell('A7').value = 'Hạng mục thi công: Dự án Mỹ Lâm - Tuyên Quang';
     worksheet.getCell('A7').font = { size: 11 };
     worksheet.getCell('A7').alignment = { horizontal: 'left', vertical: 'middle' };
@@ -108,13 +109,13 @@ export async function POST(request: Request) {
     worksheet.getCell('A7').border = { bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } } };
 
     // Subtitle (Row 8)
-    worksheet.mergeCells('A8:F8');
+    worksheet.mergeCells('A8:G8');
     worksheet.getCell('A8').value = 'DANH SÁCH ĐỀ NGHỊ CẤP THẺ XE';
     worksheet.getCell('A8').font = { bold: true, size: 12, underline: 'single', color: { argb: 'FF002060' } };
     worksheet.getCell('A8').alignment = { horizontal: 'center', vertical: 'middle' };
 
     // Table Header (Row 10)
-    worksheet.getRow(10).values = ['TT', 'HỌ VÀ TÊN', 'NGÀY THÁNG NĂM SINH', 'CCCD', 'BIỂN KIỂM SOÁT', 'CHỨC DANH'];
+    worksheet.getRow(10).values = ['TT', 'HỌ VÀ TÊN', 'NGÀY THÁNG NĂM SINH', 'CCCD', 'SỐ THẺ', 'BIỂN KIỂM SOÁT', 'CHỨC DANH'];
     worksheet.getRow(10).height = 25;
     worksheet.getRow(10).eachCell((cell) => {
       cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -142,11 +143,14 @@ export async function POST(request: Request) {
         }
       }
       
+      const cardNumber = w.employee_id ? `VCS-${w.employee_id}` : '';
+
       const row = worksheet.addRow({
         stt: i + 1,
         name: w.full_name || '',
         yob: yob,
         cccd: w.cccd || '',
+        card_number: cardNumber,
         vehicle_plate: w.vehicle_plate || '',
         position: w.position || 'CNCH'
       });
@@ -169,8 +173,9 @@ export async function POST(request: Request) {
       row.getCell(2).font = { bold: true, color: { argb: 'FF111111' } }; // HỌ VÀ TÊN
       row.getCell(3).font = { bold: false, color: { argb: 'FF555555' } }; // NĂM SINH
       row.getCell(4).font = { bold: false, color: { argb: 'FF555555' } }; // CCCD
-      row.getCell(5).font = { bold: true, color: { argb: 'FF333333' } }; // BIỂN KIỂM SOÁT
-      row.getCell(6).font = { bold: true, color: { argb: 'FF555555' } }; // CHỨC DANH
+      row.getCell(5).font = { bold: true, color: { argb: 'FF333333' } }; // SỐ THẺ
+      row.getCell(6).font = { bold: true, color: { argb: 'FF333333' } }; // BIỂN KIỂM SOÁT
+      row.getCell(7).font = { bold: true, color: { argb: 'FF555555' } }; // CHỨC DANH
     }
 
     // Add Approval Signatures Section
