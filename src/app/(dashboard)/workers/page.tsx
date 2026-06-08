@@ -350,6 +350,37 @@ export default function WorkersPage() {
           >
             <Download className="h-4 w-4" /> Xuất DS Huấn Luyện
           </Button>
+
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-fuchsia-600 border-fuchsia-300 hover:bg-fuchsia-50 gap-1.5" 
+            onClick={async () => {
+              const toastId = toast.loading('Đang tạo danh sách xin phê duyệt...');
+              try {
+                const res = await fetch('/api/export-approval', { 
+                  method: 'POST', 
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ workerIds: Array.from(checkedIds) }) 
+                });
+                if (!res.ok) throw new Error('Export failed');
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `DanhSachPheDuyet_${new Date().toISOString().slice(0,10).replace(/-/g, '')}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                toast.success('Xuất file thành công!', { id: toastId });
+              } catch (e) {
+                toast.error('Có lỗi khi xuất file', { id: toastId });
+              }
+            }}
+          >
+            <Download className="h-4 w-4" /> Xuất File Xin Duyệt
+          </Button>
           <Link href="/workers/new">
             <Button size="sm" className="gap-1.5 text-white" style={{ background: 'linear-gradient(135deg, #1e3a8a, #970731)' }}>
               <Plus className="h-4 w-4" /> Thêm công nhân
