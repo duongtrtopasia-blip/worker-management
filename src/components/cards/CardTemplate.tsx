@@ -89,7 +89,10 @@ export const PersonCard = ({ data }: { data: CardData }) => {
         </div>
 
         {/* Thanh biển số xe - luôn hiện, để trống nếu không có phương tiện */}
-        <div className="mt-auto w-full bg-green-50 border border-green-500 text-green-800 font-bold text-[14px] rounded text-center py-1 leading-normal min-h-[28px]">
+        <div
+          className="mt-auto w-full bg-green-50 border border-green-500 text-green-800 font-bold text-[14px] rounded text-center py-1 leading-normal min-h-[28px]"
+          style={{ background: '#f0fdf4', border: '1px solid #22c55e', color: '#166534', fontWeight: 'bold', fontSize: '14px', borderRadius: '4px', textAlign: 'center', padding: '4px 0', minHeight: '28px', width: '100%', marginTop: 'auto' }}
+        >
           {data.vehicle_plate || ''}
         </div>
       </div>
@@ -139,7 +142,10 @@ export const PersonCardHorizontal = ({ data }: { data: CardData }) => {
         </div>
         
         {/* Thanh biển số xe - luôn hiện, để trống nếu không có phương tiện */}
-        <div className="w-full bg-green-50 border border-green-500 text-green-800 font-bold text-[14px] rounded text-center py-1 leading-normal min-h-[28px]">
+        <div
+          className="w-full bg-green-50 border border-green-500 text-green-800 font-bold text-[14px] rounded text-center py-1 leading-normal min-h-[28px]"
+          style={{ background: '#f0fdf4', border: '1px solid #22c55e', color: '#166534', fontWeight: 'bold', fontSize: '14px', borderRadius: '4px', textAlign: 'center', padding: '4px 0', minHeight: '28px', width: '100%' }}
+        >
           {data.vehicle_plate || ''}
         </div>
       </div>
