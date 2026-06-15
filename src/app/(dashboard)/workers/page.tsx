@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useMemo } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -142,48 +144,70 @@ export default function WorkersPage() {
   const fetchWorkers = async () => {
     setLoading(true);
 
+    // ✅ Fetch workers + documents song song (parallel) thay vì tuần tự
     let allWorkers: any[] = [];
-    let from = 0;
+    let docsData: any[] = [];
     const step = 1000;
-    let hasMore = true;
 
-    while (hasMore) {
-      const { data, error } = await supabase
-        .from('workers')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .range(from, from + step - 1);
-      
-      if (error) {
+    try {
+      // Fetch trang đầu song song để nhanh hơn
+      const [firstWorkerChunk, firstDocsChunk] = await Promise.all([
+        supabase
+          .from('workers')
+          .select('id, mnv, full_name, cccd, team, area, position, card_status, work_status, portrait_url, created_at')
+          .order('created_at', { ascending: false })
+          .range(0, step - 1),
+        supabase.from('documents').select('worker_id, doc_type').range(0, step - 1),
+      ]);
+
+      if (firstWorkerChunk.error) {
         toast.error('Lỗi khi tải danh sách công nhân');
         setLoading(false);
         return;
       }
-      
-      if (data && data.length > 0) {
-        allWorkers = allWorkers.concat(data);
-        if (data.length < step) hasMore = false;
-        else from += step;
-      } else {
-        hasMore = false;
-      }
-    }
 
-    let docsData: any[] = [];
-    let dFrom = 0;
-    let dHasMore = true;
-    while (dHasMore) {
-      const { data: dData, error: dError } = await supabase.from('documents').select('worker_id, doc_type').range(dFrom, dFrom + step - 1);
-      if (dError) {
-        break;
+      if (firstWorkerChunk.data) allWorkers = firstWorkerChunk.data;
+      if (firstDocsChunk.data) docsData = firstDocsChunk.data;
+
+      // Nếu còn trang tiếp theo, fetch song song tiếp
+      const needMoreWorkers = allWorkers.length === step;
+      const needMoreDocs = docsData.length === step;
+
+      if (needMoreWorkers || needMoreDocs) {
+        const workerPages: Promise<any>[] = [];
+        const docPages: Promise<any>[] = [];
+
+        if (needMoreWorkers) {
+          let from = step;
+          // Estimate max pages, fetch until done
+          while (true) {
+            const { data, error } = await supabase
+              .from('workers')
+              .select('id, mnv, full_name, cccd, team, area, position, card_status, work_status, portrait_url, created_at')
+              .order('created_at', { ascending: false })
+              .range(from, from + step - 1);
+            if (error || !data || data.length === 0) break;
+            allWorkers = allWorkers.concat(data);
+            if (data.length < step) break;
+            from += step;
+          }
+        }
+
+        if (needMoreDocs) {
+          let dFrom = step;
+          while (true) {
+            const { data, error } = await supabase.from('documents').select('worker_id, doc_type').range(dFrom, dFrom + step - 1);
+            if (error || !data || data.length === 0) break;
+            docsData = docsData.concat(data);
+            if (data.length < step) break;
+            dFrom += step;
+          }
+        }
       }
-      if (dData && dData.length > 0) {
-        docsData = docsData.concat(dData);
-        if (dData.length < step) dHasMore = false;
-        else dFrom += step;
-      } else {
-        dHasMore = false;
-      }
+    } catch (err) {
+      toast.error('Lỗi khi tải dữ liệu');
+      setLoading(false);
+      return;
     }
 
     const docsMap = new Map();
@@ -195,10 +219,11 @@ export default function WorkersPage() {
       w.documents = docsMap.get(w.id) || [];
       return w;
     });
-    
+
     setWorkers(workersWithDocs);
     setLoading(false);
   };
+
 
   const requiredDocs = ['cccd_notarized', 'health_certificate', 'safety_card', 'safety_commitment'];
   const isProfileComplete = (worker: any) => {
@@ -207,11 +232,20 @@ export default function WorkersPage() {
     return requiredDocs.every(doc => uploadedDocs.includes(doc));
   };
 
-  const uniqueTeams = Array.from(new Set(workers.map(w => w.team).filter(Boolean))).sort();
-  const uniquePositions = Array.from(new Set(workers.map(w => w.position).filter(Boolean))).sort();
-  const uniqueAreas = Array.from(new Set(workers.map(w => w.area).filter(Boolean))).sort();
+  const uniqueTeams = useMemo(
+    () => Array.from(new Set(workers.map(w => w.team).filter(Boolean))).sort() as string[],
+    [workers]
+  );
+  const uniquePositions = useMemo(
+    () => Array.from(new Set(workers.map(w => w.position).filter(Boolean))).sort() as string[],
+    [workers]
+  );
+  const uniqueAreas = useMemo(
+    () => Array.from(new Set(workers.map(w => w.area).filter(Boolean))).sort() as string[],
+    [workers]
+  );
 
-  const filteredWorkers = workers.filter(w => {
+  const filteredWorkers = useMemo(() => workers.filter(w => {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       const match = w.full_name?.toLowerCase().includes(query) ||
@@ -230,7 +264,8 @@ export default function WorkersPage() {
     if (positionFilter !== 'Tất cả chức danh' && w.position !== positionFilter) return false;
     if (areaFilter !== 'Tất cả khu vực' && w.area !== areaFilter) return false;
     return true;
-  });
+  }), [workers, searchQuery, profileFilter, cardFilter, teamFilter, positionFilter, areaFilter]);
+
 
   const totalItems = filteredWorkers.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;

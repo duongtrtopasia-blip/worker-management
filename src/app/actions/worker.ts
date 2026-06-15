@@ -596,6 +596,11 @@ export type SafetyCardImportRow = {
 export async function importSafetyCardsAction(rows: SafetyCardImportRow[]): Promise<ImportResult> {
   const result: ImportResult = { success: 0, failed: 0, errors: [] };
 
+  if (rows.length === 0) return result;
+
+  // ✅ B1: Thu thập tất cả CCCD hợp lệ từ rows để batch fetch một lần
+  const validRows: Array<{ rowNum: number; cccdClean: string; updatePayload: any }> = [];
+
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     const rowNum = i + 2;
@@ -609,7 +614,7 @@ export async function importSafetyCardsAction(rows: SafetyCardImportRow[]): Prom
     const cccdClean = row.cccd.trim().replace(/\s/g, '');
 
     // Convert status text to card_status enum
-    let mappedStatus = undefined;
+    let mappedStatus: string | undefined = undefined;
     const st = row.card_status_text?.toLowerCase().trim() || '';
     if (st.includes('đang chờ cấp') || st.includes('chờ duyệt') || st.includes('pending')) mappedStatus = 'pending';
     else if (st.includes('đã đào tạo') || st.includes('chưa được cấp') || st.includes('chờ in') || st.includes('approved')) mappedStatus = 'approved';
@@ -635,12 +640,34 @@ export async function importSafetyCardsAction(rows: SafetyCardImportRow[]): Prom
       continue;
     }
 
-    const { data: worker, error: selectErr } = await supabase.from('workers').select('id, full_name').eq('cccd', cccdClean).single();
-    
-    if (selectErr || !worker) {
+    validRows.push({ rowNum, cccdClean, updatePayload });
+  }
+
+  if (validRows.length === 0) return result;
+
+  // ✅ B2: Batch fetch tất cả workers theo CCCD — 1 query thay vì N queries
+  const cccdList = validRows.map(r => r.cccdClean);
+  const { data: existingWorkers, error: fetchErr } = await supabase
+    .from('workers')
+    .select('id, cccd, full_name')
+    .in('cccd', cccdList);
+
+  if (fetchErr) {
+    return { success: 0, failed: rows.length, errors: [{ row: 0, name: 'System', reason: `Lỗi kết nối DB: ${fetchErr.message}` }] };
+  }
+
+  // Build Map để lookup O(1)
+  const workerByCccd = new Map<string, { id: string; full_name: string }>();
+  (existingWorkers || []).forEach(w => workerByCccd.set(w.cccd, { id: w.id, full_name: w.full_name }));
+
+  // ✅ B3: Update song song bằng Promise.all() thay vì tuần tự
+  await Promise.all(validRows.map(async ({ rowNum, cccdClean, updatePayload }) => {
+    const worker = workerByCccd.get(cccdClean);
+
+    if (!worker) {
       result.failed++;
       result.errors.push({ row: rowNum, name: cccdClean, reason: 'Không tìm thấy công nhân mang CCCD này' });
-      continue;
+      return;
     }
 
     const { error: updateErr } = await supabase.from('workers').update(updatePayload).eq('id', worker.id);
@@ -651,7 +678,7 @@ export async function importSafetyCardsAction(rows: SafetyCardImportRow[]): Prom
     } else {
       result.success++;
     }
-  }
+  }));
 
   return result;
 }

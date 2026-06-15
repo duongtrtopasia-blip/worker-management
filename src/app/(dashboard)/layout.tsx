@@ -37,11 +37,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   React.useEffect(() => {
     const fetchNotifs = async () => {
+      // ✅ Không fetch khi tab đang ẩn — tiết kiệm request không cần thiết
+      if (typeof document !== 'undefined' && document.hidden) return;
       const data = await getNotificationsAction();
       setNotifications(data);
     };
     fetchNotifs();
-    const interval = setInterval(fetchNotifs, 30000);
+    // ✅ Tăng interval từ 30s → 60s để giảm server load
+    const interval = setInterval(fetchNotifs, 60000);
     const savedTime = localStorage.getItem('last_read_notif');
     if (savedTime) setLastRead(savedTime);
     return () => clearInterval(interval);

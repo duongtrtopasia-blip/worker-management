@@ -62,11 +62,23 @@ async function saveRefreshToken(newToken: string): Promise<void> {
   }
 }
 
+// ── In-memory Access Token Cache ──────────────────────────────────────────────
+// Access token Microsoft có hiệu lực 3600s (60 phút). Cache 55 phút để an toàn.
+let _cachedAccessToken: string | null = null;
+let _tokenExpiresAt: number = 0; // Unix timestamp (ms)
+const TOKEN_TTL_MS = 55 * 60 * 1000; // 55 phút
+
 /**
  * Lấy Access Token từ Microsoft.
  * Tự động cập nhật refresh token mới sau mỗi lần gọi thành công.
+ * Cache token trong memory để tránh gọi lại Microsoft khi chưa hết hạn.
  */
 export async function getAccessToken(): Promise<string | null> {
+  // ✅ Trả về token đã cache nếu còn hiệu lực
+  if (_cachedAccessToken && Date.now() < _tokenExpiresAt) {
+    return _cachedAccessToken;
+  }
+
   const tenantId = process.env.ONEDRIVE_TENANT_ID || 'common';
   const clientId = process.env.ONEDRIVE_CLIENT_ID || '';
   const clientSecret = process.env.ONEDRIVE_CLIENT_SECRET || '';
@@ -100,6 +112,8 @@ export async function getAccessToken(): Promise<string | null> {
 
     if (!response.ok) {
       console.error('[OneDrive] Lỗi refresh token:', data.error, '-', data.error_description);
+      _cachedAccessToken = null;
+      _tokenExpiresAt = 0;
       return null;
     }
 
@@ -108,6 +122,11 @@ export async function getAccessToken(): Promise<string | null> {
       await saveRefreshToken(data.refresh_token);
       console.log('[OneDrive] Đã cập nhật refresh token mới vào Supabase.');
     }
+
+    // ✅ Cache access token trong memory
+    _cachedAccessToken = data.access_token;
+    _tokenExpiresAt = Date.now() + TOKEN_TTL_MS;
+    console.log('[OneDrive] Access token mới được cache, hết hạn sau 55 phút.');
 
     return data.access_token;
   } catch (error) {
