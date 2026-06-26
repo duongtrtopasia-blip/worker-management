@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useDeferredValue, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { CardTemplate, CardData } from '@/components/cards/CardTemplate';
 import {
@@ -21,9 +21,10 @@ export default function CardsPage() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [printMode, setPrintMode] = useState<PrintMode>('print');
   const [searchQuery, setSearchQuery] = useState('');
+  const deferredSearchQuery = useDeferredValue(searchQuery);
 
   useEffect(() => { fetchWorkers(); }, []);
-  useEffect(() => { setCheckedIds(new Set()); }, [filterStatus, printMode, searchQuery]);
+  useEffect(() => { setCheckedIds(new Set()); }, [filterStatus, printMode, deferredSearchQuery]);
 
   const fetchWorkers = async () => {
     setLoading(true);
@@ -129,13 +130,13 @@ export default function CardsPage() {
     setCheckedIds(new Set());
   };
 
-  const getFilteredWorkers = () => {
+  const fWorkers = useMemo(() => {
     let filtered = workers;
     if (filterStatus !== 'all') {
       filtered = filtered.filter((w) => w.card_status === filterStatus);
     }
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    if (deferredSearchQuery) {
+      const query = deferredSearchQuery.toLowerCase();
       filtered = filtered.filter((w) => 
         w.cccd?.toLowerCase().includes(query) ||
         w.full_name?.toLowerCase().includes(query) ||
@@ -143,14 +144,13 @@ export default function CardsPage() {
       );
     }
     return filtered;
-  };
+  }, [workers, filterStatus, deferredSearchQuery]);
 
-  const getEligibleWorkers = () => {
-    const filtered = getFilteredWorkers();
+  const eligible = useMemo(() => {
     return printMode === 'reprint'
-      ? filtered.filter((w: any) => w.card_status === 'issued')
-      : filtered.filter((w: any) => w.card_status === 'approved');
-  };
+      ? fWorkers.filter((w: any) => w.card_status === 'issued')
+      : fWorkers.filter((w: any) => w.card_status === 'approved');
+  }, [fWorkers, printMode]);
 
   const toggleCheck = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -158,7 +158,6 @@ export default function CardsPage() {
   };
 
   const toggleAll = () => {
-    const eligible = getEligibleWorkers();
     const allSel = eligible.length > 0 && eligible.every((w: any) => checkedIds.has(w.id));
     if (allSel) {
       setCheckedIds((prev) => { const next = new Set(prev); eligible.forEach((w: any) => next.delete(w.id)); return next; });
@@ -167,8 +166,6 @@ export default function CardsPage() {
     }
   };
 
-  const fWorkers = getFilteredWorkers();
-  const eligible = getEligibleWorkers();
   const allChecked = eligible.length > 0 && eligible.every((w: any) => checkedIds.has(w.id));
   const isReprintMode = printMode === 'reprint';
   const approvedCount = workers.filter((w) => w.card_status === 'approved').length;
