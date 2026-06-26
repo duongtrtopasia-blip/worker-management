@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { CardTemplate, CardData } from '@/components/cards/CardTemplate';
 import {
   Printer, RefreshCw, CheckSquare, Square, PrinterCheck,
-  CreditCard, ChevronRight, RotateCcw, X,
+  CreditCard, ChevronRight, RotateCcw, X, Search,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
@@ -20,9 +20,10 @@ export default function CardsPage() {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [printMode, setPrintMode] = useState<PrintMode>('print');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => { fetchWorkers(); }, []);
-  useEffect(() => { setCheckedIds(new Set()); }, [filterStatus, printMode]);
+  useEffect(() => { setCheckedIds(new Set()); }, [filterStatus, printMode, searchQuery]);
 
   const fetchWorkers = async () => {
     setLoading(true);
@@ -129,8 +130,19 @@ export default function CardsPage() {
   };
 
   const getFilteredWorkers = () => {
-    if (filterStatus === 'all') return workers;
-    return workers.filter((w) => w.card_status === filterStatus);
+    let filtered = workers;
+    if (filterStatus !== 'all') {
+      filtered = filtered.filter((w) => w.card_status === filterStatus);
+    }
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((w) => 
+        w.cccd?.toLowerCase().includes(query) ||
+        w.full_name?.toLowerCase().includes(query) ||
+        w.mnv?.toLowerCase().includes(query)
+      );
+    }
+    return filtered;
   };
 
   const getEligibleWorkers = () => {
@@ -298,7 +310,7 @@ export default function CardsPage() {
               )}
             </div>
 
-            <div className="flex bg-gray-100/50 p-1 rounded-lg">
+            <div className="flex bg-gray-100/50 p-1 rounded-lg mb-3">
               {(['all', 'pending', 'approved', 'issued'] as const).map((status) => {
                 const labels = { all: 'Tất cả', pending: 'Chờ duyệt', approved: 'Chờ in', issued: 'Đã cấp' };
                 return (
@@ -311,6 +323,16 @@ export default function CardsPage() {
                   </button>
                 );
               })}
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Tìm thẻ theo CCCD, tên, mnv..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-blue/30 focus:border-brand-blue/30 transition-shadow"
+              />
             </div>
           </div>
 
