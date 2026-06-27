@@ -28,15 +28,44 @@ export default function CardsPage() {
 
   const fetchWorkers = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('workers')
-      .select('*')
-      .in('card_status', ['pending', 'approved', 'issued'])
-      .order('created_at', { ascending: false });
-    if (error) { toast.error('Lỗi khi tải dữ liệu thẻ'); }
-    else if (data && data.length > 0) { setWorkers(data); setSelectedWorker(data[0]); }
-    else { setWorkers([]); }
-    setLoading(false);
+    let allData: any[] = [];
+    let from = 0;
+    const step = 1000;
+
+    try {
+      while (true) {
+        const { data, error } = await supabase
+          .from('workers')
+          .select('*')
+          .in('card_status', ['pending', 'approved', 'issued'])
+          .order('created_at', { ascending: false })
+          .range(from, from + step - 1);
+          
+        if (error) {
+          toast.error('Lỗi khi tải dữ liệu thẻ');
+          break;
+        }
+        
+        if (data && data.length > 0) {
+          allData = allData.concat(data);
+          if (data.length < step) break;
+          from += step;
+        } else {
+          break;
+        }
+      }
+      
+      if (allData.length > 0) {
+        setWorkers(allData);
+        setSelectedWorker(allData[0]);
+      } else {
+        setWorkers([]);
+      }
+    } catch (e) {
+      toast.error('Có lỗi xảy ra khi tải dữ liệu');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const buildCardData = (w: any): CardData => ({
