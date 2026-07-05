@@ -22,6 +22,31 @@ interface WorkerResult {
   created_at: string;
 }
 
+function WorkerPortrait({ worker }: { worker: WorkerResult }) {
+  const [imgError, setImgError] = React.useState(false);
+
+  if (worker.portrait_url && !imgError) {
+    return (
+      <img
+        src={`/api/proxy-image?url=${encodeURIComponent(worker.portrait_url)}`}
+        alt={worker.full_name}
+        className="w-16 h-20 rounded-xl object-cover border border-gray-100"
+        onError={() => setImgError(true)}
+      />
+    );
+  }
+
+  return (
+    <div
+      className="w-16 h-20 rounded-xl flex items-center justify-center text-white text-xl font-bold"
+      style={{ background: 'linear-gradient(135deg, #1e3a8a, #3b5fc0)' }}
+    >
+      {worker.full_name?.charAt(0) || '?'}
+    </div>
+  );
+}
+
+
 export default function VehicleSearchPage() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<WorkerResult[]>([]);
@@ -191,20 +216,7 @@ export default function VehicleSearchPage() {
 
                         {/* Portrait */}
                         <div className="shrink-0">
-                          {w.portrait_url ? (
-                            <img
-                              src={`/api/proxy-image?url=${encodeURIComponent(w.portrait_url)}`}
-                              alt={w.full_name}
-                              className="w-16 h-20 rounded-xl object-cover border border-gray-100"
-                            />
-                          ) : (
-                            <div
-                              className="w-16 h-20 rounded-xl flex items-center justify-center text-white text-xl font-bold"
-                              style={{ background: 'linear-gradient(135deg, #1e3a8a, #3b5fc0)' }}
-                            >
-                              {w.full_name?.charAt(0) || '?'}
-                            </div>
-                          )}
+                          <WorkerPortrait worker={w} />
                         </div>
 
                         {/* Info */}
