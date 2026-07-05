@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Users, CreditCard, FolderOpen, UploadCloud, Settings, LogOut, Bell, ChevronRight } from 'lucide-react';
+import { Home, Users, CreditCard, FolderOpen, UploadCloud, Settings, LogOut, Bell, ChevronRight, Car } from 'lucide-react';
 import { logoutAction } from '@/app/actions/auth';
 import { AppNotification, getNotificationsAction } from '@/app/actions/notification';
 
@@ -15,6 +15,7 @@ const baseMenuItems = [
   { name: 'Thẻ ra vào', href: '/cards', icon: CreditCard },
   { name: 'Hồ sơ tài liệu', href: '/documents', icon: FolderOpen },
   { name: 'Import Excel', href: '/import', icon: UploadCloud },
+  { name: 'Tra cứu xe', href: '/vehicle-search', icon: Car },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -223,7 +224,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* ===== MOBILE BOTTOM NAVIGATION ===== */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[72px] bg-white border-t border-gray-200 flex justify-around items-center px-1 z-50 pb-safe"
           style={{ boxShadow: '0 -4px 12px rgba(0,0,0,0.05)' }}>
-          {menuItems.slice(0, 4).map((item) => {
+          {/* Dashboard, Công nhân, Thẻ ra vào, Tra cứu xe, Settings */}
+          {[menuItems[0], menuItems[1], menuItems[2], menuItems[5]].map((item) => {
+            if (!item) return null;
             const isActive = item.href === '/'
               ? pathname === '/'
               : pathname === item.href || pathname.startsWith(item.href + '/');
@@ -231,7 +234,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link key={item.href} href={item.href} className="flex flex-col items-center justify-center w-full h-full gap-1.5 pt-1">
                 <item.icon className={`w-6 h-6 transition-all ${isActive ? 'text-brand-red scale-110 drop-shadow-md' : 'text-gray-400'}`} />
                 <span className={`text-[10px] font-medium tracking-tight transition-colors ${isActive ? 'text-brand-blue font-bold' : 'text-gray-500'}`}>
-                  {item.name === 'Dashboard' ? 'Trang chủ' : item.name === 'Hồ sơ tài liệu' ? 'Hồ sơ' : item.name === 'Công nhân' ? 'Nhân sự' : item.name}
+                  {item.name === 'Dashboard' ? 'Trang chủ' : item.name === 'Hồ sơ tài liệu' ? 'Hồ sơ' : item.name === 'Công nhân' ? 'Nhân sự' : item.name === 'Tra cứu xe' ? 'Tra cứu' : item.name}
                 </span>
               </Link>
             );
