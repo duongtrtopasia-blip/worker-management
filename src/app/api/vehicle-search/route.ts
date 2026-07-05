@@ -12,39 +12,33 @@ export async function GET(request: Request) {
 
   const supabase = createRouteHandlerClient({ cookies });
 
-  // Tìm trong bảng access_cards theo vehicle_plate
-  const { data: cards, error } = await supabase
-    .from('access_cards')
+  // vehicle_plate nằm trong bảng workers
+  const { data: workers, error } = await supabase
+    .from('workers')
     .select(`
       id,
-      card_number,
-      card_type,
+      mnv,
+      full_name,
+      cccd,
+      team,
+      area,
+      position,
+      phone,
+      portrait_url,
+      work_status,
+      card_status,
       vehicle_plate,
       vehicle_type,
-      issue_date,
-      expiry_date,
-      is_active,
-      worker_id,
-      workers (
-        id,
-        full_name,
-        employee_id,
-        cccd_number,
-        team_name,
-        work_area,
-        position,
-        phone,
-        portrait_url,
-        status
-      )
+      start_date,
+      created_at
     `)
     .ilike('vehicle_plate', `%${plate}%`)
-    .eq('card_type', 'vehicle')
+    .not('vehicle_plate', 'is', null)
     .order('created_at', { ascending: false });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ data: cards ?? [], total: cards?.length ?? 0 });
+  return NextResponse.json({ data: workers ?? [], total: workers?.length ?? 0 });
 }
