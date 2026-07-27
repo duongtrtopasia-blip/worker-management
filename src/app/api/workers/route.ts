@@ -18,13 +18,13 @@ export async function GET(request: Request) {
   `, { count: 'exact' });
 
   if (search) {
-    query = query.or(`full_name.ilike.%${search}%,employee_id.ilike.%${search}%,cccd_number.ilike.%${search}%`);
+    query = query.or(`full_name.ilike.%${search}%,mnv.ilike.%${search}%,cccd.ilike.%${search}%`);
   }
   if (team) {
-    query = query.eq('team_name', team);
+    query = query.eq('team', team);
   }
   if (area) {
-    query = query.eq('work_area', area);
+    query = query.eq('area', area);
   }
 
   const { data, error, count } = await query

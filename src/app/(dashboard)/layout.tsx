@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Users, CreditCard, FolderOpen, UploadCloud, Settings, LogOut, Bell, ChevronRight, Car } from 'lucide-react';
+import { Home, Users, CreditCard, FolderOpen, UploadCloud, Settings, LogOut, Bell, ChevronRight, Car, HardHat } from 'lucide-react';
 import { logoutAction } from '@/app/actions/auth';
 import { AppNotification, getNotificationsAction } from '@/app/actions/notification';
 
@@ -16,6 +16,7 @@ const baseMenuItems = [
   { name: 'Hồ sơ tài liệu', href: '/documents', icon: FolderOpen },
   { name: 'Import Excel', href: '/import', icon: UploadCloud },
   { name: 'Tra cứu xe', href: '/vehicle-search', icon: Car },
+  { name: 'In Tem Mũ', href: '/helmet-tags', icon: HardHat },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

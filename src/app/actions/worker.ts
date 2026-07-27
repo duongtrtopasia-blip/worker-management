@@ -682,3 +682,71 @@ export async function importSafetyCardsAction(rows: SafetyCardImportRow[]): Prom
 
   return result;
 }
+
+/* ─────────────────────────────────────────────────
+   Lấy danh sách tổ đội distinct từ database
+   — fetch toàn bộ để tránh bị giới hạn 1000 rows
+───────────────────────────────────────────────── */
+export async function getTeamsAction(): Promise<{ teams: string[]; error?: string }> {
+  try {
+    // Dùng range rộng để lấy toàn bộ dữ liệu (Supabase default cap 1000)
+    const { data, error } = await supabase
+      .from('workers')
+      .select('team')
+      .not('team', 'is', null)
+      .neq('team', '')
+      .order('team', { ascending: true })
+      .range(0, 9999);
+
+    if (error) {
+      return { teams: [], error: error.message };
+    }
+
+    // Lấy unique values
+    const teams = [...new Set((data || []).map((r: { team: string }) => r.team).filter(Boolean))].sort();
+    return { teams };
+  } catch (err: any) {
+    return { teams: [], error: err.message };
+  }
+}
+
+/* ─────────────────────────────────────────────────
+   Lấy danh sách công nhân theo tổ từ database
+   — team: tên chính xác, teamSearch: tìm kiếm ilike
+   — không truyền gì = lấy tất cả
+───────────────────────────────────────────────── */
+export async function getWorkersByTeamAction(
+  team?: string,
+  teamSearch?: string,
+): Promise<{
+  workers: Array<{ id: string; mnv: string; full_name: string; position: string; team: string }>;
+  total: number;
+  error?: string;
+}> {
+  try {
+    let query = supabase
+      .from('workers')
+      .select('id, mnv, full_name, position, team', { count: 'exact' })
+      .order('team', { ascending: true })
+      .order('full_name', { ascending: true })
+      .range(0, 9999);
+
+    if (team && team.trim() !== '') {
+      query = query.eq('team', team.trim());
+    } else if (teamSearch && teamSearch.trim() !== '') {
+      // Tìm kiếm gần đúng theo tên tổ
+      query = query.ilike('team', `%${teamSearch.trim()}%`);
+    }
+
+    const { data, error, count } = await query;
+
+    if (error) {
+      return { workers: [], total: 0, error: error.message };
+    }
+
+    return { workers: data || [], total: count || 0 };
+  } catch (err: any) {
+    return { workers: [], total: 0, error: err.message };
+  }
+}
+
