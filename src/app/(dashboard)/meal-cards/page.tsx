@@ -25,7 +25,7 @@ export default function MealCardsPage() {
   const [checkedTeams, setCheckedTeams] = useState<Set<string>>(new Set());
   const [shift, setShift] = useState<ShiftType>('both');
   const [searchQuery, setSearchQuery] = useState('');
-  const [leaders, setLeaders] = useState<Record<string, string>>({});
+
 
   useEffect(() => { fetchTeams(); }, []);
 
@@ -81,14 +81,9 @@ export default function MealCardsPage() {
     if (!searchQuery) return teams;
     const q = searchQuery.toLowerCase();
     return teams.filter(t =>
-      t.team_name.toLowerCase().includes(q) ||
-      (leaders[t.team_name] || '').toLowerCase().includes(q)
+      t.team_name.toLowerCase().includes(q)
     );
-  }, [teams, searchQuery, leaders]);
-
-  const updateLeader = (teamName: string, leaderName: string) => {
-    setLeaders(prev => ({ ...prev, [teamName]: leaderName }));
-  };
+  }, [teams, searchQuery]);
 
   const toggleCheck = (teamName: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -121,7 +116,7 @@ export default function MealCardsPage() {
 
   const buildCardData = (teamName: string): MealCardData => ({
     team_name: teamName,
-    team_leader: leaders[teamName] || '_______________',
+    team_leader: teamName,
     shift,
   });
 
@@ -345,17 +340,7 @@ export default function MealCardsPage() {
                       </div>
                     </div>
 
-                    {/* Team leader input */}
-                    <div className="mt-2 ml-[52px]">
-                      <input
-                        type="text"
-                        placeholder="Nhập tên tổ trưởng..."
-                        value={leaders[t.team_name] || ''}
-                        onChange={(e) => updateLeader(t.team_name, e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        className="w-full px-2.5 py-1.5 text-xs bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-400/30 focus:border-amber-400/30 transition-shadow placeholder:text-gray-300"
-                      />
-                    </div>
+
                   </div>
                 );
               })
