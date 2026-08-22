@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Users, CreditCard, FolderOpen, UploadCloud, Settings, LogOut, Bell, ChevronRight, Car, HardHat } from 'lucide-react';
+import { Home, Users, CreditCard, FolderOpen, UploadCloud, Settings, LogOut, Bell, ChevronRight, Car, HardHat, UtensilsCrossed } from 'lucide-react';
 import { logoutAction } from '@/app/actions/auth';
 import { AppNotification, getNotificationsAction } from '@/app/actions/notification';
 
@@ -17,6 +17,7 @@ const baseMenuItems = [
   { name: 'Import Excel', href: '/import', icon: UploadCloud },
   { name: 'Tra cứu xe', href: '/vehicle-search', icon: Car },
   { name: 'In Tem Mũ', href: '/helmet-tags', icon: HardHat },
+  { name: 'Thẻ Cơm', href: '/meal-cards', icon: UtensilsCrossed },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -86,7 +87,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="h-16 flex items-center px-5 border-b" style={{ borderColor: 'rgba(255,255,255,0.12)' }}>
           <div className="flex items-center gap-3 w-full">
             {/* Two logos side by side */}
-            <img src="/vingroup_logo.svg" alt="Vingroup" className="h-6 w-auto object-contain brightness-0 invert shrink-0" />
+            <img src="/vingroup_logo.png" alt="Vingroup" className="h-6 w-auto object-contain brightness-0 invert shrink-0" />
             <div className="w-px h-5 shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.25)' }} />
             <img src="/logo.svg" alt="VINCONS" className="h-6 w-auto object-contain brightness-0 invert shrink-0" />
           </div>

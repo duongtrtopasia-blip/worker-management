@@ -59,7 +59,7 @@ export const PersonCard = ({ data }: { data: CardData }) => {
       {/* Header */}
       <div className="w-full bg-white flex flex-col items-center pt-2 pb-1 border-b-[2px] border-brand-red/20">
         <div className="flex w-full justify-between items-center px-1 mb-[2px]">
-           <img src="/vingroup_logo.svg" alt="Vingroup" className="h-[28px] w-auto object-contain shrink-0" />
+           <img src="/vingroup_logo.png" alt="Vingroup" className="h-[28px] w-auto object-contain shrink-0" />
            <div className="flex flex-col items-center justify-center text-center px-[2px] flex-1">
               <span className="font-bold text-[6px] text-brand-maroon uppercase leading-tight text-center whitespace-pre-line">{data.project_name || 'Tên Dự Án'}</span>
               <span className="font-semibold text-[5px] text-brand-blue uppercase leading-tight text-center mt-[1px]">{data.contractor_name || 'Tên Nhà Thầu'}</span>
@@ -116,7 +116,7 @@ export const PersonCardHorizontal = ({ data }: { data: CardData }) => {
     <div className="w-[324px] h-[204px] bg-white border-[3px] border-brand-blue rounded-lg relative overflow-hidden flex p-2 shadow-md font-sans text-xs">
       <div className="flex flex-col flex-1 min-w-0 border-r-[2px] border-dashed border-brand-blue/30 pr-2 justify-between">
         <div className="w-full flex justify-between items-center mb-1 pb-1 border-b-[2px] border-brand-red/20">
-           <img src="/vingroup_logo.svg" alt="Vingroup" className="h-[24px] w-auto object-contain shrink-0" />
+           <img src="/vingroup_logo.png" alt="Vingroup" className="h-[24px] w-auto object-contain shrink-0" />
            <div className="flex flex-col items-center justify-center text-center px-1 flex-1">
               <span className="font-bold text-[8px] text-brand-maroon uppercase leading-tight text-center whitespace-pre-line">{data.project_name || 'Tên Dự Án'}</span>
               <span className="font-semibold text-[6px] text-brand-blue uppercase leading-tight text-center mt-[1px]">{data.contractor_name || 'Tên Nhà Thầu'}</span>
@@ -172,7 +172,7 @@ export const VehicleCard = ({ data }: { data: CardData }) => {
       <div className="flex flex-col flex-1 border-r-[2px] border-dashed border-brand-blue/30 pr-2">
         <div className="w-full flex flex-col mb-2 pb-1 border-b-[2px] border-brand-red/20 space-y-1">
           <div className="flex w-full justify-between items-center">
-             <img src="/vingroup_logo.svg" alt="Vingroup" className="h-[14px] w-auto object-contain" />
+             <img src="/vingroup_logo.png" alt="Vingroup" className="h-[14px] w-auto object-contain" />
              <img src="/vincons_logo.png" alt="VINCONS" className="h-[14px] w-auto object-contain" />
           </div>
           <div className="bg-brand-maroon text-white px-2 py-[2px] text-center font-bold rounded-sm uppercase text-[9px] shadow-sm">
