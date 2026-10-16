@@ -64,12 +64,12 @@ export const MealCardTemplate = ({ data }: { data: MealCardData }) => {
           <div className="flex gap-2 flex-1">
             {(data.shift === 'morning' || data.shift === 'both') && (
               <div className="flex items-center gap-1 px-2 py-1 rounded-md border border-amber-400 bg-amber-50">
-                <span className="text-[10px] font-bold text-amber-700">SÁNG : 10:15</span>
+                <span className="text-[10px] font-bold text-amber-700">SÁNG : 10:30</span>
               </div>
             )}
             {(data.shift === 'afternoon' || data.shift === 'both') && (
               <div className="flex items-center gap-1 px-2 py-1 rounded-md border border-blue-400 bg-blue-50">
-                <span className="text-[10px] font-bold text-blue-700">CHIỀU : 17:45</span>
+                <span className="text-[10px] font-bold text-blue-700">CHIỀU : 17:15</span>
               </div>
             )}
           </div>
