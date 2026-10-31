@@ -17,7 +17,9 @@
   "vars": {
     "NEXT_PUBLIC_SUPABASE_URL": "https://slhutfdbkqbitwcopxkq.supabase.co",
     "NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_rLna6trDZm_j_a62OUEnZQ_3yetb6yZ",
-    "ONEDRIVE_TENANT_ID": "common"
+    "ONEDRIVE_TENANT_ID": "common",
+    "ONEDRIVE_CLIENT_ID": "5244fb5c-e279-450d-b49f-53f8b07c2b2f",
+    "SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNsaHV0ZmRia3FiaXR3Y29weGtxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTk1MTUwOSwiZXhwIjoyMDk1NTI3NTA5fQ.2Zt5MWoTY5gZoaKt7ZzWhkOpil_PIzpHZtZLTsQfPLQ"
   },
   "observability": {
     "enabled": true

@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 // Khởi tạo Supabase client sử dụng Service Role Key (vượt qua RLS do Cron chạy ở background)
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://slhutfdbkqbitwcopxkq.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'sb_publishable_rLna6trDZm_j_a62OUEnZQ_3yetb6yZ'
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNsaHV0ZmRia3FiaXR3Y29weGtxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTk1MTUwOSwiZXhwIjoyMDk1NTI3NTA5fQ.2Zt5MWoTY5gZoaKt7ZzWhkOpil_PIzpHZtZLTsQfPLQ'
 );
 
 export const dynamic = 'force-dynamic';

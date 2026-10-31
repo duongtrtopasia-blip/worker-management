@@ -11,7 +11,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://slhutfdbkqbitwcopxkq.supabase.co';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_rLna6trDZm_j_a62OUEnZQ_3yetb6yZ';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNsaHV0ZmRia3FiaXR3Y29weGtxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTk1MTUwOSwiZXhwIjoyMDk1NTI3NTA5fQ.2Zt5MWoTY5gZoaKt7ZzWhkOpil_PIzpHZtZLTsQfPLQ';
 
 // Dùng service role key để có quyền đọc/ghi bảng settings
 const supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
@@ -42,8 +42,8 @@ async function getRefreshToken(): Promise<string> {
     // Bảng settings chưa có hoặc lỗi → dùng .env
   }
 
-  // Fallback: dùng refresh token từ .env (lần khởi động đầu tiên)
-  return process.env.ONEDRIVE_REFRESH_TOKEN || '';
+  // Fallback: dùng refresh token từ .env hoặc token mới nhất đã cấp
+  return process.env.ONEDRIVE_REFRESH_TOKEN || 'M.C502_BAY.0.U.MsaArtifacts.-Clpskic22rhKdP2rEiVXxdxw5mVp8*w1n0QeQOmDI7MnrOn7*tRx7fN29UeHHeB7BtvMQZm2Jsp9dbEyLrDyqkw6nRFvjrLeaDjwm0Zwq!0XL3KrjHzjLpFsb0b!owWSCbkBE8WKoWQQEAOVD9GtSEalVBFyzZ88*x9Ti*OIEsVTGJjVTyzTY44aRPf3bLZ07RxWh9oOqAjV!9Ktl5yV0olP1lUysbWFgRTPP0j3SPfOg9dYuoksyWEm55I5kUp7EA0g5WtglddHFXS538J0m3MqmK5XOoizFzjE7j9JdfX*1XvK7zHrNR5OS*vYUeUyoTz*FBCjHPIE9*dz1OnaSxRV993XB4Y!kCGdA3V03PF1';
 }
 
 /**
@@ -80,7 +80,7 @@ export async function getAccessToken(): Promise<string | null> {
   }
 
   const tenantId = process.env.ONEDRIVE_TENANT_ID || 'common';
-  const clientId = process.env.ONEDRIVE_CLIENT_ID || '';
+  const clientId = process.env.ONEDRIVE_CLIENT_ID || '5244fb5c-e279-450d-b49f-53f8b07c2b2f';
   const clientSecret = process.env.ONEDRIVE_CLIENT_SECRET || '';
   const refreshToken = await getRefreshToken();
 
