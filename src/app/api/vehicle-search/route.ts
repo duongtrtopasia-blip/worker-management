@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 
+import { formatVehiclePlate } from '@/lib/format-vehicle';
+
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
@@ -13,6 +15,11 @@ export async function GET(request: Request) {
   }
 
   const supabase = createRouteHandlerClient({ cookies });
+
+  const formatted = formatVehiclePlate(plate);
+  const unformatted = plate.replace(/[-.\s]/g, '');
+  const variants = Array.from(new Set([plate, formatted, unformatted].filter(Boolean)));
+  const orFilter = variants.map(v => `vehicle_plate.ilike.%${v}%`).join(',');
 
   // vehicle_plate nằm trong bảng workers
   const { data: workers, error } = await supabase
@@ -34,7 +41,7 @@ export async function GET(request: Request) {
       start_date,
       created_at
     `)
-    .ilike('vehicle_plate', `%${plate}%`)
+    .or(orFilter)
     .not('vehicle_plate', 'is', null)
     .order('created_at', { ascending: false });
 

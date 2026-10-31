@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx';
 import toast from 'react-hot-toast';
 import { Upload, X, FileSpreadsheet, AlertCircle, CheckCircle2, Download, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { importWorkersAction, checkDuplicateWorkersAction, type ImportRow, type ImportResult } from '@/app/actions/worker';
+import { formatVehiclePlate } from '@/lib/format-vehicle';
 
 // Mapping header Excel → field name
 const HEADER_MAP: Record<string, keyof ImportRow> = {
@@ -135,6 +136,11 @@ export default function ImportExcelModal({ open, onClose, onImported }: Props) {
             const field = HEADER_MAP[h];
             if (field) obj[field] = String(cells[ci] ?? '').trim();
           });
+
+          // Chuẩn hóa biển số xe
+          if (obj.vehicle_plate) {
+            obj.vehicle_plate = formatVehiclePlate(obj.vehicle_plate);
+          }
 
           // Chỉ thêm nếu có ít nhất full_name và không phải là dòng hướng dẫn
           const nameLower = obj.full_name?.toLowerCase() || '';

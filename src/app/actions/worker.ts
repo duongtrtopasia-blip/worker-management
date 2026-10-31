@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { createNotification } from './notification';
 import { uploadToOneDrive } from '@/lib/onedrive';
+import { formatVehiclePlate } from '@/lib/format-vehicle';
 
 export async function uploadToFlaskAPI(file: File): Promise<string> {
   // Đã chuyển sang dùng trực tiếp Next.js upload thay vì Flask API để tương thích Vercel
@@ -21,7 +22,8 @@ export async function addWorkerAction(formData: FormData) {
   }
 
   // 2. Chuẩn bị dữ liệu — lọc bỏ empty string để tránh lỗi constraint
-  const vehiclePlate = (formData.get('vehicle_plate') as string)?.trim() || null;
+  const rawPlate     = (formData.get('vehicle_plate') as string)?.trim() || null;
+  const vehiclePlate = rawPlate ? formatVehiclePlate(rawPlate) : null;
   const vehicleType  = (formData.get('vehicle_type')  as string)?.trim() || null;
   const position     = (formData.get('position')      as string)?.trim() || null;
   const phone        = (formData.get('phone')         as string)?.trim() || null;
@@ -113,7 +115,8 @@ export async function updateWorkerAction(id: string, formData: FormData) {
     if (newUrl) portraitUrl = newUrl;
   }
 
-  const vehiclePlate = (formData.get('vehicle_plate') as string)?.trim() || null;
+  const rawPlate     = (formData.get('vehicle_plate') as string)?.trim() || null;
+  const vehiclePlate = rawPlate ? formatVehiclePlate(rawPlate) : null;
   const vehicleType  = (formData.get('vehicle_type')  as string)?.trim() || null;
   const position     = (formData.get('position')      as string)?.trim() || null;
   const phone        = (formData.get('phone')         as string)?.trim() || null;
@@ -318,7 +321,7 @@ export async function importWorkersAction(rows: ImportRow[], sendNotification = 
       team:          row.team.trim(),
       area:          row.area.trim(),
       position:      row.position?.trim() || null,
-      vehicle_plate: row.vehicle_plate?.trim() || null,
+      vehicle_plate: row.vehicle_plate ? formatVehiclePlate(row.vehicle_plate) : null,
       vehicle_type:  row.vehicle_type?.trim() || null,
       phone:         row.phone?.trim() || null,
       address:       row.address?.trim() || null,

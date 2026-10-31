@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { updateWorkerAction } from '@/app/actions/worker';
 import { supabase } from '@/lib/supabase';
+import { formatVehiclePlate } from '@/lib/format-vehicle';
 import { DocumentUploader } from '@/components/documents/DocumentUploader';
 import {
   User, Hash, CreditCard, Users, MapPin, Briefcase, Phone, Calendar,
@@ -26,11 +27,11 @@ const inputBase =
 ───────────────────────────────────────────────────────── */
 function Field({
   id, name, label, placeholder, required, type = 'text',
-  icon: Icon, maxLength, defaultValue, readOnly,
+  icon: Icon, maxLength, defaultValue, readOnly, onBlur,
 }: {
   id: string; name: string; label: string; placeholder?: string;
   required?: boolean; type?: string; icon: React.ElementType; maxLength?: number;
-  defaultValue?: string; readOnly?: boolean;
+  defaultValue?: string; readOnly?: boolean; onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
@@ -43,7 +44,7 @@ function Field({
         id={id} name={name} type={type}
         required={required} placeholder={placeholder}
         maxLength={maxLength} defaultValue={defaultValue}
-        readOnly={readOnly}
+        readOnly={readOnly} onBlur={onBlur}
         className={`${inputBase} ${readOnly ? '!bg-slate-100 !border-slate-200 cursor-not-allowed text-slate-500' : ''}`}
       />
     </div>
@@ -374,7 +375,17 @@ export default function EditWorkerPage(props: { params: Promise<{ id: string }> 
               {/* Section 3: Vehicle */}
               <Section number={3} title="Thông Tin Phương Tiện" subtitle="Tùy chọn — để trống nếu không có xe" icon={Car}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Field id="vehicle_plate" name="vehicle_plate" label="Biển Số Xe" placeholder="VD: 59X1-123.45" icon={FileText} defaultValue={worker.vehicle_plate || ''} />
+                  <Field
+                    id="vehicle_plate"
+                    name="vehicle_plate"
+                    label="Biển Số Xe"
+                    placeholder="VD: 59X1-123.45 hoặc 123.45"
+                    icon={FileText}
+                    defaultValue={worker.vehicle_plate ? formatVehiclePlate(worker.vehicle_plate) : ''}
+                    onBlur={(e) => {
+                      e.target.value = formatVehiclePlate(e.target.value);
+                    }}
+                  />
                   <SelectField id="vehicle_type" name="vehicle_type" label="Loại Xe" icon={Car} defaultValue={worker.vehicle_type || ''}>
                     <option value="">— Không có —</option>
                     <option value="Xe Máy">🏍️ Xe Máy</option>

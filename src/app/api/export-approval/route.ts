@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import ExcelJS from 'exceljs';
 import { format } from 'date-fns';
+import { formatVehiclePlate } from '@/lib/format-vehicle';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://slhutfdbkqbitwcopxkq.supabase.co';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNsaHV0ZmRia3FiaXR3Y29weGtxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTk1MTUwOSwiZXhwIjoyMDk1NTI3NTA5fQ.2Zt5MWoTY5gZoaKt7ZzWhkOpil_PIzpHZtZLTsQfPLQ';
@@ -151,7 +152,7 @@ export async function POST(request: Request) {
         yob: yob,
         cccd: w.cccd || '',
         card_number: cardNumber,
-        vehicle_plate: w.vehicle_plate || '',
+        vehicle_plate: w.vehicle_plate ? formatVehiclePlate(w.vehicle_plate) : '',
         position: w.position || 'CNCH'
       });
       

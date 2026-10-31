@@ -1,5 +1,6 @@
 import React, { useRef, useLayoutEffect } from 'react';
 import QRCode from 'react-qr-code';
+import { formatVehiclePlate } from '@/lib/format-vehicle';
 
 const AutoFitText = ({ text, className, align = 'center', defaultFontSize = 13 }: { text: string; className?: string; align?: 'center' | 'left'; defaultFontSize?: number }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -93,7 +94,7 @@ export const PersonCard = ({ data }: { data: CardData }) => {
           className="mt-auto w-full bg-green-50 border border-green-500 text-green-800 font-bold text-[14px] rounded text-center py-1 leading-normal min-h-[28px]"
           style={{ background: '#f0fdf4', border: '1px solid #22c55e', color: '#166534', fontWeight: 'bold', fontSize: '14px', borderRadius: '4px', textAlign: 'center', padding: '4px 0', minHeight: '28px', width: '100%', marginTop: 'auto' }}
         >
-          {data.vehicle_plate || ''}
+          {data.vehicle_plate ? formatVehiclePlate(data.vehicle_plate) : ''}
         </div>
       </div>
       
@@ -146,7 +147,7 @@ export const PersonCardHorizontal = ({ data }: { data: CardData }) => {
           className="w-full bg-green-50 border border-green-500 text-green-800 font-bold text-[14px] rounded text-center py-1 leading-normal min-h-[28px]"
           style={{ background: '#f0fdf4', border: '1px solid #22c55e', color: '#166534', fontWeight: 'bold', fontSize: '14px', borderRadius: '4px', textAlign: 'center', padding: '4px 0', minHeight: '28px', width: '100%' }}
         >
-          {data.vehicle_plate || ''}
+          {data.vehicle_plate ? formatVehiclePlate(data.vehicle_plate) : ''}
         </div>
       </div>
       
@@ -182,7 +183,7 @@ export const VehicleCard = ({ data }: { data: CardData }) => {
         <div className="space-y-1">
           <div className="flex"><span className="w-16 font-semibold">Chủ xe:</span><span>{data.worker.full_name}</span></div>
           <div className="flex"><span className="w-16 font-semibold">MNV:</span><span>{data.worker.employee_id}</span></div>
-          <div className="flex"><span className="w-16 font-semibold">Biển số:</span><span className="font-bold text-green-700">{data.vehicle_plate}</span></div>
+          <div className="flex"><span className="w-16 font-semibold">Biển số:</span><span className="font-bold text-green-700">{data.vehicle_plate ? formatVehiclePlate(data.vehicle_plate) : ''}</span></div>
           <div className="flex"><span className="w-16 font-semibold">Loại xe:</span><span>{data.vehicle_type}</span></div>
           <div className="flex"><span className="w-16 font-semibold">Khu vực:</span><span>{data.worker.work_area}</span></div>
         </div>
