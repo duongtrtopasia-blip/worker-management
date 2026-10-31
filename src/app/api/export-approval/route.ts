@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import ExcelJS from 'exceljs';
 import { format } from 'date-fns';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://slhutfdbkqbitwcopxkq.supabase.co';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_rLna6trDZm_j_a62OUEnZQ_3yetb6yZ';
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function POST(request: Request) {

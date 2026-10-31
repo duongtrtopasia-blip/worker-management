@@ -28,8 +28,8 @@ export async function GET() {
   let refreshToken = envToken;
   try {
     const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'
+      process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://slhutfdbkqbitwcopxkq.supabase.co',
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_rLna6trDZm_j_a62OUEnZQ_3yetb6yZ'
     );
     const { data, error } = await supabase
       .from('settings')
