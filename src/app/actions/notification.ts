@@ -14,7 +14,7 @@ export interface AppNotification {
 
 export async function getNotificationsAction(): Promise<AppNotification[]> {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const userRole = cookieStore.get('user_role')?.value || 'editor';
 
     // Fetch notifications where role_target is 'all' or matches the user's role

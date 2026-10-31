@@ -1,8 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from 'react-hot-toast';
 
+export const viewport: Viewport = {
+  themeColor: "#1e3a8a",
+};
 
 export const metadata: Metadata = {
   title: "SCMP Vincons",
@@ -17,7 +20,6 @@ export const metadata: Metadata = {
     icon: "/vincons_logo.png",
     apple: "/vincons_logo.png",
   },
-  themeColor: "#1e3a8a",
 };
 
 export default function RootLayout({

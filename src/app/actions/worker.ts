@@ -58,7 +58,7 @@ export async function addWorkerAction(formData: FormData) {
     ])
     .select();
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const role = cookieStore.get('user_role')?.value || 'admin';
   const username = cookieStore.get('username')?.value || 'unknown';
 
@@ -156,7 +156,7 @@ export async function updateWorkerAction(id: string, formData: FormData) {
     return { success: false, error: `Lỗi cập nhật: ${error.message}` };
   }
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const role = cookieStore.get('user_role')?.value || 'admin';
   const username = cookieStore.get('username')?.value || 'unknown';
 
@@ -410,7 +410,7 @@ export async function importWorkersAction(rows: ImportRow[], sendNotification = 
 }
 
 export async function updateCardStatusAction(workerId: string, newStatus: string) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const role = cookieStore.get('user_role')?.value;
   const username = cookieStore.get('username')?.value || 'unknown';
 
@@ -476,7 +476,7 @@ export async function updateCardStatusAction(workerId: string, newStatus: string
 export async function updateCardStatusBulkAction(workerIds: string[], newStatus: string) {
   if (!workerIds || workerIds.length === 0) return { success: true };
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const role = cookieStore.get('user_role')?.value;
   const username = cookieStore.get('username')?.value || 'unknown';
 

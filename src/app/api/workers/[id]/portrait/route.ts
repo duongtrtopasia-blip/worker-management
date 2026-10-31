@@ -3,7 +3,8 @@ import { uploadPortrait } from '@/lib/google-drive';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;

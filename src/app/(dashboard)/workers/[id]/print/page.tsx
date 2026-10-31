@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, use } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { FileText, Printer, ChevronLeft, ExternalLink, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
-export default function PrintCenterPage({ params }: { params: { id: string } }) {
+export default function PrintCenterPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const [worker, setWorker] = useState<any>(null);
   const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

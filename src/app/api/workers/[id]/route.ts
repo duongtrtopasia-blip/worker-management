@@ -2,7 +2,10 @@ import { NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const supabase = createRouteHandlerClient({ cookies });
   const { data, error } = await supabase
     .from('workers')
@@ -14,7 +17,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
   return NextResponse.json(data);
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const supabase = createRouteHandlerClient({ cookies });
   try {
     const body = await request.json();
@@ -32,8 +36,9 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const cookieStore = cookies();
+export async function DELETE(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const cookieStore = await cookies();
   const role = cookieStore.get('user_role')?.value;
   const username = cookieStore.get('username')?.value || 'unknown';
 
@@ -42,10 +47,10 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
   }
 
   const supabase = createRouteHandlerClient({ cookies });
-  
+
   // Get worker info for audit log
   const { data: worker } = await supabase.from('workers').select('mnv, full_name').eq('id', params.id).single();
-  
+
   const { error } = await supabase.from('workers').delete().eq('id', params.id);
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 

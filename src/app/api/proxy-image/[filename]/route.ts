@@ -9,7 +9,8 @@ import { getAccessToken } from '@/lib/onedrive';
 const _urlCache = new Map<string, { url: string; expiresAt: number }>();
 const URL_CACHE_TTL_MS = 10 * 60 * 1000; // 10 phút
 
-export async function GET(req: NextRequest, { params }: { params: { filename: string } }) {
+export async function GET(req: NextRequest, props: { params: Promise<{ filename: string }> }) {
+  const params = await props.params;
   try {
     const filename = params.filename;
     if (!filename) {

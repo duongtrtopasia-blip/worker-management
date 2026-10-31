@@ -7,6 +7,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   // Chỉ cho phép request có chứa header bảo mật từ Vercel Cron
   const authHeader = request.headers.get('authorization');

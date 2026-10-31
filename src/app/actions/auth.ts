@@ -28,18 +28,18 @@ export async function loginAction(username: string, password: string) {
   }
 
   // 3. Set cookies
-  cookies().set('admin_auth', 'true', { secure: true, httpOnly: true, path: '/', maxAge: 60 * 60 * 24 * 7 });
-  cookies().set('user_role', user.role, { secure: true, httpOnly: false, path: '/', maxAge: 60 * 60 * 24 * 7 });
-  cookies().set('username', user.username, { secure: true, httpOnly: false, path: '/', maxAge: 60 * 60 * 24 * 7 });
-  cookies().set('full_name', user.full_name || user.username, { secure: true, httpOnly: false, path: '/', maxAge: 60 * 60 * 24 * 7 });
+  (await cookies()).set('admin_auth', 'true', { secure: true, httpOnly: true, path: '/', maxAge: 60 * 60 * 24 * 7 });
+  (await cookies()).set('user_role', user.role, { secure: true, httpOnly: false, path: '/', maxAge: 60 * 60 * 24 * 7 });
+  (await cookies()).set('username', user.username, { secure: true, httpOnly: false, path: '/', maxAge: 60 * 60 * 24 * 7 });
+  (await cookies()).set('full_name', user.full_name || user.username, { secure: true, httpOnly: false, path: '/', maxAge: 60 * 60 * 24 * 7 });
 
   return { success: true };
 }
 
 export async function logoutAction() {
-  cookies().delete('admin_auth');
-  cookies().delete('user_role');
-  cookies().delete('username');
-  cookies().delete('full_name');
+  (await cookies()).delete('admin_auth');
+  (await cookies()).delete('user_role');
+  (await cookies()).delete('username');
+  (await cookies()).delete('full_name');
   return { success: true };
 }

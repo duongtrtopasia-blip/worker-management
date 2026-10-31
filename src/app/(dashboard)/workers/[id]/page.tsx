@@ -1,12 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { use } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Edit, User } from 'lucide-react';
 import Link from 'next/link';
 
-export default function WorkerDetailPage({ params }: { params: { id: string } }) {
+export default function WorkerDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
       <div className="flex justify-between items-center">

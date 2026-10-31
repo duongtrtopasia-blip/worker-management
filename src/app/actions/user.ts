@@ -4,15 +4,16 @@ import { supabase } from '@/lib/supabase';
 import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
 
-function checkAdmin() {
-  const role = cookies().get('user_role')?.value;
+async function checkAdmin() {
+  const cookieStore = await cookies();
+  const role = cookieStore.get('user_role')?.value;
   if (role !== 'admin') {
     throw new Error('Chỉ Admin mới có quyền thực hiện thao tác này');
   }
 }
 
 export async function getUsersAction() {
-  checkAdmin();
+  await checkAdmin();
   
   const { data, error } = await supabase
     .from('system_users')
@@ -24,7 +25,7 @@ export async function getUsersAction() {
 }
 
 export async function createUserAction(formData: FormData) {
-  checkAdmin();
+  await checkAdmin();
   
   const username = formData.get('username') as string;
   const password = formData.get('password') as string;
@@ -55,7 +56,7 @@ export async function createUserAction(formData: FormData) {
 }
 
 export async function updateUserAction(formData: FormData) {
-  checkAdmin();
+  await checkAdmin();
 
   const id = formData.get('id') as string;
   const role = formData.get('role') as string;
@@ -71,7 +72,7 @@ export async function updateUserAction(formData: FormData) {
 }
 
 export async function changePasswordAction(formData: FormData) {
-  checkAdmin();
+  await checkAdmin();
 
   const id = formData.get('id') as string;
   const newPassword = formData.get('new_password') as string;
@@ -93,7 +94,7 @@ export async function changePasswordAction(formData: FormData) {
 }
 
 export async function toggleUserStatusAction(id: string, currentStatus: string) {
-  checkAdmin();
+  await checkAdmin();
   
   const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
   
@@ -107,7 +108,7 @@ export async function toggleUserStatusAction(id: string, currentStatus: string) 
 }
 
 export async function deleteUserAction(id: string) {
-  checkAdmin();
+  await checkAdmin();
   
   const { error } = await supabase
     .from('system_users')

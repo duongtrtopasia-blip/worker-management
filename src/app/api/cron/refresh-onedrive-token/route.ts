@@ -12,6 +12,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAccessToken } from '@/lib/onedrive';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   // Bảo mật: chỉ cho phép gọi từ Vercel Cron hoặc với secret header
   const authHeader = req.headers.get('authorization');

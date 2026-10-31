@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, use } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { updateWorkerAction } from '@/app/actions/worker';
@@ -104,7 +104,8 @@ function Section({ number, title, subtitle, icon: Icon, children }: {
 /* ─────────────────────────────────────────────────────────────
    Main Edit Page
 ───────────────────────────────────────────────────────── */
-export default function EditWorkerPage({ params }: { params: { id: string } }) {
+export default function EditWorkerPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
