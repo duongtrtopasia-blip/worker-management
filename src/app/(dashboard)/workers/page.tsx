@@ -221,7 +221,12 @@ export default function WorkersPage() {
     }
     try {
       const [allWorkers, docsData] = await Promise.all([
-        fetchWorkersCached(force),
+        fetchWorkersCached(force, (firstChunk) => {
+          setWorkers((prev) =>
+            prev.length === 0 ? mergeWorkersWithDocs(firstChunk, []) : prev
+          );
+          setLoading(false);
+        }),
         fetchDocumentsCached(force),
       ]);
       setWorkers(mergeWorkersWithDocs(allWorkers, docsData));

@@ -1,27 +1,27 @@
 import { supabase } from '@/lib/supabase';
 
 const WORKER_COLUMNS =
-  'id, mnv, full_name, cccd, phone, date_of_birth, start_date, team, area, position, card_status, work_status, status, portrait_url, vehicle_plate, vehicle_type, safety_training_date, address, created_at';
-
-const DOC_COLUMNS =
-  'id, worker_id, doc_type, issue_date, expiry_date, file_url, created_at';
+  'id, mnv, full_name, cccd, team, area, portrait_url, status, created_at, vehicle_plate, vehicle_type, position, card_status, safety_card_number, safety_card_date, start_date, phone, address, gender, date_of_birth, work_status';
 
 const CHUNK_SIZE = 1000;
-const STALE_TIME_MS = 45_000; // 45s stale-while-revalidate
+const STALE_TIME_MS = 60_000; // 60s stale-while-revalidate
 
 let workersCache: any[] | null = null;
 let workersCacheTime = 0;
 let workersInFlight: Promise<any[]> | null = null;
+let progressListeners: Array<(partial: any[], total: number) => void> = [];
 
 let docsCache: any[] | null = null;
 let docsCacheTime = 0;
 let docsInFlight: Promise<any[]> | null = null;
+let docsTableMissing = false;
 
 export function getCachedWorkers(): any[] | null {
   return workersCache;
 }
 
 export function getCachedDocuments(): any[] | null {
+  if (docsTableMissing) return [];
   return docsCache;
 }
 
@@ -44,15 +44,28 @@ async function fetchAllWorkersFromDB(): Promise<any[]> {
     .order('created_at', { ascending: false })
     .range(0, CHUNK_SIZE - 1);
 
-  if (error) throw error;
+  if (error) {
+    console.error('Supabase fetch workers error:', error);
+    throw error;
+  }
+
   const initial = firstChunk || [];
   const total = count ?? initial.length;
+
+  // Phát sự kiện ngay khi có 1.000 dòng đầu tiên (~350ms) để UI hiển thị bảng tức thì
+  if (initial.length > 0 && progressListeners.length > 0) {
+    for (const listener of progressListeners) {
+      try {
+        listener(initial, total);
+      } catch {}
+    }
+  }
 
   if (initial.length < CHUNK_SIZE || total <= CHUNK_SIZE) {
     return initial;
   }
 
-  // Tải song song tất cả các trang còn lại thay vì vòng lặp while tuần tự
+  // Tải song song tất cả các trang còn lại
   const remainingOffsets: number[] = [];
   for (let from = CHUNK_SIZE; from < total; from += CHUNK_SIZE) {
     remainingOffsets.push(from);
@@ -78,12 +91,20 @@ async function fetchAllWorkersFromDB(): Promise<any[]> {
 }
 
 async function fetchAllDocumentsFromDB(): Promise<any[]> {
+  if (docsTableMissing) return [];
+
   const { data: firstChunk, count, error } = await supabase
     .from('documents')
-    .select(DOC_COLUMNS, { count: 'exact' })
+    .select('*', { count: 'exact' })
     .range(0, CHUNK_SIZE - 1);
 
-  if (error) throw error;
+  if (error) {
+    if (error.code === 'PGRST205' || error.message?.includes('documents')) {
+      docsTableMissing = true;
+    }
+    return [];
+  }
+
   const initial = firstChunk || [];
   const total = count ?? initial.length;
 
@@ -100,7 +121,7 @@ async function fetchAllDocumentsFromDB(): Promise<any[]> {
     remainingOffsets.map((from) =>
       supabase
         .from('documents')
-        .select(DOC_COLUMNS)
+        .select('*')
         .range(from, from + CHUNK_SIZE - 1)
     )
   );
@@ -114,10 +135,16 @@ async function fetchAllDocumentsFromDB(): Promise<any[]> {
   return all;
 }
 
-export async function fetchWorkersCached(force = false): Promise<any[]> {
+export async function fetchWorkersCached(
+  force = false,
+  onFirstChunk?: (partial: any[], total: number) => void
+): Promise<any[]> {
   const now = Date.now();
   if (!force && workersCache && now - workersCacheTime < STALE_TIME_MS) {
     return workersCache;
+  }
+  if (onFirstChunk) {
+    progressListeners.push(onFirstChunk);
   }
   if (workersInFlight) {
     return workersInFlight;
@@ -131,12 +158,14 @@ export async function fetchWorkersCached(force = false): Promise<any[]> {
     })
     .finally(() => {
       workersInFlight = null;
+      progressListeners = [];
     });
 
   return workersInFlight;
 }
 
 export async function fetchDocumentsCached(force = false): Promise<any[]> {
+  if (docsTableMissing) return [];
   const now = Date.now();
   if (!force && docsCache && now - docsCacheTime < STALE_TIME_MS) {
     return docsCache;
@@ -157,4 +186,3 @@ export async function fetchDocumentsCached(force = false): Promise<any[]> {
 
   return docsInFlight;
 }
-
