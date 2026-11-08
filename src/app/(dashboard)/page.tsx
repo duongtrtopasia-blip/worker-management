@@ -4,124 +4,124 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Users, Clock, AlertTriangle, Car, Download, Plus } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { fetchWorkersCached, getCachedWorkers } from '@/lib/data-cache';
 import toast from 'react-hot-toast';
 
 const AREA_BAR_COLORS = ['#1e3a8a', '#2f4ba0', '#4865bd', '#7189d4', '#9bb0ea'];
 
-export default function DashboardPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    total: 0,
-    missingDocs: 0,
-    expiring: 0,
-    vehicles: 0,
-    areaData: [] as { name: string; count: number; pct: number }[],
-    expiringCards: [] as {
-      id: string;
-      name: string;
-      mnv: string;
-      team: string;
-      expiry: string;
-      daysLeft: number;
-    }[],
-    missingPortraitWorkers: [] as {
-      id: string;
-      name: string;
-      mnv: string;
-      team: string;
-      missingLabel: string;
-    }[],
+function computeDashboardStats(data: any[]) {
+  const total = data.length;
+  const missingDocsList = data.filter((w) => !w.portrait_url || !w.cccd);
+  const missingDocs = missingDocsList.length;
+  const vehicles = data.filter((w) => w.vehicle_plate && w.vehicle_plate.trim() !== '').length;
+
+  const areaMap = new Map<string, number>();
+  data.forEach((w) => {
+    const area = w.area || 'Khu vực khác / Nhà thầu phụ';
+    areaMap.set(area, (areaMap.get(area) || 0) + 1);
   });
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      const { count: totalCount } = await supabase
-        .from('workers')
-        .select('*', { count: 'exact', head: true });
+  const areaData = Array.from(areaMap.entries())
+    .map(([name, count]) => ({
+      name,
+      count,
+      pct: total > 0 ? Math.round((count / total) * 100) : 0,
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
 
-      let allData: any[] = [];
-      let from = 0;
-      const step = 1000;
-      while (true) {
-        const { data: chunk, error } = await supabase
-          .from('workers')
-          .select('id, area, team, portrait_url, start_date, created_at, mnv, full_name, vehicle_plate, cccd')
-          .range(from, from + step - 1);
-        if (error || !chunk || chunk.length === 0) break;
-        allData = allData.concat(chunk);
-        if (chunk.length < step) break;
-        from += step;
-      }
+  const expiringCards: {
+    id: string;
+    name: string;
+    mnv: string;
+    team: string;
+    expiry: string;
+    daysLeft: number;
+  }[] = [];
+  const now = new Date();
+  data.forEach((w) => {
+    const startDate = new Date(w.start_date || w.created_at);
+    const expiryDate = new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000);
+    const diffTime = expiryDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      const data = allData;
-      if (!data) {
-        setLoading(false);
-        return;
-      }
-
-      const total = totalCount ?? data.length;
-      const missingDocsList = data.filter((w) => !w.portrait_url || !w.cccd);
-      const missingDocs = missingDocsList.length;
-      const vehicles = data.filter((w) => w.vehicle_plate && w.vehicle_plate.trim() !== '').length;
-
-      const areaMap = new Map<string, number>();
-      data.forEach((w) => {
-        const area = w.area || 'Khu vực khác / Nhà thầu phụ';
-        areaMap.set(area, (areaMap.get(area) || 0) + 1);
-      });
-
-      const areaData = Array.from(areaMap.entries())
-        .map(([name, count]) => ({
-          name,
-          count,
-          pct: total > 0 ? Math.round((count / total) * 100) : 0,
-        }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
-
-      const expiringCards: any[] = [];
-      const now = new Date();
-      data.forEach((w) => {
-        const startDate = new Date(w.start_date || w.created_at);
-        const expiryDate = new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000);
-        const diffTime = expiryDate.getTime() - now.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays <= 30 && diffDays >= 0) {
-          expiringCards.push({
-            id: w.id,
-            name: w.full_name,
-            mnv: w.mnv,
-            team: w.team || 'Chưa phân tổ',
-            expiry: expiryDate.toLocaleDateString('vi-VN'),
-            daysLeft: diffDays,
-          });
-        }
-      });
-      expiringCards.sort((a, b) => a.daysLeft - b.daysLeft);
-
-      const missingPortraitWorkers = missingDocsList.slice(0, 5).map((w) => ({
+    if (diffDays <= 30 && diffDays >= 0) {
+      expiringCards.push({
         id: w.id,
         name: w.full_name,
         mnv: w.mnv,
         team: w.team || 'Chưa phân tổ',
-        missingLabel: !w.portrait_url ? 'Chưa có ảnh thẻ' : 'Thiếu CCCD',
-      }));
-
-      setStats({
-        total,
-        missingDocs,
-        expiring: expiringCards.length,
-        vehicles,
-        areaData,
-        expiringCards,
-        missingPortraitWorkers,
+        expiry: expiryDate.toLocaleDateString('vi-VN'),
+        daysLeft: diffDays,
       });
-      setLoading(false);
+    }
+  });
+  expiringCards.sort((a, b) => a.daysLeft - b.daysLeft);
+
+  const missingPortraitWorkers = missingDocsList.slice(0, 5).map((w) => ({
+    id: w.id,
+    name: w.full_name,
+    mnv: w.mnv,
+    team: w.team || 'Chưa phân tổ',
+    missingLabel: !w.portrait_url ? 'Chưa có ảnh thẻ' : 'Thiếu CCCD',
+  }));
+
+  return {
+    total,
+    missingDocs,
+    expiring: expiringCards.length,
+    vehicles,
+    areaData,
+    expiringCards,
+    missingPortraitWorkers,
+  };
+}
+
+export default function DashboardPage() {
+  const router = useRouter();
+  const cached = getCachedWorkers();
+  const [loading, setLoading] = useState(!cached);
+  const [stats, setStats] = useState(() =>
+    cached
+      ? computeDashboardStats(cached)
+      : {
+          total: 0,
+          missingDocs: 0,
+          expiring: 0,
+          vehicles: 0,
+          areaData: [] as { name: string; count: number; pct: number }[],
+          expiringCards: [] as {
+            id: string;
+            name: string;
+            mnv: string;
+            team: string;
+            expiry: string;
+            daysLeft: number;
+          }[],
+          missingPortraitWorkers: [] as {
+            id: string;
+            name: string;
+            mnv: string;
+            team: string;
+            missingLabel: string;
+          }[],
+        }
+  );
+
+  useEffect(() => {
+    let active = true;
+    fetchWorkersCached()
+      .then((data) => {
+        if (!active) return;
+        setStats(computeDashboardStats(data));
+        setLoading(false);
+      })
+      .catch(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
     };
-    fetchStats();
   }, []);
 
   const validCount = Math.max(0, stats.total - stats.missingDocs);

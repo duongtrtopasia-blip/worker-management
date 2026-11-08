@@ -15,63 +15,57 @@ import {
   X,
   Search,
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import {
+  fetchWorkersCached,
+  getCachedWorkers,
+  invalidateDataCache,
+  updateCachedWorkers,
+} from '@/lib/data-cache';
 import toast from 'react-hot-toast';
 import { updateCardStatusBulkAction } from '@/app/actions/worker';
 
 type PrintMode = 'print' | 'reprint';
 
+function filterCardWorkers(all: any[]) {
+  return all.filter((w) => ['pending', 'approved', 'issued'].includes(w.card_status));
+}
+
 export default function CardsPage() {
-  const [workers, setWorkers] = useState<any[]>([]);
-  const [selectedWorker, setSelectedWorker] = useState<any>(null);
+  const cachedAll = getCachedWorkers();
+  const initialCardWorkers = cachedAll ? filterCardWorkers(cachedAll) : [];
+  const [workers, setWorkers] = useState<any[]>(initialCardWorkers);
+  const [selectedWorker, setSelectedWorker] = useState<any>(initialCardWorkers[0] || null);
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cachedAll);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [printMode, setPrintMode] = useState<PrintMode>('print');
   const [searchQuery, setSearchQuery] = useState('');
   const deferredSearchQuery = useDeferredValue(searchQuery);
 
   useEffect(() => {
-    fetchWorkers();
+    fetchWorkers(false);
   }, []);
   useEffect(() => {
     setCheckedIds(new Set());
   }, [filterStatus, printMode, deferredSearchQuery]);
 
-  const fetchWorkers = async () => {
-    setLoading(true);
-    let allData: any[] = [];
-    let from = 0;
-    const step = 1000;
+  const fetchWorkers = async (force = true) => {
+    if (force) {
+      invalidateDataCache();
+      if (workers.length === 0) setLoading(true);
+    }
 
     try {
-      while (true) {
-        const { data, error } = await supabase
-          .from('workers')
-          .select('*')
-          .in('card_status', ['pending', 'approved', 'issued'])
-          .order('created_at', { ascending: false })
-          .range(from, from + step - 1);
-
-        if (error) {
-          toast.error('Lỗi khi tải dữ liệu thẻ');
-          break;
-        }
-
-        if (data && data.length > 0) {
-          allData = allData.concat(data);
-          if (data.length < step) break;
-          from += step;
-        } else {
-          break;
-        }
-      }
-
-      if (allData.length > 0) {
-        setWorkers(allData);
-        setSelectedWorker(allData[0]);
+      const allData = await fetchWorkersCached(force);
+      const cardWorkers = filterCardWorkers(allData);
+      if (cardWorkers.length > 0) {
+        setWorkers(cardWorkers);
+        setSelectedWorker((prev: any) =>
+          prev && cardWorkers.some((w) => w.id === prev.id) ? prev : cardWorkers[0]
+        );
       } else {
         setWorkers([]);
+        setSelectedWorker(null);
       }
     } catch {
       toast.error('Có lỗi xảy ra khi tải dữ liệu');
@@ -291,7 +285,7 @@ export default function CardsPage() {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          <button type="button" onClick={fetchWorkers} className="btn-secondary">
+          <button type="button" onClick={() => fetchWorkers(true)} className="btn-secondary">
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             <span>Làm mới</span>
           </button>

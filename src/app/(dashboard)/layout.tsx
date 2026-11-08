@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { logoutAction } from '@/app/actions/auth';
 import { AppNotification, getNotificationsAction } from '@/app/actions/notification';
+import { fetchWorkersCached, fetchDocumentsCached } from '@/lib/data-cache';
 
 const managementMenuItems = [
   { name: 'Tổng quan', href: '/', icon: Home },
@@ -53,6 +54,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [lastRead, setLastRead] = React.useState<string | null>(null);
 
   React.useEffect(() => {
+    // Khởi tạo cache dữ liệu ngầm để khi chuyển sang các tab khác hiển thị tức thì (0ms)
+    fetchWorkersCached().catch(() => {});
+    fetchDocumentsCached().catch(() => {});
+
     const fetchNotifs = async () => {
       if (typeof document !== 'undefined' && document.hidden) return;
       const data = await getNotificationsAction();

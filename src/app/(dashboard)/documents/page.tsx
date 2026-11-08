@@ -1,13 +1,17 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
-import { Button } from '@/components/ui/button';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   Download, CheckCircle2, AlertTriangle, XCircle, Loader2,
-  Search, SlidersHorizontal, ChevronRight, FileText, Shield,
+  Search, ChevronRight, FileText, Shield,
   Heart, CreditCard, ClipboardCheck, X,
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import {
+  fetchWorkersCached,
+  fetchDocumentsCached,
+  getCachedWorkers,
+  getCachedDocuments,
+} from '@/lib/data-cache';
 import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 
@@ -53,57 +57,101 @@ function CircularProgress({ pct }: { pct: number }) {
 }
 
 export default function DocumentsPage() {
-  const [workers, setWorkers] = useState<any[]>([]);
-  const [docsData, setDocsData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const initialW = getCachedWorkers();
+  const initialD = getCachedDocuments();
+  const [workers, setWorkers] = useState<any[]>(initialW || []);
+  const [docsData, setDocsData] = useState<any[]>(initialD || []);
+  const [loading, setLoading] = useState(!(initialW && initialD));
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'problem' | 'complete'>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [visibleLimit, setVisibleLimit] = useState(60);
 
-  useEffect(() => { fetchData(); setMounted(true); }, []);
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    setVisibleLimit(60);
+  }, [searchQuery, filter]);
 
   const fetchData = async () => {
-    setLoading(true);
-    const { data: wData, error: wError } = await supabase.from('workers').select('*').order('created_at', { ascending: false });
-    const { data: dData } = await supabase.from('documents').select('*');
-    if (wError) toast.error('Lỗi khi tải dữ liệu');
-    else setWorkers(wData || []);
-    if (dData) setDocsData(dData);
-    setLoading(false);
+    try {
+      const [wData, dData] = await Promise.all([
+        fetchWorkersCached(),
+        fetchDocumentsCached(),
+      ]);
+      setWorkers(wData);
+      setDocsData(dData);
+    } catch {
+      toast.error('Lỗi khi tải dữ liệu');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getDocStatus = (workerId: string, type: string): DocStatus => {
-    const doc = docsData.find((d) => d.worker_id === workerId && d.doc_type === type);
-    if (!doc) return 'missing';
-    if (type === 'health_certificate') {
-      const issueDate = doc.issue_date || doc.created_at;
-      const expiry = new Date(issueDate);
-      expiry.setMonth(expiry.getMonth() + 6);
-      const diffDays = Math.ceil((expiry.getTime() - Date.now()) / (1000 * 3600 * 24));
-      if (diffDays <= 0) return 'expired';
-      if (diffDays <= 30) return 'expiring';
+  // Pre-index documents by `${worker_id}:${doc_type}` -> O(1) lookup instead of O(N*M)
+  const docLookup = useMemo(() => {
+    const map = new Map<string, any>();
+    for (const d of docsData) {
+      map.set(`${d.worker_id}:${d.doc_type}`, d);
+    }
+    return map;
+  }, [docsData]);
+
+  // Precompute summaries for all workers once when workers/docsData change
+  const summariesMap = useMemo(() => {
+    const now = Date.now();
+    const computeStatus = (workerId: string, type: string): DocStatus => {
+      const doc = docLookup.get(`${workerId}:${type}`);
+      if (!doc) return 'missing';
+      if (type === 'health_certificate') {
+        const issueDate = doc.issue_date || doc.created_at;
+        const expiry = new Date(issueDate);
+        expiry.setMonth(expiry.getMonth() + 6);
+        const diffDays = Math.ceil((expiry.getTime() - now) / (1000 * 3600 * 24));
+        if (diffDays <= 0) return 'expired';
+        if (diffDays <= 30) return 'expiring';
+        return 'valid';
+      }
+      if (doc.expiry_date) {
+        const diffDays = Math.ceil((new Date(doc.expiry_date).getTime() - now) / (1000 * 3600 * 24));
+        if (diffDays <= 0) return 'expired';
+        if (diffDays <= 30) return 'expiring';
+      }
       return 'valid';
-    }
-    if (doc.expiry_date) {
-      const diffDays = Math.ceil((new Date(doc.expiry_date).getTime() - Date.now()) / (1000 * 3600 * 24));
-      if (diffDays <= 0) return 'expired';
-      if (diffDays <= 30) return 'expiring';
-    }
-    return 'valid';
-  };
+    };
 
-  const getWorkerSummary = (workerId: string) => {
-    let validCount = 0, hasWarning = false, hasError = false;
-    const statuses = DOC_CONFIG.map((d) => {
-      const status = getDocStatus(workerId, d.key);
-      if (status === 'valid') validCount++;
-      if (status === 'expiring') { hasWarning = true; validCount++; }
-      if (status === 'missing' || status === 'expired') hasError = true;
-      return { ...d, status };
-    });
-    return { validCount, total: DOC_CONFIG.length, hasWarning, hasError, statuses };
-  };
+    const map = new Map<string, {
+      validCount: number;
+      total: number;
+      hasWarning: boolean;
+      hasError: boolean;
+      statuses: (typeof DOC_CONFIG[number] & { status: DocStatus })[];
+    }>();
+
+    for (const w of workers) {
+      let validCount = 0, hasWarning = false, hasError = false;
+      const statuses = DOC_CONFIG.map((d) => {
+        const status = computeStatus(w.id, d.key);
+        if (status === 'valid') validCount++;
+        if (status === 'expiring') { hasWarning = true; validCount++; }
+        if (status === 'missing' || status === 'expired') hasError = true;
+        return { ...d, status };
+      });
+      map.set(w.id, { validCount, total: DOC_CONFIG.length, hasWarning, hasError, statuses });
+    }
+    return map;
+  }, [workers, docLookup]);
+
+  const getWorkerSummary = (workerId: string) =>
+    summariesMap.get(workerId) || {
+      validCount: 0,
+      total: DOC_CONFIG.length,
+      hasWarning: false,
+      hasError: true,
+      statuses: DOC_CONFIG.map((d) => ({ ...d, status: 'missing' as DocStatus })),
+    };
 
   const filteredWorkers = workers.filter((w) => {
     const q = searchQuery.toLowerCase();
@@ -266,7 +314,8 @@ export default function DocumentsPage() {
               </div>
             </div>
           ) : (
-            filteredWorkers.map((w) => {
+            <>
+              {filteredWorkers.slice(0, visibleLimit).map((w) => {
               const summary = getWorkerSummary(w.id);
               const pct = Math.round((summary.validCount / summary.total) * 100);
               const isExpanded = expandedId === w.id;
@@ -287,7 +336,7 @@ export default function DocumentsPage() {
                       <div className="relative shrink-0">
                         <div className="w-12 h-12 rounded-[10px] overflow-hidden bg-[#eef2fb] border border-[#c9d4f0] flex items-center justify-center">
                           {w.portrait_url
-                            ? <img src={w.portrait_url} className="w-full h-full object-cover" alt={w.full_name} />
+                            ? <img src={w.portrait_url} loading="lazy" decoding="async" className="w-full h-full object-cover" alt={w.full_name} />
                             : <span className="text-[#1e3a8a] text-base font-extrabold">{w.full_name?.charAt(0)}</span>}
                         </div>
                         <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${summary.hasError ? 'bg-[#e31c23]' : summary.hasWarning ? 'bg-[#d97706]' : 'bg-[#10b981]'}`} />
@@ -373,7 +422,19 @@ export default function DocumentsPage() {
                   )}
                 </div>
               );
-            })
+              })}
+              {filteredWorkers.length > visibleLimit && (
+                <div className="pt-2 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setVisibleLimit((prev) => prev + 60)}
+                    className="btn-secondary"
+                  >
+                    Hiển thị thêm ({filteredWorkers.length - visibleLimit} hồ sơ còn lại)
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

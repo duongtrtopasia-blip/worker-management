@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { updateWorkerAction } from '@/app/actions/worker';
 import { supabase } from '@/lib/supabase';
+import { invalidateDataCache } from '@/lib/data-cache';
 import { formatVehiclePlate } from '@/lib/format-vehicle';
 import { DocumentUploader } from '@/components/documents/DocumentUploader';
 import {
@@ -176,8 +177,9 @@ export default function EditWorkerPage(props: { params: Promise<{ id: string }> 
     try {
       const res = await updateWorkerAction(params.id, formData);
       if (res.success) {
+        invalidateDataCache();
         toast.success('Đã cập nhật hồ sơ công nhân!');
-        setTimeout(() => { router.push('/workers'); router.refresh(); }, 1000);
+        setTimeout(() => { router.push('/workers'); router.refresh(); }, 400);
       } else {
         toast.error(`❌ ${res.error || 'Lỗi khi cập nhật hồ sơ'}`);
       }

@@ -15,10 +15,29 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { supabase } from '@/lib/supabase';
+import {
+  fetchWorkersCached,
+  fetchDocumentsCached,
+  getCachedWorkers,
+  getCachedDocuments,
+  invalidateDataCache,
+  updateCachedWorkers,
+} from '@/lib/data-cache';
 import ImportExcelModal from '@/components/workers/ImportExcelModal';
 import ImportSafetyCardModal from '@/components/workers/ImportSafetyCardModal';
 import { updateCardStatusAction, updateCardStatusBulkAction } from '@/app/actions/worker';
+
+function mergeWorkersWithDocs(allWorkers: any[], docsData: any[]) {
+  const docsMap = new Map<string, any[]>();
+  docsData.forEach((d) => {
+    if (!docsMap.has(d.worker_id)) docsMap.set(d.worker_id, []);
+    docsMap.get(d.worker_id)!.push(d);
+  });
+  return allWorkers.map((w) => ({
+    ...w,
+    documents: docsMap.get(w.id) || [],
+  }));
+}
 
 /* ── Custom Filter Select (SCMP Vincons Design) ─────────────────────────────────── */
 function FilterSelect({
@@ -166,9 +185,13 @@ function FilterSelect({
 
 export default function WorkersPage() {
   const router = useRouter();
-  const [workers, setWorkers] = useState<any[]>([]);
+  const initialW = getCachedWorkers();
+  const initialD = getCachedDocuments();
+  const [workers, setWorkers] = useState<any[]>(() =>
+    initialW && initialD ? mergeWorkersWithDocs(initialW, initialD) : []
+  );
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!(initialW && initialD));
   const [importOpen, setImportOpen] = useState(false);
   const [importSafetyOpen, setImportSafetyOpen] = useState(false);
   const [profileFilter, setProfileFilter] = useState<string>('Tất cả hồ sơ');
@@ -184,93 +207,29 @@ export default function WorkersPage() {
   useEffect(() => {
     const roleMatch = document.cookie.match(new RegExp('(^| )user_role=([^;]+)'));
     if (roleMatch) setUserRole(roleMatch[2]);
-    fetchWorkers();
+    fetchWorkers(false);
   }, []);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, profileFilter, cardFilter, teamFilter, positionFilter, areaFilter]);
 
-  const fetchWorkers = async () => {
-    setLoading(true);
-    let allWorkers: any[] = [];
-    let docsData: any[] = [];
-    const step = 1000;
-
-    try {
-      const [firstWorkerChunk, firstDocsChunk] = await Promise.all([
-        supabase
-          .from('workers')
-          .select(
-            'id, mnv, full_name, cccd, phone, date_of_birth, start_date, team, area, position, card_status, work_status, portrait_url, created_at'
-          )
-          .order('created_at', { ascending: false })
-          .range(0, step - 1),
-        supabase.from('documents').select('worker_id, doc_type').range(0, step - 1),
-      ]);
-
-      if (firstWorkerChunk.error) {
-        toast.error('Lỗi khi tải danh sách công nhân');
-        setLoading(false);
-        return;
-      }
-
-      if (firstWorkerChunk.data) allWorkers = firstWorkerChunk.data;
-      if (firstDocsChunk.data) docsData = firstDocsChunk.data;
-
-      const needMoreWorkers = allWorkers.length === step;
-      const needMoreDocs = docsData.length === step;
-
-      if (needMoreWorkers || needMoreDocs) {
-        if (needMoreWorkers) {
-          let from = step;
-          while (true) {
-            const { data, error } = await supabase
-              .from('workers')
-              .select(
-                'id, mnv, full_name, cccd, phone, date_of_birth, start_date, team, area, position, card_status, work_status, portrait_url, created_at'
-              )
-              .order('created_at', { ascending: false })
-              .range(from, from + step - 1);
-            if (error || !data || data.length === 0) break;
-            allWorkers = allWorkers.concat(data);
-            if (data.length < step) break;
-            from += step;
-          }
-        }
-
-        if (needMoreDocs) {
-          let dFrom = step;
-          while (true) {
-            const { data, error } = await supabase
-              .from('documents')
-              .select('worker_id, doc_type')
-              .range(dFrom, dFrom + step - 1);
-            if (error || !data || data.length === 0) break;
-            docsData = docsData.concat(data);
-            if (data.length < step) break;
-            dFrom += step;
-          }
-        }
-      }
-    } catch {
-      toast.error('Lỗi khi tải dữ liệu');
-      setLoading(false);
-      return;
+  const fetchWorkers = async (force = true) => {
+    if (force) {
+      invalidateDataCache();
+      if (workers.length === 0) setLoading(true);
     }
-
-    const docsMap = new Map();
-    docsData.forEach((d) => {
-      if (!docsMap.has(d.worker_id)) docsMap.set(d.worker_id, []);
-      docsMap.get(d.worker_id).push(d);
-    });
-    const workersWithDocs = allWorkers.map((w) => {
-      w.documents = docsMap.get(w.id) || [];
-      return w;
-    });
-
-    setWorkers(workersWithDocs);
-    setLoading(false);
+    try {
+      const [allWorkers, docsData] = await Promise.all([
+        fetchWorkersCached(force),
+        fetchDocumentsCached(force),
+      ]);
+      setWorkers(mergeWorkersWithDocs(allWorkers, docsData));
+    } catch {
+      toast.error('Lỗi khi tải danh sách công nhân');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const requiredDocs = ['cccd_notarized', 'health_certificate', 'safety_card', 'safety_commitment'];
@@ -338,7 +297,8 @@ export default function WorkersPage() {
         return;
       }
       toast.success(`Đã xóa công nhân ${worker.full_name}`);
-      fetchWorkers();
+      updateCachedWorkers((prev) => prev.filter((w) => w.id !== worker.id));
+      setWorkers((prev) => prev.filter((w) => w.id !== worker.id));
     } catch (error: any) {
       toast.error(`Lỗi hệ thống: ${error.message}`);
     }
@@ -350,7 +310,12 @@ export default function WorkersPage() {
       toast.success(
         status === 'approved' ? 'Đã phê duyệt xuất thẻ' : 'Đã trình yêu cầu cấp thẻ'
       );
-      fetchWorkers();
+      updateCachedWorkers((prev) =>
+        prev.map((w) => (w.id === workerId ? { ...w, card_status: status } : w))
+      );
+      setWorkers((prev) =>
+        prev.map((w) => (w.id === workerId ? { ...w, card_status: status } : w))
+      );
     } catch (error: any) {
       toast.error(error.message || 'Có lỗi xảy ra');
     }
@@ -360,6 +325,7 @@ export default function WorkersPage() {
     if (checkedIds.size === 0) return;
     try {
       const ids = Array.from(checkedIds);
+      const idSet = new Set(ids);
       await updateCardStatusBulkAction(ids, status);
       toast.success(
         status === 'approved'
@@ -367,7 +333,12 @@ export default function WorkersPage() {
           : `Đã trình yêu cầu ${ids.length} thẻ`
       );
       setCheckedIds(new Set());
-      fetchWorkers();
+      updateCachedWorkers((prev) =>
+        prev.map((w) => (idSet.has(w.id) ? { ...w, card_status: status } : w))
+      );
+      setWorkers((prev) =>
+        prev.map((w) => (idSet.has(w.id) ? { ...w, card_status: status } : w))
+      );
     } catch (error: any) {
       toast.error(error.message || 'Có lỗi xảy ra');
     }

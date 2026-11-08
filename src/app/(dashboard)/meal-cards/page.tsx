@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
 import { MealCardTemplate, MealCardData } from '@/components/cards/MealCardTemplate';
 import {
   UtensilsCrossed, RefreshCw, CheckSquare, Square, Printer,
   Search, X, Sun, Moon, Layers,
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { fetchWorkersCached, getCachedWorkers, invalidateDataCache } from '@/lib/data-cache';
 import toast from 'react-hot-toast';
 
 type ShiftType = 'morning' | 'afternoon' | 'both';
@@ -18,54 +17,46 @@ type TeamGroup = {
   leader: string;
 };
 
+function groupTeamsFromWorkers(allData: any[]): TeamGroup[] {
+  const teamMap = new Map<string, number>();
+  allData.forEach((w) => {
+    if (w.status && w.status !== 'active') return;
+    const team = w.team || 'Chưa phân tổ';
+    teamMap.set(team, (teamMap.get(team) || 0) + 1);
+  });
+
+  return Array.from(teamMap.entries())
+    .map(([team_name, worker_count]) => ({
+      team_name,
+      worker_count,
+      leader: '',
+    }))
+    .sort((a, b) => a.team_name.localeCompare(b.team_name, 'vi'));
+}
+
 export default function MealCardsPage() {
-  const [teams, setTeams] = useState<TeamGroup[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
+  const initialW = getCachedWorkers();
+  const initialTeams = initialW ? groupTeamsFromWorkers(initialW) : [];
+  const [teams, setTeams] = useState<TeamGroup[]>(initialTeams);
+  const [loading, setLoading] = useState(!initialW);
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(initialTeams[0]?.team_name || null);
   const [checkedTeams, setCheckedTeams] = useState<Set<string>>(new Set());
   const [shift, setShift] = useState<ShiftType>('both');
   const [searchQuery, setSearchQuery] = useState('');
+  const [bulkPrintTeams, setBulkPrintTeams] = useState<TeamGroup[] | null>(null);
 
+  useEffect(() => {
+    fetchTeams(false);
+  }, []);
 
-  useEffect(() => { fetchTeams(); }, []);
-
-  const fetchTeams = async () => {
-    setLoading(true);
+  const fetchTeams = async (force = true) => {
+    if (force) {
+      invalidateDataCache();
+      if (teams.length === 0) setLoading(true);
+    }
     try {
-      let allData: any[] = [];
-      let from = 0;
-      const step = 1000;
-
-      while (true) {
-        const { data, error } = await supabase
-          .from('workers')
-          .select('team')
-          .eq('status', 'active')
-          .range(from, from + step - 1);
-
-        if (error) { toast.error('Lỗi khi tải dữ liệu tổ đội'); break; }
-        if (data && data.length > 0) {
-          allData = allData.concat(data);
-          if (data.length < step) break;
-          from += step;
-        } else break;
-      }
-
-      // Group by team
-      const teamMap = new Map<string, number>();
-      allData.forEach(w => {
-        const team = w.team || 'Chưa phân tổ';
-        teamMap.set(team, (teamMap.get(team) || 0) + 1);
-      });
-
-      const grouped = Array.from(teamMap.entries())
-        .map(([team_name, worker_count]) => ({
-          team_name,
-          worker_count,
-          leader: '',
-        }))
-        .sort((a, b) => a.team_name.localeCompare(b.team_name, 'vi'));
-
+      const allData = await fetchWorkersCached(force);
+      const grouped = groupTeamsFromWorkers(allData);
       setTeams(grouped);
       if (grouped.length > 0 && !selectedTeam) {
         setSelectedTeam(grouped[0].team_name);
@@ -147,32 +138,49 @@ export default function MealCardsPage() {
       : filteredTeams;
 
     if (targetTeams.length === 0) { toast.error('Không có tổ đội nào để in!'); return; }
-
-    // Gather card HTML from hidden render
-    const cardHTMLs: string[] = [];
-    targetTeams.forEach(t => {
-      const el = document.querySelector(`[data-meal-team="${t.team_name}"]`);
-      if (el) cardHTMLs.push(el.innerHTML);
-    });
-
-    if (cardHTMLs.length === 0) { toast.error('Không thể lấy dữ liệu thẻ!'); return; }
-
-    const cardsPerPage = 10;
-    const pages: string[][] = [];
-    for (let i = 0; i < cardHTMLs.length; i += cardsPerPage) pages.push(cardHTMLs.slice(i, i + cardsPerPage));
-
-    const html = pages.map((pageCards, pi) => {
-      const cells = Array.from({ length: cardsPerPage }, (_, ci) => {
-        const h = pageCards[ci] || '';
-        return `<div style="width:85.6mm;height:54mm;overflow:hidden;flex-shrink:0;${h ? '' : 'visibility:hidden;'}">${h}</div>`;
-      }).join('');
-      return `<div style="width:210mm;height:297mm;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:4mm;padding:5.5mm 17.4mm;box-sizing:border-box;page-break-after:${pi < pages.length - 1 ? 'always' : 'auto'};background:white;">${cells}</div>`;
-    }).join('');
-
-    openPrintWindow(html, 'A4 portrait');
-    toast.success(`Đang in ${targetTeams.length} thẻ cơm...`);
-    setCheckedTeams(new Set());
+    setBulkPrintTeams(targetTeams);
   };
+
+  useEffect(() => {
+    if (!bulkPrintTeams || bulkPrintTeams.length === 0) return;
+
+    const timer = setTimeout(() => {
+      const cardHTMLs: string[] = [];
+      bulkPrintTeams.forEach((t) => {
+        const el = document.querySelector(`[data-meal-team="${t.team_name}"]`);
+        if (el) cardHTMLs.push(el.innerHTML);
+      });
+
+      if (cardHTMLs.length === 0) {
+        toast.error('Không thể lấy dữ liệu thẻ!');
+        setBulkPrintTeams(null);
+        return;
+      }
+
+      const cardsPerPage = 10;
+      const pages: string[][] = [];
+      for (let i = 0; i < cardHTMLs.length; i += cardsPerPage) {
+        pages.push(cardHTMLs.slice(i, i + cardsPerPage));
+      }
+
+      const html = pages
+        .map((pageCards, pi) => {
+          const cells = Array.from({ length: cardsPerPage }, (_, ci) => {
+            const h = pageCards[ci] || '';
+            return `<div style="width:85.6mm;height:54mm;overflow:hidden;flex-shrink:0;${h ? '' : 'visibility:hidden;'}">${h}</div>`;
+          }).join('');
+          return `<div style="width:210mm;height:297mm;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:4mm;padding:5.5mm 17.4mm;box-sizing:border-box;page-break-after:${pi < pages.length - 1 ? 'always' : 'auto'};background:white;">${cells}</div>`;
+        })
+        .join('');
+
+      openPrintWindow(html, 'A4 portrait');
+      toast.success(`Đang in ${bulkPrintTeams.length} thẻ cơm...`);
+      setCheckedTeams(new Set());
+      setBulkPrintTeams(null);
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [bulkPrintTeams]);
 
   const previewData = selectedTeam ? buildCardData(selectedTeam) : null;
 
@@ -194,7 +202,7 @@ export default function MealCardsPage() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={fetchTeams} className="btn-secondary">
+          <button onClick={() => fetchTeams(true)} className="btn-secondary">
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Làm mới
           </button>
 
@@ -347,14 +355,16 @@ export default function MealCardsPage() {
         </div>
       </div>
 
-      {/* Hidden render for bulk print */}
-      <div className="absolute opacity-0 pointer-events-none -z-50 -top-[9999px] -left-[9999px]">
-        {teams.map((t) => (
-          <div key={t.team_name} data-meal-team={t.team_name}>
-            <MealCardTemplate data={buildCardData(t.team_name)} />
-          </div>
-        ))}
-      </div>
+      {/* On-demand hidden render for bulk print only when triggered */}
+      {bulkPrintTeams && (
+        <div className="absolute opacity-0 pointer-events-none -z-50 -top-[9999px] -left-[9999px]">
+          {bulkPrintTeams.map((t) => (
+            <div key={t.team_name} data-meal-team={t.team_name}>
+              <MealCardTemplate data={buildCardData(t.team_name)} />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

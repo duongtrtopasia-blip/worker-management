@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { addWorkerAction } from '@/app/actions/worker';
 import { supabase } from '@/lib/supabase';
+import { invalidateDataCache } from '@/lib/data-cache';
 import { formatVehiclePlate } from '@/lib/format-vehicle';
 import {
   User, Hash, CreditCard, Users, MapPin, Briefcase, Phone, Calendar,
@@ -326,8 +327,9 @@ export default function NewWorkerPage() {
     try {
       const res = await addWorkerAction(formData);
       if (res.success) {
+        invalidateDataCache();
         toast.success('✅ Đã lưu hồ sơ thành công!');
-        setTimeout(() => { router.push('/workers'); router.refresh(); }, 1200);
+        setTimeout(() => { router.push('/workers'); router.refresh(); }, 400);
       } else {
         toast.error(`❌ ${res.error || 'Lỗi khi lưu vào Database'}`);
       }

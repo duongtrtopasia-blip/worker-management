@@ -17,20 +17,24 @@ import {
 import QRCode from 'react-qr-code';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
+import { getCachedWorkers, getCachedDocuments, invalidateDataCache } from '@/lib/data-cache';
 import { DocumentUploader } from '@/components/documents/DocumentUploader';
 import { formatVehiclePlate } from '@/lib/format-vehicle';
 
 export default function WorkerDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = use(props.params);
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [worker, setWorker] = useState<any>(null);
-  const [documents, setDocuments] = useState<any[]>([]);
+  const cachedWorker = getCachedWorkers()?.find((w) => w.id === params.id) || null;
+  const cachedDocs = getCachedDocuments()?.filter((d) => d.worker_id === params.id) || null;
+  const [loading, setLoading] = useState(!cachedWorker);
+  const [worker, setWorker] = useState<any>(cachedWorker);
+  const [documents, setDocuments] = useState<any[]>(cachedDocs || []);
   const [activeTab, setActiveTab] = useState<'info' | 'docs'>('info');
   const [imgError, setImgError] = useState(false);
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (isDocRefresh = false) => {
+    if (isDocRefresh) invalidateDataCache();
+    if (!worker && !isDocRefresh) setLoading(true);
     const [{ data: wData, error }, { data: dData }] = await Promise.all([
       supabase.from('workers').select('*').eq('id', params.id).single(),
       supabase.from('documents').select('*').eq('worker_id', params.id),
@@ -46,7 +50,7 @@ export default function WorkerDetailPage(props: { params: Promise<{ id: string }
   };
 
   useEffect(() => {
-    fetchData();
+    fetchData(false);
   }, [params.id]);
 
   if (loading) {
@@ -693,7 +697,7 @@ export default function WorkerDetailPage(props: { params: Promise<{ id: string }
                         note={note}
                         icon={icon}
                         hasDoc={!!existingDoc}
-                        onSuccess={fetchData}
+                        onSuccess={() => fetchData(true)}
                       />
                     );
                   })}

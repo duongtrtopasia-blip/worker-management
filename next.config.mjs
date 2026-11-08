@@ -1,6 +1,8 @@
 import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
 
-initOpenNextCloudflareForDev();
+if (process.env.CLOUDFLARE_DEV === 'true') {
+  initOpenNextCloudflareForDev();
+}
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -13,6 +15,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   experimental: {
+    optimizePackageImports: ['lucide-react', 'date-fns', 'recharts'],
     serverActions: {
       bodySizeLimit: '50mb',
     },
