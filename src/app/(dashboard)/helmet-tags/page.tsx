@@ -91,11 +91,10 @@ function FilterSelect({ value, onChange, options, label }: {
   return (
     <div ref={ref} className="relative">
       <button type="button" onClick={() => setOpen(o => !o)}
-        className={`h-9 pl-3 pr-2.5 rounded-xl text-sm font-medium flex items-center gap-1.5 border transition-all duration-200 whitespace-nowrap min-w-[140px] ${isActive ? 'text-white border-transparent shadow-md' : 'text-gray-600 bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`}
-        style={isActive ? { background: 'linear-gradient(135deg, #1e3a8a, #970731)' } : {}}>
-        <Filter className={`w-3.5 h-3.5 ${isActive ? 'text-white/80' : 'text-gray-400'}`} />
+        className={`h-9 pl-3 pr-2.5 rounded-[10px] text-sm font-bold flex items-center gap-1.5 border transition-all duration-200 whitespace-nowrap min-w-[140px] ${isActive ? 'bg-[#1e3a8a] text-white border-[#1e3a8a]' : 'text-[#334155] bg-white border-[#8592a4] hover:border-[#1e3a8a] hover:bg-[#f7f9fc]'}`}>
+        <Filter className={`w-3.5 h-3.5 ${isActive ? 'text-white/80' : 'text-[#5b6577]'}`} />
         <span className="flex-1 text-left">{value || label}</span>
-        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''} ${isActive ? 'text-white/70' : 'text-gray-400'}`} />
+        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''} ${isActive ? 'text-white/70' : 'text-[#5b6577]'}`} />
       </button>
       {open && (
         <div className="absolute z-50 top-full left-0 mt-1 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden">
@@ -221,28 +220,27 @@ function DBTeamSelector({ onLoad }: { onLoad: (workers: Worker[]) => void }) {
   };
 
   return (
-    <div className="rounded-3xl bg-white border-2 border-blue-100 shadow-sm overflow-hidden">
+    <div className="rounded-[12px] bg-white border border-[#e3e8ef] shadow-[0_1px_2px_rgba(15,27,51,0.04)] overflow-hidden">
 
       {/* ── Header ── */}
-      <div className="px-6 py-4 flex items-center gap-3" style={{ background: 'linear-gradient(135deg, #eff6ff, #fdf2f8)' }}>
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow" style={{ background: 'linear-gradient(135deg, #1e3a8a, #970731)' }}>
+      <div className="px-6 py-4 flex items-center gap-3 bg-[#f7f9fc] border-b border-[#e3e8ef]">
+        <div className="w-10 h-10 rounded-[10px] flex items-center justify-center bg-[#1e3a8a]">
           <Database className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h3 className="font-bold text-gray-900">Lấy từ Database</h3>
-          <p className="text-xs text-gray-500">Chọn tổ đội cần in từ dữ liệu hệ thống</p>
+          <h3 className="font-extrabold text-[#0f1b33]">Lấy từ Database</h3>
+          <p className="text-xs text-[#5b6577]">Chọn tổ đội cần in từ dữ liệu hệ thống</p>
         </div>
         <div className="ml-auto">
           {!loaded ? (
             <button onClick={fetchTeams} disabled={loadingTeams}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl shadow hover:shadow-md hover:scale-[1.02] transition-all disabled:opacity-60"
-              style={{ background: 'linear-gradient(135deg, #1e3a8a, #970731)' }}>
+              className="btn-primary disabled:opacity-60">
               {loadingTeams ? <Loader2 className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
               {loadingTeams ? 'Đang tải...' : 'Tải danh sách tổ đội'}
             </button>
           ) : (
             <button onClick={fetchTeams} disabled={loadingTeams}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-blue-700 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all disabled:opacity-60">
+              className="btn-secondary disabled:opacity-60">
               <RefreshCw className={`w-3.5 h-3.5 ${loadingTeams ? 'animate-spin' : ''}`} />
               Làm mới
             </button>
@@ -252,23 +250,23 @@ function DBTeamSelector({ onLoad }: { onLoad: (workers: Worker[]) => void }) {
 
       {/* ── Tìm kiếm trực tiếp DB ── */}
       <div className="px-6 pt-5 pb-1">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+        <p className="text-xs font-bold text-[#5b6577] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
           <Search className="w-3.5 h-3.5" />
           Tìm kiếm tổ đội và lấy ngay
         </p>
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b7586] pointer-events-none" />
             <input
               value={directSearch}
               onChange={e => setDirectSearch(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') handleDirectSearch(); }}
               placeholder="Nhập tên tổ đội... (VD: Tổ 1, TH-02, Điện)"
-              className="w-full pl-9 pr-8 h-11 text-sm rounded-xl border-2 border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none transition-all font-medium"
+              className="w-full pl-9 pr-8 h-10 text-sm rounded-[10px] border border-[#8592a4] bg-white text-[#0f1b33] focus:border-[#1e3a8a] focus:outline-none focus:ring-[3px] focus:ring-[#c9d4f0] transition-all font-medium"
             />
             {directSearch && (
               <button onClick={() => setDirectSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5b6577] hover:text-[#0f1b33] transition-colors">
                 <X className="w-4 h-4" />
               </button>
             )}
@@ -276,14 +274,13 @@ function DBTeamSelector({ onLoad }: { onLoad: (workers: Worker[]) => void }) {
           <button
             onClick={handleDirectSearch}
             disabled={directSearching || !directSearch.trim()}
-            className="flex items-center gap-2 px-5 py-2 text-sm font-bold text-white rounded-xl shadow hover:shadow-md hover:scale-[1.02] transition-all disabled:opacity-50 whitespace-nowrap"
-            style={{ background: 'linear-gradient(135deg, #059669, #0891b2)' }}>
+            className="btn-primary disabled:opacity-50 whitespace-nowrap">
             {directSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Users className="w-4 h-4" />}
             {directSearching ? 'Đang tìm...' : 'Lấy danh sách'}
           </button>
         </div>
-        <p className="text-xs text-gray-400 mt-1.5 ml-1">
-          Tìm gần đúng (không cần nhập đúng hoàn toàn) • Nhấn <kbd className="px-1 py-0.5 bg-gray-100 rounded text-[10px] font-mono">Enter</kbd> để tìm
+        <p className="text-xs text-[#5b6577] mt-1.5 ml-1">
+          Tìm gần đúng (không cần nhập đúng hoàn toàn) • Nhấn <kbd className="px-1 py-0.5 bg-[#f3f5f9] border border-[#e3e8ef] rounded text-[11px] font-mono">Enter</kbd> để tìm
         </p>
       </div>
 
@@ -341,37 +338,35 @@ function DBTeamSelector({ onLoad }: { onLoad: (workers: Worker[]) => void }) {
               const isSelected = selectedTeams.has(team);
               return (
                 <button key={team} onClick={() => toggleTeam(team)}
-                  className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all duration-150 text-left ${
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-[10px] border text-sm font-bold transition-all duration-150 text-left ${
                     isSelected
-                      ? 'border-transparent text-white shadow-md scale-[1.02]'
-                      : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
-                  }`}
-                  style={isSelected ? { background: 'linear-gradient(135deg, #1e3a8a, #970731)' } : {}}>
+                      ? 'border-[#1e3a8a] bg-[#1e3a8a] text-white'
+                      : 'border-[#e3e8ef] bg-[#f7f9fc] text-[#334155] hover:border-[#1e3a8a] hover:bg-[#eef2fb]'
+                  }`}>
                   {isSelected
-                    ? <CheckSquare className="w-4 h-4 shrink-0 text-white/80" />
-                    : <Square className="w-4 h-4 shrink-0 text-gray-400" />}
+                    ? <CheckSquare className="w-4 h-4 shrink-0 text-white" />
+                    : <Square className="w-4 h-4 shrink-0 text-[#8592a4]" />}
                   <span className="truncate">{team}</span>
                 </button>
               );
             }) : (
               <div className="col-span-4 py-8 text-center">
-                <Search className="w-8 h-8 text-gray-200 mx-auto mb-2" />
-                <p className="text-gray-400 text-sm">Không tìm thấy tổ nào chứa &ldquo;<b>{teamSearch}</b>&rdquo;</p>
-                <p className="text-gray-300 text-xs mt-1">Thử dùng ô tìm kiếm trực tiếp DB ở trên</p>
+                <Search className="w-8 h-8 text-[#8592a4] mx-auto mb-2" />
+                <p className="text-[#5b6577] text-sm">Không tìm thấy tổ nào chứa &ldquo;<b>{teamSearch}</b>&rdquo;</p>
+                <p className="text-[#8592a4] text-xs mt-1">Thử dùng ô tìm kiếm trực tiếp DB ở trên</p>
               </div>
             )}
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-            <p className="text-xs text-gray-500">
+          <div className="flex items-center justify-between pt-3 border-t border-[#e3e8ef]">
+            <p className="text-xs text-[#5b6577]">
               {selectedTeams.size === 0
                 ? <span>Không chọn tổ nào → lấy <b>tất cả</b> công nhân</span>
-                : <span>Đã chọn <b className="text-blue-700">{selectedTeams.size}</b>/{teams.length} tổ đội</span>}
+                : <span>Đã chọn <b className="text-[#1e3a8a]">{selectedTeams.size}</b>/{teams.length} tổ đội</span>}
             </p>
             <button onClick={handleLoadWorkers} disabled={loadingWorkers}
-              className="flex items-center gap-2 px-5 py-2 text-sm font-bold text-white rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-60"
-              style={{ background: 'linear-gradient(135deg, #059669, #0891b2)' }}>
+              className="btn-primary disabled:opacity-60">
               {loadingWorkers ? <Loader2 className="w-4 h-4 animate-spin" /> : <Users className="w-4 h-4" />}
               {loadingWorkers ? 'Đang tải...' : 'Lấy danh sách công nhân'}
             </button>
@@ -553,11 +548,11 @@ export default function HelmetTagsPage() {
   const pageCount = Math.ceil(workersToPrint.length / TAGS_PER_PAGE);
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 space-y-5" style={{ background: 'linear-gradient(135deg, #f0f4f8 0%, #e8edf5 100%)' }}>
+    <div className="min-h-screen p-4 sm:p-6 space-y-5 bg-[#f3f5f9]">
 
       {/* Toast */}
       {toast && (
-        <div className={`fixed top-4 right-4 z-[9999] flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-2xl text-white text-sm font-medium ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+        <div className={`fixed top-4 right-4 z-[9999] flex items-center gap-2.5 px-4 py-3 rounded-[10px] shadow-xl text-white text-sm font-bold ${toast.type === 'success' ? 'bg-[#047857]' : 'bg-[#e31c23]'}`}>
           {toast.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
           {toast.msg}
         </div>
@@ -566,26 +561,24 @@ export default function HelmetTagsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(135deg, #1e3a8a, #970731)' }}>
+          <div className="w-10 h-10 rounded-[10px] flex items-center justify-center bg-[#1e3a8a]">
             <HardHat className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">In Tem Mũ Bảo Hộ</h1>
-            <p className="text-xs text-gray-500 mt-0.5">In theo tổ đội • A4 ngang • Tối đa 16 tem/trang</p>
+            <h1 className="text-[22px] font-extrabold text-[#0f1b33] tracking-[-0.02em]">In tem mũ bảo hộ</h1>
+            <p className="text-[13px] text-[#5b6577] mt-0.5">In theo tổ đội • A4 ngang • Tối đa 16 tem/trang (60x35mm)</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <button onClick={downloadSample} className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all">
-            <Download className="w-4 h-4" /> Tải mẫu Excel
+          <button onClick={downloadSample} className="btn-secondary">
+            <Download className="w-4 h-4 text-[#047857]" /> Tải mẫu Excel
           </button>
           {workers.length > 0 && (
             <>
-              <button onClick={() => setShowPreview(true)} className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all">
-                <Eye className="w-4 h-4" /> Xem trước ({pageCount} trang)
+              <button onClick={() => setShowPreview(true)} className="btn-secondary">
+                <Eye className="w-4 h-4 text-[#1e3a8a]" /> Xem trước ({pageCount} trang)
               </button>
-              <button onClick={handlePrint}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl text-white shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all"
-                style={{ background: 'linear-gradient(135deg, #1e3a8a, #970731)' }}>
+              <button onClick={handlePrint} className="btn-primary">
                 <Printer className="w-4 h-4" />
                 In {workersToPrint.length} tem{selectedWorkers.length > 0 ? ' (đã chọn)' : ''}
               </button>
@@ -599,15 +592,15 @@ export default function HelmetTagsPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Tổng công nhân', value: workers.length, color: '#1e3a8a', icon: <Users className="w-4 h-4" /> },
-            { label: 'Đang hiển thị', value: filteredWorkers.length, color: '#0891b2', icon: <Filter className="w-4 h-4" /> },
-            { label: 'Đã chọn in', value: selectedWorkers.length, color: '#059669', icon: <CheckSquare className="w-4 h-4" /> },
+            { label: 'Đang hiển thị', value: filteredWorkers.length, color: '#1d4ed8', icon: <Filter className="w-4 h-4" /> },
+            { label: 'Đã chọn in', value: selectedWorkers.length, color: '#047857', icon: <CheckSquare className="w-4 h-4" /> },
             { label: 'Số tổ đội', value: allTeams.length, color: '#970731', icon: <HardHat className="w-4 h-4" /> },
           ].map((s) => (
-            <div key={s.label} className="bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0" style={{ background: s.color }}>{s.icon}</div>
+            <div key={s.label} className="bg-white rounded-[12px] px-4 py-3 shadow-[0_1px_2px_rgba(15,27,51,0.04)] border border-[#e3e8ef] flex items-center gap-3">
+              <div className="w-8 h-8 rounded-[8px] flex items-center justify-center text-white shrink-0" style={{ background: s.color }}>{s.icon}</div>
               <div>
-                <div className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</div>
-                <div className="text-xs text-gray-500">{s.label}</div>
+                <div className="text-2xl font-extrabold" style={{ color: s.color }}>{s.value}</div>
+                <div className="text-xs text-[#5b6577] font-bold">{s.label}</div>
               </div>
             </div>
           ))}
@@ -618,13 +611,13 @@ export default function HelmetTagsPage() {
       {workers.length === 0 && (
         <div className="space-y-4">
           {/* Tabs */}
-          <div className="flex gap-1 bg-gray-100 rounded-2xl p-1 w-fit">
+          <div className="flex gap-1 bg-white border border-[#e3e8ef] rounded-[10px] p-1 w-fit">
             <button onClick={() => setSourceTab('db')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${sourceTab === 'db' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
+              className={`flex items-center gap-2 px-4 py-2 rounded-[8px] text-[13px] font-bold transition-all duration-200 ${sourceTab === 'db' ? 'bg-[#1e3a8a] text-white' : 'text-[#5b6577] hover:text-[#0f1b33]'}`}>
               <Database className="w-4 h-4" /> Từ hệ thống
             </button>
             <button onClick={() => setSourceTab('excel')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${sourceTab === 'excel' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
+              className={`flex items-center gap-2 px-4 py-2 rounded-[8px] text-[13px] font-bold transition-all duration-200 ${sourceTab === 'excel' ? 'bg-[#1e3a8a] text-white' : 'text-[#5b6577] hover:text-[#0f1b33]'}`}>
               <FileSpreadsheet className="w-4 h-4" /> Import Excel
             </button>
           </div>
@@ -634,30 +627,28 @@ export default function HelmetTagsPage() {
           {sourceTab === 'excel' && (
             <div onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }} onDragLeave={() => setIsDragging(false)} onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className={`rounded-3xl border-2 border-dashed cursor-pointer transition-all duration-300 flex flex-col items-center justify-center gap-4 py-16 ${isDragging ? 'border-blue-500 bg-blue-50 scale-[1.01]' : 'border-gray-300 bg-white hover:border-blue-400 hover:bg-blue-50/30'}`}>
+              className={`rounded-[12px] border-2 border-dashed cursor-pointer transition-all duration-300 flex flex-col items-center justify-center gap-4 py-16 ${isDragging ? 'border-[#1e3a8a] bg-[#eef2fb]' : 'border-[#8592a4] bg-white hover:border-[#1e3a8a] hover:bg-[#f7f9fc]'}`}>
               {isLoading ? (
                 <div className="flex flex-col items-center gap-3">
-                  <div className="w-12 h-12 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin" />
-                  <p className="text-blue-600 font-medium">Đang đọc file Excel...</p>
+                  <div className="w-12 h-12 rounded-full border-4 border-[#c9d4f0] border-t-[#1e3a8a] animate-spin" />
+                  <p className="text-[#1e3a8a] font-bold">Đang đọc file Excel...</p>
                 </div>
               ) : (
                 <>
-                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-transform duration-300 ${isDragging ? 'scale-110' : ''}`}
-                    style={{ background: isDragging ? 'linear-gradient(135deg, #1e3a8a, #970731)' : 'linear-gradient(135deg, #e0e7ff, #fce7f3)' }}>
-                    <FileSpreadsheet className={`w-8 h-8 ${isDragging ? 'text-white' : 'text-blue-600'}`} />
+                  <div className={`w-16 h-16 rounded-[12px] flex items-center justify-center transition-transform duration-300 ${isDragging ? 'bg-[#1e3a8a]' : 'bg-[#eef2fb] border border-[#c9d4f0]'}`}>
+                    <FileSpreadsheet className={`w-8 h-8 ${isDragging ? 'text-white' : 'text-[#1e3a8a]'}`} />
                   </div>
                   <div className="text-center">
-                    <p className="text-lg font-bold text-gray-800">Kéo thả file Excel vào đây</p>
-                    <p className="text-sm text-gray-500 mt-1">hoặc click để chọn file • Hỗ trợ .xlsx, .xls</p>
-                    <p className="text-xs text-gray-400 mt-2">
-                      Cột cần có: <code className="bg-gray-100 px-1.5 py-0.5 rounded">ho_ten</code>{' '}
-                      <code className="bg-gray-100 px-1.5 py-0.5 rounded">chuc_danh</code>{' '}
-                      <code className="bg-gray-100 px-1.5 py-0.5 rounded">to_doi</code>
+                    <p className="text-lg font-extrabold text-[#0f1b33]">Kéo thả file Excel vào đây</p>
+                    <p className="text-sm text-[#5b6577] mt-1">hoặc click để chọn file • Hỗ trợ .xlsx, .xls</p>
+                    <p className="text-xs text-[#5b6577] mt-2">
+                      Cột cần có: <code className="bg-[#f3f5f9] border border-[#e3e8ef] px-1.5 py-0.5 rounded font-mono">ho_ten</code>{' '}
+                      <code className="bg-[#f3f5f9] border border-[#e3e8ef] px-1.5 py-0.5 rounded font-mono">chuc_danh</code>{' '}
+                      <code className="bg-[#f3f5f9] border border-[#e3e8ef] px-1.5 py-0.5 rounded font-mono">to_doi</code>
                     </p>
                   </div>
                   <button onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                    className="flex items-center gap-2 px-6 py-2.5 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all"
-                    style={{ background: 'linear-gradient(135deg, #1e3a8a, #970731)' }}>
+                    className="btn-primary">
                     <Upload className="w-4 h-4" /> Chọn file Excel
                   </button>
                 </>
@@ -669,27 +660,27 @@ export default function HelmetTagsPage() {
 
       {/* Worker table */}
       {workers.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-4 border-b border-gray-100 flex flex-wrap items-center gap-3">
+        <div className="bg-white rounded-[12px] shadow-[0_1px_2px_rgba(15,27,51,0.04)] border border-[#e3e8ef] overflow-hidden">
+          <div className="p-4 border-b border-[#e3e8ef] bg-[#f7f9fc] flex flex-wrap items-center gap-3">
             <div className="relative flex-1 min-w-[180px] max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6b7586]" />
               <input value={searchText} onChange={e => setSearchText(e.target.value)} placeholder="Tìm tên công nhân..."
-                className="w-full pl-8 pr-3 h-9 text-sm rounded-xl border border-gray-200 focus:outline-none focus:border-blue-400 bg-gray-50 focus:bg-white transition-all" />
+                className="w-full pl-8 pr-3 h-9 text-sm rounded-[10px] border border-[#8592a4] focus:outline-none focus:border-[#1e3a8a] bg-white transition-all" />
             </div>
             <FilterSelect value={filterTo} onChange={setFilterTo} options={allTeams} label="Lọc theo tổ đội" />
             {(filterTo || searchText) && (
               <button onClick={() => { setFilterTo(''); setSearchText(''); }}
-                className="h-9 px-3 rounded-xl text-sm text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 flex items-center gap-1.5 transition-all">
+                className="h-9 px-3 rounded-[10px] text-sm font-bold text-[#b4141a] border border-[#f5b5b8] bg-[#fef2f2] hover:bg-[#f5b5b8]/40 flex items-center gap-1.5 transition-all">
                 <X className="w-3.5 h-3.5" /> Xóa lọc
               </button>
             )}
             <div className="ml-auto flex items-center gap-2">
               <button onClick={() => { setWorkers([]); setFilterTo(''); setSearchText(''); }}
-                className="h-9 px-3 rounded-xl text-sm text-gray-600 border border-gray-200 bg-gray-50 hover:bg-gray-100 flex items-center gap-1.5 transition-all">
+                className="btn-secondary !h-9">
                 <RefreshCw className="w-3.5 h-3.5" /> Đổi nguồn
               </button>
               <button onClick={() => { setWorkers([]); setFilterTo(''); setSearchText(''); }}
-                className="h-9 px-3 rounded-xl text-sm text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 flex items-center gap-1.5 transition-all">
+                className="h-9 px-3 rounded-[10px] text-sm font-bold text-[#b4141a] border border-[#f5b5b8] bg-[#fef2f2] hover:bg-[#f5b5b8]/40 flex items-center gap-1.5 transition-all">
                 <Trash2 className="w-3.5 h-3.5" /> Xóa tất cả
               </button>
             </div>
@@ -697,36 +688,36 @@ export default function HelmetTagsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
+                <tr className="bg-[#f7f9fc] border-b border-[#e3e8ef]">
                   <th className="w-10 px-4 py-3 text-left">
                     <button onClick={toggleAll}>
-                      {allSelected ? <CheckSquare className="w-4 h-4 text-blue-600" /> : <Square className="w-4 h-4 text-gray-400" />}
+                      {allSelected ? <CheckSquare className="w-4 h-4 text-[#1e3a8a]" /> : <Square className="w-4 h-4 text-[#8592a4]" />}
                     </button>
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">STT</th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">MNV</th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Họ tên</th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Chức danh</th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tổ đội</th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Preview tem</th>
+                  <th className="px-3 py-3 text-left text-[11px] font-extrabold text-[#5b6577] uppercase tracking-wider">STT</th>
+                  <th className="px-3 py-3 text-left text-[11px] font-extrabold text-[#5b6577] uppercase tracking-wider">MNV</th>
+                  <th className="px-3 py-3 text-left text-[11px] font-extrabold text-[#5b6577] uppercase tracking-wider">Họ tên</th>
+                  <th className="px-3 py-3 text-left text-[11px] font-extrabold text-[#5b6577] uppercase tracking-wider">Chức danh</th>
+                  <th className="px-3 py-3 text-left text-[11px] font-extrabold text-[#5b6577] uppercase tracking-wider">Tổ đội</th>
+                  <th className="px-3 py-3 text-left text-[11px] font-extrabold text-[#5b6577] uppercase tracking-wider">Preview tem</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-[#e3e8ef]">
                 {filteredWorkers.map((worker, idx) => (
-                  <tr key={worker.id} className={`transition-colors hover:bg-gray-50/80 ${worker.selected ? 'bg-blue-50/30' : ''}`}>
+                  <tr key={worker.id} className={`transition-colors hover:bg-[#f7f9fc] ${worker.selected ? 'bg-[#eef2fb]/40' : ''}`}>
                     <td className="px-4 py-3">
                       <button onClick={() => toggleSelect(worker.id)}>
-                        {worker.selected ? <CheckSquare className="w-4 h-4 text-blue-600" /> : <Square className="w-4 h-4 text-gray-400" />}
+                        {worker.selected ? <CheckSquare className="w-4 h-4 text-[#1e3a8a]" /> : <Square className="w-4 h-4 text-[#8592a4]" />}
                       </button>
                     </td>
-                    <td className="px-3 py-3 text-gray-400 text-xs">{idx + 1}</td>
-                    <td className="px-3 py-3 text-gray-500 text-xs font-mono">{worker.mnv || <span className="text-gray-300">—</span>}</td>
-                    <td className="px-3 py-3 font-semibold text-gray-900">{worker.ho_ten}</td>
-                    <td className="px-3 py-3 text-gray-600">{worker.chuc_danh || <span className="text-gray-300">—</span>}</td>
+                    <td className="px-3 py-3 text-[#5b6577] text-xs font-mono">{idx + 1}</td>
+                    <td className="px-3 py-3 text-[#334155] text-xs font-mono font-bold">{worker.mnv || <span className="text-[#8592a4]">—</span>}</td>
+                    <td className="px-3 py-3 font-extrabold text-[#0f1b33]">{worker.ho_ten}</td>
+                    <td className="px-3 py-3 text-[#334155]">{worker.chuc_danh || <span className="text-[#8592a4]">—</span>}</td>
                     <td className="px-3 py-3">
                       {worker.to_doi
-                        ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white shadow-sm" style={{ background: 'linear-gradient(135deg, #1e3a8a, #970731)' }}>{worker.to_doi}</span>
-                        : <span className="text-gray-300">—</span>}
+                        ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#1e3a8a] text-white">{worker.to_doi}</span>
+                        : <span className="text-[#8592a4]">—</span>}
                     </td>
                     <td className="px-3 py-2">
                       <div style={{ transform: 'scale(0.52)', transformOrigin: 'left center', width: '115px', height: '35mm', display: 'inline-block' }}>
@@ -739,55 +730,55 @@ export default function HelmetTagsPage() {
             </table>
             {filteredWorkers.length === 0 && (
               <div className="py-16 text-center">
-                <Users className="w-12 h-12 text-gray-200 mx-auto mb-3" />
-                <p className="text-gray-400 font-medium">Không tìm thấy công nhân nào</p>
+                <Users className="w-12 h-12 text-[#8592a4] mx-auto mb-3" />
+                <p className="text-[#5b6577] font-medium">Không tìm thấy công nhân nào</p>
               </div>
             )}
           </div>
-          <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between text-xs text-gray-500">
+          <div className="px-4 py-3 border-t border-[#e3e8ef] bg-[#f7f9fc] flex items-center justify-between text-xs text-[#5b6577]">
             <span>
-              Hiển thị <b className="text-gray-700">{filteredWorkers.length}</b> / {workers.length} công nhân
-              {selectedWorkers.length > 0 && <span className="ml-2 text-blue-600 font-semibold">• Đã chọn: {selectedWorkers.length}</span>}
+              Hiển thị <b className="text-[#0f1b33]">{filteredWorkers.length}</b> / {workers.length} công nhân
+              {selectedWorkers.length > 0 && <span className="ml-2 text-[#1e3a8a] font-bold">• Đã chọn: {selectedWorkers.length}</span>}
             </span>
-            <span>Sẽ in: <b className="text-blue-700">{workersToPrint.length}</b> tem ({pageCount} trang A4)</span>
+            <span>Sẽ in: <b className="text-[#1e3a8a]">{workersToPrint.length}</b> tem ({pageCount} trang A4)</span>
           </div>
         </div>
       )}
 
       {/* Logo */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-          <div className="w-5 h-5 rounded-lg" style={{ background: 'linear-gradient(135deg, #1e3a8a, #970731)' }} />
+      <div className="bg-white rounded-[12px] shadow-[0_1px_2px_rgba(15,27,51,0.04)] border border-[#e3e8ef] p-4">
+        <h3 className="text-sm font-extrabold text-[#0f1b33] mb-3 flex items-center gap-2">
+          <div className="w-4 h-4 rounded-[4px] bg-[#1e3a8a]" />
           Logo trên tem mũ
         </h3>
         <div className="flex flex-wrap items-center gap-3">
           {/* Preview logo */}
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700">
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-[10px] bg-[#16296a] border border-[#2a3f86]">
             {logoUrl
               ? <img src={logoUrl} alt="Logo" className="h-8 w-auto object-contain" style={{ filter: 'brightness(0) invert(1)', maxWidth: '80px' }} />
-              : <span className="text-gray-400 text-xs">Không có logo</span>}
+              : <span className="text-white/60 text-xs">Không có logo</span>}
             <div>
-              <p className="text-white text-xs font-semibold">
+              <p className="text-white text-xs font-bold">
                 {logoUrl === '/logo.svg' || logoUrl === '/logo.png' ? 'VINCONS' : 'Logo tùy chỉnh'}
               </p>
-              <p className="text-gray-400 text-[10px] mt-0.5">
+              <p className="text-white/60 text-[11px] mt-0.5">
                 {logoUrl === '/logo.svg' ? 'Mặc định (SVG)' : logoUrl === '/logo.png' ? 'Mặc định (PNG)' : 'Đã đổi'}
               </p>
             </div>
           </div>
           <div className="flex gap-2">
             <button onClick={() => logoInputRef.current?.click()}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all">
-              <Upload className="w-3.5 h-3.5" /> Đổi logo khác
+              className="btn-secondary">
+              <Upload className="w-3.5 h-3.5 text-[#1e3a8a]" /> Đổi logo khác
             </button>
             {logoUrl !== '/logo.svg' && (
               <button onClick={() => setLogoUrl('/logo.svg')}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 transition-all">
+                className="btn-secondary">
                 <X className="w-3.5 h-3.5" /> Về logo Vincons
               </button>
             )}
           </div>
-          <p className="text-xs text-gray-400">Logo tự động chuyển màu trắng trên nền tối của tem</p>
+          <p className="text-xs text-[#5b6577]">Logo tự động chuyển màu trắng trên nền tối của tem</p>
         </div>
       </div>
 
@@ -800,20 +791,18 @@ export default function HelmetTagsPage() {
       {/* Preview Modal */}
       {showPreview && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center py-8 px-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div className="bg-white rounded-[16px] border border-[#e3e8ef] shadow-2xl w-full max-w-3xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#e3e8ef] bg-[#f7f9fc] rounded-t-[16px]">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Xem trước bố cục in</h2>
-                <p className="text-xs text-gray-500 mt-0.5">{workersToPrint.length} tem • {pageCount} trang A4 ngang • Max 16 tem/trang</p>
+                <h2 className="text-lg font-extrabold text-[#0f1b33]">Xem trước bố cục in</h2>
+                <p className="text-xs text-[#5b6577] mt-0.5">{workersToPrint.length} tem • {pageCount} trang A4 ngang • Max 16 tem/trang</p>
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={handlePrint}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-xl shadow-lg hover:scale-[1.02] transition-all"
-                  style={{ background: 'linear-gradient(135deg, #1e3a8a, #970731)' }}>
+                <button onClick={handlePrint} className="btn-primary">
                   <Printer className="w-4 h-4" /> In ngay
                 </button>
                 <button onClick={() => setShowPreview(false)}
-                  className="w-8 h-8 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors">
+                  className="w-9 h-9 rounded-[10px] bg-white border border-[#e3e8ef] hover:bg-[#f3f5f9] flex items-center justify-center text-[#5b6577] transition-colors">
                   <X className="w-4 h-4" />
                 </button>
               </div>

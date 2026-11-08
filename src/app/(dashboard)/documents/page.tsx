@@ -21,21 +21,21 @@ const DOC_CONFIG: { key: string; label: string; short: string; icon: React.React
   { key: 'safety_commitment',   label: 'Cam Kết',    short: 'CK',  icon: <FileText className="w-3.5 h-3.5" /> },
 ];
 
-const STATUS_STYLE: Record<DocStatus, { bg: string; text: string; dot: string }> = {
-  valid:    { bg: 'bg-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-500' },
-  expiring: { bg: 'bg-amber-100',   text: 'text-amber-700',   dot: 'bg-amber-500'   },
-  expired:  { bg: 'bg-red-100',     text: 'text-red-700',     dot: 'bg-red-500'     },
-  missing:  { bg: 'bg-gray-100',    text: 'text-gray-500',    dot: 'bg-gray-400'    },
+const STATUS_STYLE: Record<DocStatus, { bg: string; text: string; dot: string; border: string }> = {
+  valid:    { bg: 'bg-[#ecfdf5]', text: 'text-[#047857]', dot: 'bg-[#10b981]', border: 'border-[#a7f3d0]' },
+  expiring: { bg: 'bg-[#fef7e6]', text: 'text-[#92400e]', dot: 'bg-[#d97706]', border: 'border-[#f5d89a]' },
+  expired:  { bg: 'bg-[#fef2f2]', text: 'text-[#b4141a]', dot: 'bg-[#e31c23]', border: 'border-[#f5b5b8]' },
+  missing:  { bg: 'bg-[#f3f5f9]', text: 'text-[#5b6577]', dot: 'bg-[#8592a4]', border: 'border-[#e3e8ef]' },
 };
 
 function CircularProgress({ pct }: { pct: number }) {
   const r = 22;
   const circ = 2 * Math.PI * r;
   const offset = circ * (1 - pct / 100);
-  const color = pct === 100 ? '#10b981' : pct >= 60 ? '#f59e0b' : '#ef4444';
+  const color = pct === 100 ? '#10b981' : pct >= 60 ? '#d97706' : '#e31c23';
   return (
     <svg width="56" height="56" className="shrink-0 -rotate-90">
-      <circle cx="28" cy="28" r={r} fill="none" stroke="#f1f5f9" strokeWidth="4" />
+      <circle cx="28" cy="28" r={r} fill="none" stroke="#e3e8ef" strokeWidth="4" />
       <circle
         cx="28" cy="28" r={r} fill="none"
         stroke={color} strokeWidth="4"
@@ -138,289 +138,252 @@ export default function DocumentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#f3f5f9] p-4 sm:p-7 space-y-6 pb-24">
+      <div className="max-w-6xl mx-auto space-y-6">
 
-      {/* ══════════════════════════════════════
-          HERO HEADER — gradient + big stats
-      ══════════════════════════════════════ */}
-      <div
-        className="relative overflow-hidden px-5 pt-6 pb-8"
-        style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #7c3aed 100%)' }}
-      >
-        {/* decorative blobs */}
-        <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full opacity-10"
-          style={{ background: 'radial-gradient(circle, #a78bfa, transparent)' }} />
-        <div className="absolute bottom-0 left-0 w-32 h-32 rounded-full opacity-10"
-          style={{ background: 'radial-gradient(circle, #60a5fa, transparent)' }} />
+        {/* ── Page Header ── */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-[22px] font-extrabold text-[#0f1b33] tracking-[-0.02em]">Tình trạng hồ sơ pháp lý</h1>
+            <p className="text-[13px] text-[#5b6577] mt-1">Theo dõi tiến độ chuẩn hóa 5 loại giấy tờ của {totalWorkers} công nhân</p>
+          </div>
+          <button
+            onClick={handleExportExcel}
+            className="btn-secondary"
+          >
+            <Download className="h-4 w-4 text-[#047857]" />
+            Xuất danh sách thiếu hồ sơ (.xlsx)
+          </button>
+        </div>
 
-        <div className="relative z-10">
-          {/* title row */}
-          <div className="flex items-start justify-between mb-6">
-            <div>
-              <p className="text-white/60 text-xs font-medium uppercase tracking-widest mb-1">Quản Lý</p>
-              <h1 className="text-2xl font-bold text-white">Tình Trạng Hồ Sơ</h1>
-              <p className="text-white/50 text-xs mt-1">{totalWorkers} công nhân trong hệ thống</p>
+        {/* ── KPI Summary Row ── */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="kpi-card">
+            <div className="flex justify-between items-start">
+              <span className="text-[12px] font-bold text-[#5b6577]">Tỷ lệ đầy đủ</span>
+              <div className="w-8 h-8 rounded-[8px] bg-[#eef2fb] flex items-center justify-center text-[#1e3a8a]">
+                <FileText className="w-4 h-4" />
+              </div>
             </div>
-            <button
-              onClick={handleExportExcel}
-              className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-3 py-2 rounded-xl hover:bg-white/20 transition-all active:scale-95"
-            >
-              <Download className="h-3.5 w-3.5" />
-              Xuất Excel
-            </button>
+            <div className="text-[28px] font-extrabold text-[#0f1b33] leading-none">{overallPct}%</div>
+            <div className="text-[11px] font-bold text-[#5b6577]">{completeCount}/{totalWorkers} công nhân hoàn tất</div>
           </div>
 
-          {/* big circular gauge + stats */}
-          <div className="flex items-center gap-5 bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-4">
-            {/* circular progress */}
-            <div className="relative">
-              <svg width="80" height="80" className="-rotate-90">
-                <circle cx="40" cy="40" r="33" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="6" />
-                <circle
-                  cx="40" cy="40" r="33" fill="none"
-                  stroke={overallPct === 100 ? '#34d399' : overallPct >= 60 ? '#fbbf24' : '#f87171'}
-                  strokeWidth="6"
-                  strokeDasharray={2 * Math.PI * 33}
-                  strokeDashoffset={mounted ? 2 * Math.PI * 33 * (1 - overallPct / 100) : 2 * Math.PI * 33}
-                  strokeLinecap="round"
-                  style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.34,1.56,0.64,1)' }}
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-xl font-bold text-white">{overallPct}%</span>
-                <span className="text-white/50 text-[9px]">đầy đủ</span>
+          <div className="kpi-card border-l-4 border-l-[#10b981]">
+            <div className="flex justify-between items-start">
+              <span className="text-[12px] font-bold text-[#5b6577]">Đầy đủ hồ sơ</span>
+              <div className="w-8 h-8 rounded-[8px] bg-[#ecfdf5] flex items-center justify-center text-[#047857]">
+                <CheckCircle2 className="w-4 h-4" />
               </div>
             </div>
+            <div className="text-[28px] font-extrabold text-[#0f1b33] leading-none">{completeCount}</div>
+            <div className="text-[11px] font-bold text-[#047857]">Đủ điều kiện cấp thẻ</div>
+          </div>
 
-            {/* stat pills */}
-            <div className="flex-1 grid grid-cols-1 gap-2">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                </div>
-                <div>
-                  <p className="text-white font-bold text-lg leading-none">{completeCount}</p>
-                  <p className="text-white/50 text-[10px] mt-0.5">Đầy đủ hồ sơ</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center">
-                  <AlertTriangle className="w-4 h-4 text-amber-400" />
-                </div>
-                <div>
-                  <p className="text-white font-bold text-lg leading-none">{warningCount}</p>
-                  <p className="text-white/50 text-[10px] mt-0.5">Sắp hết hạn</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-red-500/20 border border-red-400/30 flex items-center justify-center">
-                  <XCircle className="w-4 h-4 text-red-400" />
-                </div>
-                <div>
-                  <p className="text-white font-bold text-lg leading-none">{missingCount}</p>
-                  <p className="text-white/50 text-[10px] mt-0.5">Thiếu / Hết hạn</p>
-                </div>
+          <div className="kpi-card border-l-4 border-l-[#d97706]">
+            <div className="flex justify-between items-start">
+              <span className="text-[12px] font-bold text-[#5b6577]">Sắp hết hạn</span>
+              <div className="w-8 h-8 rounded-[8px] bg-[#fef7e6] flex items-center justify-center text-[#92400e]">
+                <AlertTriangle className="w-4 h-4" />
               </div>
             </div>
+            <div className="text-[28px] font-extrabold text-[#0f1b33] leading-none">{warningCount}</div>
+            <div className="text-[11px] font-bold text-[#92400e]">Cần gia hạn trong 30 ngày</div>
+          </div>
+
+          <div className="kpi-card border-l-4 border-l-[#e31c23]">
+            <div className="flex justify-between items-start">
+              <span className="text-[12px] font-bold text-[#5b6577]">Thiếu / Hết hạn</span>
+              <div className="w-8 h-8 rounded-[8px] bg-[#fef2f2] flex items-center justify-center text-[#b4141a]">
+                <XCircle className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-[28px] font-extrabold text-[#0f1b33] leading-none">{missingCount}</div>
+            <div className="text-[11px] font-bold text-[#b4141a]">Chưa đủ giấy tờ bắt buộc</div>
           </div>
         </div>
-      </div>
 
-      {/* ══════════════════════════════════════
-          SEARCH + FILTER TABS
-      ══════════════════════════════════════ */}
-      <div className="px-4 -mt-1 pt-5 space-y-3 sticky top-0 bg-slate-50 z-20 pb-3 border-b border-slate-200/60">
-        {/* Search bar */}
-        <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Tìm tên hoặc mã NV..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-10 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 shadow-sm transition-all"
-          />
-          {searchQuery && (
-            <button onClick={() => setSearchQuery('')} className="absolute right-3.5 top-1/2 -translate-y-1/2">
-              <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-            </button>
+        {/* ── Search + Filter Bar ── */}
+        <div className="bg-white rounded-[12px] border border-[#e3e8ef] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[0_1px_2px_rgba(15,27,51,0.04)]">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b7586]" />
+            <input
+              type="text"
+              placeholder="Tìm tên hoặc mã NV..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-10 pl-10 pr-10 bg-white border border-[#8592a4] rounded-[10px] text-[13px] font-medium text-[#0f1b33] placeholder:text-[#6b7586] focus:outline-none focus:border-[#1e3a8a] focus:ring-[3px] focus:ring-[#c9d4f0] transition-all"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className="absolute right-3.5 top-1/2 -translate-y-1/2">
+                <X className="h-4 w-4 text-[#5b6577] hover:text-[#0f1b33]" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
+            {([
+              { key: 'all',      label: 'Tất cả',       count: totalWorkers },
+              { key: 'problem',  label: 'Có vấn đề',    count: missingCount + warningCount },
+              { key: 'complete', label: 'Đầy đủ',       count: completeCount },
+            ] as const).map((f) => {
+              const active = filter === f.key;
+              return (
+                <button
+                  key={f.key}
+                  onClick={() => setFilter(f.key)}
+                  className={`shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] text-[12px] font-bold border transition-all ${
+                    active
+                      ? 'bg-[#1e3a8a] text-white border-[#1e3a8a]'
+                      : 'bg-white text-[#334155] border-[#e3e8ef] hover:bg-[#f7f9fc]'
+                  }`}
+                >
+                  {f.label}
+                  <span className={`text-[11px] px-1.5 py-0.5 rounded-full font-bold ${active ? 'bg-white/20 text-white' : 'bg-[#f3f5f9] text-[#5b6577]'}`}>
+                    {f.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── Worker Cards List ── */}
+        <div className="space-y-3">
+          {loading ? (
+            <div className="flex flex-col items-center gap-3 py-20 bg-white rounded-[12px] border border-[#e3e8ef]">
+              <Loader2 className="w-8 h-8 text-[#1e3a8a] animate-spin" />
+              <p className="text-sm text-[#5b6577] font-medium">Đang tải dữ liệu...</p>
+            </div>
+          ) : filteredWorkers.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-16 text-center bg-white rounded-[12px] border border-[#e3e8ef]">
+              <div className="w-14 h-14 rounded-[12px] bg-[#eef2fb] flex items-center justify-center">
+                <FileText className="w-7 h-7 text-[#1e3a8a]" />
+              </div>
+              <div>
+                <p className="font-bold text-[#0f1b33]">Không tìm thấy hồ sơ phù hợp</p>
+                <p className="text-xs text-[#5b6577] mt-1">Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc trạng thái</p>
+              </div>
+            </div>
+          ) : (
+            filteredWorkers.map((w) => {
+              const summary = getWorkerSummary(w.id);
+              const pct = Math.round((summary.validCount / summary.total) * 100);
+              const isExpanded = expandedId === w.id;
+              const borderColor = summary.hasError ? '#e31c23' : summary.hasWarning ? '#d97706' : '#10b981';
+
+              return (
+                <div
+                  key={w.id}
+                  className="bg-white rounded-[12px] shadow-[0_1px_2px_rgba(15,27,51,0.04)] border border-[#e3e8ef] overflow-hidden"
+                  style={{ borderLeft: `4px solid ${borderColor}` }}
+                >
+                  <button
+                    className="w-full text-left p-4 hover:bg-[#f7f9fc] transition-colors"
+                    onClick={() => setExpandedId(isExpanded ? null : w.id)}
+                  >
+                    <div className="flex items-center gap-3.5">
+                      {/* Avatar */}
+                      <div className="relative shrink-0">
+                        <div className="w-12 h-12 rounded-[10px] overflow-hidden bg-[#eef2fb] border border-[#c9d4f0] flex items-center justify-center">
+                          {w.portrait_url
+                            ? <img src={w.portrait_url} className="w-full h-full object-cover" alt={w.full_name} />
+                            : <span className="text-[#1e3a8a] text-base font-extrabold">{w.full_name?.charAt(0)}</span>}
+                        </div>
+                        <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${summary.hasError ? 'bg-[#e31c23]' : summary.hasWarning ? 'bg-[#d97706]' : 'bg-[#10b981]'}`} />
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-extrabold text-[#0f1b33] text-sm truncate">{w.full_name}</p>
+                        <p className="text-xs text-[#5b6577] mt-0.5 flex items-center gap-1.5">
+                          <span className="font-mono bg-[#f3f5f9] border border-[#e3e8ef] px-1.5 py-0.5 rounded text-[11px] font-bold text-[#334155]">{w.mnv}</span>
+                          <span>·</span>
+                          <span className="truncate">{w.team}</span>
+                        </p>
+                        <div className="mt-2 flex items-center gap-2">
+                          <div className="flex-1 h-1.5 bg-[#f3f5f9] rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-700"
+                              style={{
+                                width: `${pct}%`,
+                                background: pct === 100 ? '#10b981' : pct >= 60 ? '#d97706' : '#e31c23',
+                              }}
+                            />
+                          </div>
+                          <span className="text-[11px] font-bold text-[#5b6577] shrink-0">{summary.validCount}/{summary.total}</span>
+                        </div>
+                      </div>
+
+                      {/* Doc status dots */}
+                      <div className="flex flex-col gap-1 shrink-0">
+                        <div className="flex gap-1">
+                          {summary.statuses.slice(0, 3).map((s) => (
+                            <div
+                              key={s.key}
+                              className={`w-2.5 h-2.5 rounded-full ${STATUS_STYLE[s.status].dot}`}
+                              title={s.label}
+                            />
+                          ))}
+                        </div>
+                        <div className="flex gap-1">
+                          {summary.statuses.slice(3).map((s) => (
+                            <div
+                              key={s.key}
+                              className={`w-2.5 h-2.5 rounded-full ${STATUS_STYLE[s.status].dot}`}
+                              title={s.label}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      <ChevronRight className={`h-4 w-4 text-[#5b6577] shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
+                    </div>
+                  </button>
+
+                  {/* Expanded detail */}
+                  {isExpanded && (
+                    <div className="px-4 pb-4 border-t border-[#e3e8ef] bg-[#f7f9fc]">
+                      <div className="pt-3 grid grid-cols-2 sm:grid-cols-5 gap-2">
+                        {summary.statuses.map((s) => {
+                          const style = STATUS_STYLE[s.status];
+                          const statusLabel = { valid: 'Hợp lệ', expiring: 'Sắp hết', expired: 'Hết hạn', missing: 'Chưa có' }[s.status];
+                          return (
+                            <div key={s.key} className={`flex flex-col items-center gap-1.5 rounded-[10px] p-2.5 border ${style.bg} ${style.border}`}>
+                              <div className={`${style.text}`}>{s.icon}</div>
+                              <span className="text-[11px] font-bold text-[#0f1b33] text-center leading-tight">{s.label}</span>
+                              <span className={`text-[11px] font-bold ${style.text} text-center leading-tight`}>{statusLabel}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div className="mt-3 flex items-center gap-3 bg-white rounded-[10px] p-3 border border-[#e3e8ef]">
+                        <CircularProgress pct={pct} />
+                        <div>
+                          <p className="text-sm font-extrabold text-[#0f1b33]">
+                            {pct === 100 ? 'Hồ sơ đầy đủ' : summary.hasError ? 'Cần bổ sung hồ sơ' : 'Sắp hết hạn'}
+                          </p>
+                          <p className="text-xs text-[#5b6577] mt-0.5">
+                            {summary.validCount}/{summary.total} giấy tờ hợp lệ
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })
           )}
         </div>
-
-        {/* Filter pills */}
-        <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
-          {([
-            { key: 'all',      label: 'Tất cả',       count: totalWorkers,  color: 'blue'   },
-            { key: 'problem',  label: 'Có vấn đề',    count: missingCount + warningCount, color: 'red' },
-            { key: 'complete', label: 'Đầy đủ',       count: completeCount, color: 'green'  },
-          ] as const).map((f) => {
-            const active = filter === f.key;
-            const colors = {
-              blue:  active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200',
-              red:   active ? 'bg-red-500 text-white border-red-500' : 'bg-white text-gray-600 border-gray-200',
-              green: active ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-gray-600 border-gray-200',
-            };
-            return (
-              <button
-                key={f.key}
-                onClick={() => setFilter(f.key)}
-                className={`shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all shadow-sm ${colors[f.color]}`}
-              >
-                {f.label}
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${active ? 'bg-white/20' : 'bg-gray-100'}`}>
-                  {f.count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
       </div>
 
-      {/* ══════════════════════════════════════
-          WORKER CARDS LIST
-      ══════════════════════════════════════ */}
-      <div className="px-4 py-4 space-y-3 pb-24">
-        {loading ? (
-          <div className="flex flex-col items-center gap-3 py-20">
-            <div className="w-10 h-10 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" style={{ borderWidth: 3 }} />
-            <p className="text-sm text-gray-400">Đang tải dữ liệu...</p>
-          </div>
-        ) : filteredWorkers.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-20 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
-              <FileText className="w-8 h-8 text-gray-300" />
-            </div>
-            <div>
-              <p className="font-semibold text-gray-500">Không tìm thấy</p>
-              <p className="text-xs text-gray-400 mt-1">Thử thay đổi từ khóa hoặc bộ lọc</p>
-            </div>
-          </div>
-        ) : (
-          filteredWorkers.map((w, idx) => {
-            const summary = getWorkerSummary(w.id);
-            const pct = Math.round((summary.validCount / summary.total) * 100);
-            const isExpanded = expandedId === w.id;
-            const borderColor = summary.hasError ? '#ef4444' : summary.hasWarning ? '#f59e0b' : '#10b981';
-
-            return (
-              <div
-                key={w.id}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
-                style={{
-                  borderLeft: `3px solid ${borderColor}`,
-                  animationDelay: `${idx * 40}ms`,
-                }}
-              >
-                {/* Card header — always visible */}
-                <button
-                  className="w-full text-left p-4"
-                  onClick={() => setExpandedId(isExpanded ? null : w.id)}
-                >
-                  <div className="flex items-center gap-3">
-                    {/* Avatar */}
-                    <div className="relative shrink-0">
-                      <div className="w-12 h-12 rounded-xl overflow-hidden bg-gradient-to-br from-blue-800 to-red-700 flex items-center justify-center border-2 border-white shadow-sm">
-                        {w.portrait_url
-                          ? <img src={w.portrait_url} className="w-full h-full object-cover" alt={w.full_name} />
-                          : <span className="text-white text-base font-bold">{w.full_name?.charAt(0)}</span>}
-                      </div>
-                      {/* Status dot */}
-                      <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${summary.hasError ? 'bg-red-500' : summary.hasWarning ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900 text-sm truncate">{w.full_name}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">{w.mnv}</span>
-                        {' '}<span className="text-gray-300">·</span>{' '}{w.team}
-                      </p>
-                      {/* Mini progress bar */}
-                      <div className="mt-2 flex items-center gap-2">
-                        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-700"
-                            style={{
-                              width: `${pct}%`,
-                              background: pct === 100 ? '#10b981' : pct >= 60 ? '#f59e0b' : '#ef4444',
-                            }}
-                          />
-                        </div>
-                        <span className="text-[10px] font-bold text-gray-500 shrink-0">{summary.validCount}/{summary.total}</span>
-                      </div>
-                    </div>
-
-                    {/* Doc status dots — compact */}
-                    <div className="flex flex-col gap-1 shrink-0">
-                      <div className="flex gap-1">
-                        {summary.statuses.slice(0, 3).map((s) => (
-                          <div
-                            key={s.key}
-                            className={`w-2.5 h-2.5 rounded-full ${STATUS_STYLE[s.status].dot}`}
-                            title={s.label}
-                          />
-                        ))}
-                      </div>
-                      <div className="flex gap-1">
-                        {summary.statuses.slice(3).map((s) => (
-                          <div
-                            key={s.key}
-                            className={`w-2.5 h-2.5 rounded-full ${STATUS_STYLE[s.status].dot}`}
-                            title={s.label}
-                          />
-                        ))}
-                      </div>
-                    </div>
-
-                    <ChevronRight className={`h-4 w-4 text-gray-300 shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
-                  </div>
-                </button>
-
-                {/* Expanded detail */}
-                {isExpanded && (
-                  <div className="px-4 pb-4 border-t border-gray-50">
-                    <div className="pt-3 grid grid-cols-5 gap-2">
-                      {summary.statuses.map((s) => {
-                        const style = STATUS_STYLE[s.status];
-                        const statusLabel = { valid: 'Hợp lệ', expiring: 'Sắp hết', expired: 'Hết hạn', missing: 'Chưa có' }[s.status];
-                        return (
-                          <div key={s.key} className={`flex flex-col items-center gap-1.5 rounded-xl p-2 ${style.bg}`}>
-                            <div className={`${style.text}`}>{s.icon}</div>
-                            <span className="text-[9px] font-bold text-gray-600 text-center leading-tight">{s.short}</span>
-                            <span className={`text-[8px] font-semibold ${style.text} text-center leading-tight`}>{statusLabel}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Progress ring inline */}
-                    <div className="mt-3 flex items-center gap-3 bg-gray-50 rounded-xl p-3">
-                      <CircularProgress pct={pct} />
-                      <div>
-                        <p className="text-sm font-bold text-gray-800">
-                          {pct === 100 ? '✅ Hồ sơ đầy đủ' : summary.hasError ? '❌ Cần bổ sung hồ sơ' : '⚠️ Sắp hết hạn'}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-0.5">
-                          {summary.validCount}/{summary.total} giấy tờ hợp lệ
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })
-        )}
-      </div>
-
-      {/* ══════════════════════════════════════
-          BOTTOM LEGEND (fixed)
-      ══════════════════════════════════════ */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-gray-100 px-4 py-2.5 flex items-center justify-center gap-4 text-[10px] text-gray-500 z-30">
-        <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-emerald-500" /> Hợp lệ</div>
-        <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-amber-500" /> Sắp hết hạn</div>
-        <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-red-500" /> Hết hạn</div>
-        <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-gray-400" /> Chưa nộp</div>
+      {/* ── Bottom Legend ── */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-[#e3e8ef] px-4 py-2.5 flex items-center justify-center gap-4 text-[11px] font-bold text-[#5b6577] z-30">
+        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#10b981]" /> Hợp lệ</div>
+        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#d97706]" /> Sắp hết hạn</div>
+        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#e31c23]" /> Hết hạn</div>
+        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#8592a4]" /> Chưa nộp</div>
       </div>
     </div>
   );

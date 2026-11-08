@@ -15,61 +15,373 @@
   src: local('UTM Avo Bold'), local('UTMAvo-Bold'), url('/fonts/UTMAvo-Bold.ttf') format('truetype');
 }
 
+@layer base {
+  :root {
+    --font-sans: 'UTM Avo', 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+    /* SCMP Vincons Design System Tokens */
+    --brand-blue: #1e3a8a;
+    --brand-blue-hover: #192f72;
+    --brand-blue-soft: #eef2fb;
+    --brand-blue-line: #c9d4f0;
+    --brand-maroon: #970731;
+    --brand-red: #e31c23;
+    --brand-yellow: #fdef03;
+
+    --canvas: #f3f5f9;
+    --surface: #ffffff;
+    --surface-sunken: #f7f9fc;
+    --line: #e3e8ef;
+    --line-strong: #8592a4;
+
+    --ink: #0f1b33;
+    --ink-2: #334155;
+    --ink-muted: #5b6577;
+    --ink-placeholder: #6b7586;
+
+    --sidebar: #16296a;
+    --sidebar-hover: #1d3380;
+    --sidebar-active: #243d93;
+    --sidebar-ink: #ffffff;
+    --sidebar-ink-muted: #b8c3e6;
+    --sidebar-line: #2a3f86;
+
+    --success: #047857;
+    --success-soft: #e6f5ee;
+    --warning: #92400e;
+    --warning-solid: #d97706;
+    --warning-soft: #fdf3dc;
+    --danger: #b4141a;
+    --danger-soft: #fdecec;
+    --neutral-soft: #eef1f5;
+
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-12: 48px;
+
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-full: 999px;
+
+    --shadow-card: 0 1px 2px rgba(15, 27, 51, 0.06);
+    --shadow-raised: 0 8px 24px -8px rgba(15, 27, 51, 0.18);
+    --shadow-overlay: 0 24px 48px -12px rgba(15, 27, 51, 0.30);
+
+    --control-sm: 32px;
+    --control-md: 40px;
+    --control-lg: 44px;
+    --header-h: 64px;
+    --sidebar-w: 248px;
+
+    /* Shadcn compatibility variables */
+    --background: #f3f5f9;
+    --foreground: #0f1b33;
+    --card: #ffffff;
+    --card-foreground: #0f1b33;
+    --popover: #ffffff;
+    --popover-foreground: #0f1b33;
+    --primary: #1e3a8a;
+    --primary-foreground: #ffffff;
+    --secondary: #f7f9fc;
+    --secondary-foreground: #1e3a8a;
+    --muted: #eef1f5;
+    --muted-foreground: #5b6577;
+    --accent: #eef2fb;
+    --accent-foreground: #1e3a8a;
+    --destructive: #e31c23;
+    --destructive-foreground: #ffffff;
+    --border: #e3e8ef;
+    --input: #8592a4;
+    --ring: #1e3a8a;
+    --radius: 0.5rem;
+  }
+
+  * {
+    box-sizing: border-box;
+    border-color: var(--border);
+    font-family: var(--font-sans);
+  }
+
+  body {
+    background-color: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    margin: 0;
+  }
+
+  html {
+    font-family: var(--font-sans);
+  }
+}
+
+@layer components {
+  /* SCMP Vincons Component Classes */
+  .vc-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    height: var(--control-md);
+    padding: 0 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    font: 700 13px/1 var(--font-sans);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    white-space: nowrap;
+  }
+  .vc-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--brand-blue-line);
+  }
+  .vc-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+  .vc-btn--primary, .btn-primary {
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 8px;
+    border: none;
+    background: var(--brand-blue);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 4px rgba(30, 58, 138, 0.25);
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+  .vc-btn--primary:hover, .btn-primary:hover {
+    background: var(--brand-blue-hover);
+  }
+  .vc-btn--secondary, .btn-secondary {
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 8px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+  .vc-btn--secondary:hover, .btn-secondary:hover {
+    background: var(--surface-sunken);
+    border-color: var(--ink-muted);
+  }
+  .vc-btn--ghost {
+    background: transparent;
+    color: var(--ink-2);
+  }
+  .vc-btn--ghost:hover {
+    background: var(--neutral-soft);
+  }
+  .vc-btn--danger {
+    background: var(--brand-red);
+    color: #fff;
+  }
+  .vc-btn--sm {
+    height: var(--control-sm);
+    padding: 0 12px;
+    font-size: 12px;
+  }
+  .vc-btn--icon {
+    width: var(--control-sm);
+    height: var(--control-sm);
+    padding: 0;
+  }
+  .vc-btn[disabled], .btn-primary[disabled], .btn-secondary[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .vc-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-family: var(--font-sans);
+  }
+  .vc-label {
+    font: 700 13px/20px var(--font-sans);
+    color: var(--ink-2);
+  }
+  .vc-help {
+    font: 400 12px/16px var(--font-sans);
+    color: var(--ink-muted);
+  }
+  .vc-help--error {
+    color: var(--danger);
+  }
+  .vc-input {
+    height: var(--control-md);
+    padding: 0 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    color: var(--ink);
+    font: 400 14px/22px var(--font-sans);
+    box-sizing: border-box;
+    width: 100%;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .vc-input::placeholder {
+    color: var(--ink-placeholder);
+  }
+  .vc-input:hover {
+    border-color: var(--ink-muted);
+  }
+  .vc-input:focus {
+    outline: none;
+    border-color: var(--brand-blue);
+    box-shadow: 0 0 0 3px var(--brand-blue-line);
+  }
+  .vc-input--error {
+    border-color: var(--danger);
+    background: var(--danger-soft);
+  }
+
+  .vc-badge, .scmp-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    padding: 0 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .vc-badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .vc-badge--success {
+    background: var(--success-soft);
+    color: var(--success);
+  }
+  .vc-badge--warning {
+    background: var(--warning-soft);
+    color: var(--warning);
+  }
+  .vc-badge--danger {
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+  .vc-badge--info {
+    background: var(--brand-blue-soft);
+    color: var(--brand-blue);
+  }
+  .vc-badge--neutral {
+    background: var(--neutral-soft);
+    color: var(--ink-2);
+  }
+
+  .vc-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+  }
+  .vc-card--link {
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .vc-card--link:hover {
+    box-shadow: var(--shadow-raised);
+    border-color: var(--brand-blue-line);
+  }
+
+  .kpi-card {
+    background: #ffffff;
+    border: 1px solid #e3e8ef;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 2px rgba(15, 27, 51, 0.05);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -8px rgba(15, 27, 51, 0.12);
+  }
+
+  .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 8px;
+    color: #b8c3e6;
+    font-size: 14px;
+    text-decoration: none;
+    position: relative;
+    transition: all 0.15s ease;
+  }
+  .sidebar-link:hover {
+    background: #1d3380;
+    color: #ffffff;
+  }
+  .sidebar-link.active {
+    background: #243d93;
+    color: #ffffff;
+    font-weight: 700;
+  }
+  .sidebar-link.active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 4px;
+    border-radius: 0 4px 4px 0;
+    background: #fdef03;
+  }
+
+  .field-box {
+    background: #f7f9fc;
+    border: 1px solid #e3e8ef;
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .field-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #5b6577;
+    margin-bottom: 4px;
+  }
+  .field-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f1b33;
+  }
+}
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
-  .sidebar-gradient {
-    background: linear-gradient(160deg, #1e3a8a 0%, #1a2f6e 40%, #970731 100%);
-  }
-  .brand-header-gradient {
-    background: linear-gradient(90deg, #1e3a8a 0%, #970731 100%);
-  }
   .stat-card-hover {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
   .stat-card-hover:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px -5px rgba(0,0,0,0.12);
-  }
-}
-
-@layer base {
-  :root {
-    --font-sans: 'UTM Avo', sans-serif;
-    --background: oklch(0.97 0.005 260);
-    --foreground: oklch(0.15 0.01 260);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.15 0.01 260);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.15 0.01 260);
-    --primary: oklch(0.32 0.12 260);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.96 0.005 260);
-    --secondary-foreground: oklch(0.32 0.12 260);
-    --muted: oklch(0.96 0.005 260);
-    --muted-foreground: oklch(0.50 0.01 260);
-    --accent: oklch(0.94 0.01 260);
-    --accent-foreground: oklch(0.32 0.12 260);
-    --destructive: oklch(0.54 0.22 27);
-    --border: oklch(0.90 0.005 260);
-    --input: oklch(0.92 0.005 260);
-    --ring: oklch(0.32 0.12 260);
-    --radius: 0.625rem;
-    --font-sans: 'Be Vietnam Pro', sans-serif;
-  }
-
-  * {
-    @apply border-border outline-ring/50;
-    font-family: 'UTM Avo', sans-serif;
-  }
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'UTM Avo', sans-serif;
-    background-color: #f0f4f8;
-  }
-  html {
-    font-family: 'UTM Avo', sans-serif;
+    box-shadow: 0 8px 24px -8px rgba(15, 27, 51, 0.12);
   }
 }

@@ -177,56 +177,56 @@ export default function MealCardsPage() {
   const previewData = selectedTeam ? buildCardData(selectedTeam) : null;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-[#f3f5f9] min-h-full">
 
       {/* PAGE HEADER */}
       <div className="flex justify-between items-start flex-wrap gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
+          <div className="p-2.5 rounded-[10px] bg-[#1e3a8a]">
             <UtensilsCrossed className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Thẻ Cơm Tổ Đội</h1>
-            <p className="text-sm text-gray-400 mt-0.5">
-              <span className="font-semibold text-amber-600">{teams.length}</span> tổ đội
+            <h1 className="text-[22px] font-extrabold text-[#0f1b33] tracking-[-0.02em]">Thẻ cơm tổ đội</h1>
+            <p className="text-[13px] text-[#5b6577] mt-0.5">
+              In thẻ suất ăn tập thể cho <span className="font-bold text-[#1e3a8a]">{teams.length}</span> tổ đội đang hoạt động
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <Button variant="outline" size="sm" onClick={fetchTeams} className="gap-1.5 text-gray-600">
+          <button onClick={fetchTeams} className="btn-secondary">
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Làm mới
-          </Button>
+          </button>
 
           {/* Shift toggle */}
-          <div className="flex bg-gray-100 rounded-lg p-1 gap-1">
+          <div className="flex bg-white border border-[#e3e8ef] rounded-[10px] p-1 gap-1">
             <button
               onClick={() => setShift('morning')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${shift === 'morning' ? 'bg-white text-amber-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`px-3 py-1.5 text-xs font-bold rounded-[8px] transition-all flex items-center gap-1.5 ${shift === 'morning' ? 'bg-[#1e3a8a] text-white' : 'text-[#5b6577] hover:text-[#0f1b33]'}`}
             >
               <Sun className="h-3.5 w-3.5" /> Sáng
             </button>
             <button
               onClick={() => setShift('afternoon')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${shift === 'afternoon' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`px-3 py-1.5 text-xs font-bold rounded-[8px] transition-all flex items-center gap-1.5 ${shift === 'afternoon' ? 'bg-[#1e3a8a] text-white' : 'text-[#5b6577] hover:text-[#0f1b33]'}`}
             >
               <Moon className="h-3.5 w-3.5" /> Chiều
             </button>
             <button
               onClick={() => setShift('both')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${shift === 'both' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`px-3 py-1.5 text-xs font-bold rounded-[8px] transition-all flex items-center gap-1.5 ${shift === 'both' ? 'bg-[#1e3a8a] text-white' : 'text-[#5b6577] hover:text-[#0f1b33]'}`}
             >
               <Layers className="h-3.5 w-3.5" /> Cả hai
             </button>
           </div>
 
-          <Button variant="outline" size="sm" onClick={handlePrintSingle} disabled={!previewData} className="gap-1.5 text-amber-600 border-amber-400/40 hover:bg-amber-50">
-            <Printer className="h-4 w-4" /> In thẻ này
-          </Button>
-          <Button size="sm" onClick={handlePrintBulk} disabled={filteredTeams.length === 0} className="gap-1.5 text-white" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
+          <button onClick={handlePrintSingle} disabled={!previewData} className="btn-secondary disabled:opacity-50">
+            <Printer className="h-4 w-4 text-[#1e3a8a]" /> In thẻ này
+          </button>
+          <button onClick={handlePrintBulk} disabled={filteredTeams.length === 0} className="btn-primary disabled:opacity-50">
             <Printer className="h-4 w-4" />
             {checkedTeams.size > 0 ? `In ${checkedTeams.size} thẻ đã chọn` : `In tất cả (${filteredTeams.length})`}
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -234,45 +234,45 @@ export default function MealCardsPage() {
       <div className="flex flex-col lg:grid lg:grid-cols-5 gap-6 lg:h-[calc(100vh-200px)] pb-6 lg:pb-0">
 
         {/* Card Preview */}
-        <div className="lg:col-span-3 order-2 lg:order-1 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="lg:col-span-3 order-2 lg:order-1 bg-white rounded-[12px] border border-[#e3e8ef] shadow-[0_1px_2px_rgba(15,27,51,0.04)] overflow-hidden flex flex-col">
+          <div className="px-5 py-4 border-b border-[#e3e8ef] bg-[#f7f9fc] flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-1 h-5 rounded-full" style={{ background: 'linear-gradient(to bottom, #f59e0b, #d97706)' }} />
-              <h2 className="font-semibold text-gray-800">Bản Xem Trước</h2>
+              <div className="w-1 h-5 rounded-full bg-[#1e3a8a]" />
+              <h2 className="font-extrabold text-[#0f1b33] text-sm">Bản Xem Trước</h2>
             </div>
             {selectedTeam && (
-              <span className="text-xs px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 font-medium border border-amber-200">
-                Thẻ Cơm
+              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-[#eef2fb] text-[#1e3a8a] font-bold border border-[#c9d4f0]">
+                Thẻ Cơm CR80
               </span>
             )}
           </div>
-          <div className="flex-1 flex justify-center items-center bg-gray-50 p-6 lg:p-10 min-h-[350px] lg:min-h-0 overflow-hidden">
+          <div className="flex-1 flex justify-center items-center bg-[#f3f5f9] p-6 lg:p-10 min-h-[350px] lg:min-h-0 overflow-hidden">
             {previewData ? (
-              <div id="meal-card-preview" className="drop-shadow-2xl scale-75 sm:scale-90 lg:scale-100 origin-center">
+              <div id="meal-card-preview" className="drop-shadow-xl scale-75 sm:scale-90 lg:scale-100 origin-center">
                 <MealCardTemplate data={previewData} />
               </div>
             ) : (
-              <div className="flex flex-col items-center gap-3 text-gray-300">
+              <div className="flex flex-col items-center gap-3 text-[#8592a4]">
                 <UtensilsCrossed className="w-16 h-16" />
-                <p className="text-sm">Chọn một tổ đội để xem trước thẻ cơm</p>
+                <p className="text-sm text-[#5b6577]">Chọn một tổ đội để xem trước thẻ cơm</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Team List */}
-        <div className="lg:col-span-2 order-1 lg:order-2 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col h-[500px] lg:h-auto">
-          <div className="px-5 py-4 border-b border-gray-100">
+        <div className="lg:col-span-2 order-1 lg:order-2 bg-white rounded-[12px] border border-[#e3e8ef] shadow-[0_1px_2px_rgba(15,27,51,0.04)] overflow-hidden flex flex-col h-[500px] lg:h-auto">
+          <div className="px-5 py-4 border-b border-[#e3e8ef] bg-[#f7f9fc]">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <div className="w-1 h-5 rounded-full" style={{ background: 'linear-gradient(to bottom, #f59e0b, #d97706)' }} />
-                <h2 className="font-semibold text-gray-800">Danh Sách Tổ Đội</h2>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 font-medium">{filteredTeams.length}</span>
+                <div className="w-1 h-5 rounded-full bg-[#1e3a8a]" />
+                <h2 className="font-extrabold text-[#0f1b33] text-sm">Danh Sách Tổ Đội</h2>
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#eef2fb] text-[#1e3a8a] border border-[#c9d4f0] font-bold">{filteredTeams.length}</span>
               </div>
               {filteredTeams.length > 0 && (
                 <button
                   onClick={toggleAll}
-                  className="text-xs font-medium flex items-center gap-1 transition-colors text-amber-600 hover:text-amber-700"
+                  className="text-xs font-bold flex items-center gap-1 transition-colors text-[#1e3a8a] hover:underline"
                 >
                   {allChecked ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
                   {allChecked ? 'Bỏ chọn tất cả' : `Chọn tất cả (${filteredTeams.length})`}
@@ -281,19 +281,19 @@ export default function MealCardsPage() {
             </div>
 
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#6b7586]" />
               <input
                 type="text"
                 placeholder="Tìm tổ đội..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-400/30 focus:border-amber-400/30 transition-shadow"
+                className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-[#8592a4] rounded-[10px] text-[#0f1b33] placeholder:text-[#6b7586] focus:outline-none focus:border-[#1e3a8a] focus:ring-[3px] focus:ring-[#c9d4f0]"
               />
             </div>
           </div>
 
           {checkedTeams.size > 0 && (
-            <div className="mx-4 mt-3 px-3 py-2 rounded-lg text-xs font-medium flex items-center justify-between bg-amber-50 border border-amber-200 text-amber-700">
+            <div className="mx-4 mt-3 px-3 py-2 rounded-[10px] text-xs font-bold flex items-center justify-between bg-[#eef2fb] border border-[#c9d4f0] text-[#1e3a8a]">
               <span>Đã chọn <strong>{checkedTeams.size}</strong> tổ đội để in</span>
               <button onClick={() => setCheckedTeams(new Set())} className="hover:opacity-70">
                 <X className="h-3.5 w-3.5" />
@@ -304,13 +304,13 @@ export default function MealCardsPage() {
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
             {loading ? (
               <div className="flex flex-col items-center gap-2 py-16">
-                <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-                <span className="text-sm text-gray-400">Đang tải...</span>
+                <div className="w-8 h-8 border-2 border-[#1e3a8a] border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm text-[#5b6577]">Đang tải...</span>
               </div>
             ) : filteredTeams.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-16">
-                <UtensilsCrossed className="w-12 h-12 text-gray-200" />
-                <p className="text-sm text-gray-500 font-medium">Không tìm thấy tổ đội nào</p>
+                <UtensilsCrossed className="w-12 h-12 text-[#8592a4]" />
+                <p className="text-sm text-[#5b6577] font-medium">Không tìm thấy tổ đội nào</p>
               </div>
             ) : (
               filteredTeams.map((t) => {
@@ -320,27 +320,25 @@ export default function MealCardsPage() {
                   <div
                     key={t.team_name}
                     onClick={() => setSelectedTeam(t.team_name)}
-                    className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-                      isSelected ? 'border-amber-400/40 bg-amber-50/60 ring-1 ring-amber-400/20' : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'
-                    } ${isChecked ? 'border-amber-300 bg-amber-50/60' : ''}`}
+                    className={`p-3.5 rounded-[10px] border cursor-pointer transition-all ${
+                      isSelected ? 'border-[#1e3a8a] bg-[#eef2fb]' : 'border-[#e3e8ef] hover:border-[#8592a4] hover:bg-[#f7f9fc]'
+                    } ${isChecked ? 'border-[#1e3a8a] bg-[#eef2fb]/70' : ''}`}
                   >
                     <div className="flex items-center gap-3">
                       <button onClick={(e) => toggleCheck(t.team_name, e)} className="shrink-0">
                         {isChecked
-                          ? <CheckSquare className="h-4 w-4 text-amber-600" />
-                          : <Square className="h-4 w-4 text-gray-300 hover:text-gray-400" />
+                          ? <CheckSquare className="h-4 w-4 text-[#1e3a8a]" />
+                          : <Square className="h-4 w-4 text-[#8592a4] hover:text-[#1e3a8a]" />
                         }
                       </button>
-                      <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center shrink-0 border-2 border-white shadow-sm" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
-                        <UtensilsCrossed className="w-4 h-4 text-white" />
+                      <div className="w-9 h-9 rounded-[8px] overflow-hidden flex items-center justify-center shrink-0 bg-[#1e3a8a] text-white">
+                        <UtensilsCrossed className="w-4 h-4" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm text-gray-900 truncate">{t.team_name}</p>
-                        <p className="text-xs text-gray-400">{t.worker_count} công nhân</p>
+                        <p className="font-bold text-sm text-[#0f1b33] truncate">{t.team_name}</p>
+                        <p className="text-xs text-[#5b6577]">{t.worker_count} công nhân</p>
                       </div>
                     </div>
-
-
                   </div>
                 );
               })

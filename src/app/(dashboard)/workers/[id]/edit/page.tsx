@@ -14,13 +14,13 @@ import {
 } from 'lucide-react';
 
 /* ─────────────────────────────────────────────────────────────
-   Shared input styles
+   Shared input styles (SCMP Vincons Design System)
 ───────────────────────────────────────────────────────────── */
 const inputBase =
-  'w-full h-11 px-4 rounded-xl border-2 border-slate-100 bg-slate-50/80 text-slate-800 text-sm ' +
-  'placeholder:text-slate-400 transition-all duration-200 ' +
-  'focus:outline-none focus:border-blue-400/60 focus:bg-white focus:shadow-[0_0_0_4px_rgba(30,58,138,0.08)] ' +
-  'hover:border-slate-200 hover:bg-white';
+  'w-full h-10 px-3.5 rounded-lg border border-[#8592a4] bg-white text-[#0f1b33] text-sm ' +
+  'placeholder:text-[#6b7586] transition-all duration-150 ' +
+  'focus:outline-none focus:border-[#1e3a8a] focus:shadow-[0_0_0_3px_#c9d4f0] ' +
+  'hover:border-[#5b6577]';
 
 /* ─────────────────────────────────────────────────────────────
    Field Components
@@ -35,17 +35,17 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-        <Icon className="w-3.5 h-3.5 text-blue-400" />
+      <label htmlFor={id} className="flex items-center gap-1.5 text-[13px] font-bold text-[#334155]">
+        <Icon className="w-3.5 h-3.5 text-[#1e3a8a]" />
         {label}
-        {required && <span className="text-rose-500 ml-0.5 normal-case tracking-normal font-bold">*</span>}
+        {required && <span className="text-[#b4141a] ml-0.5 font-bold">*</span>}
       </label>
       <input
         id={id} name={name} type={type}
         required={required} placeholder={placeholder}
         maxLength={maxLength} defaultValue={defaultValue}
         readOnly={readOnly} onBlur={onBlur}
-        className={`${inputBase} ${readOnly ? '!bg-slate-100 !border-slate-200 cursor-not-allowed text-slate-500' : ''}`}
+        className={`${inputBase} ${readOnly ? '!bg-[#f7f9fc] !border-[#e3e8ef] cursor-not-allowed text-[#5b6577]' : ''}`}
       />
     </div>
   );
@@ -58,15 +58,15 @@ function SelectField({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-        <Icon className="w-3.5 h-3.5 text-blue-400" />
+      <label htmlFor={id} className="flex items-center gap-1.5 text-[13px] font-bold text-[#334155]">
+        <Icon className="w-3.5 h-3.5 text-[#1e3a8a]" />
         {label}
       </label>
       <select
         id={id} name={name} defaultValue={defaultValue}
         className={`${inputBase} cursor-pointer appearance-none`}
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%235b6577'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
           backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center', backgroundSize: '16px',
         }}
       >
@@ -80,21 +80,19 @@ function Section({ number, title, subtitle, icon: Icon, children }: {
   number?: number; title: string; subtitle: string; icon: React.ElementType; children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-      <div className="flex items-center gap-4 px-6 py-4 border-b border-slate-50"
-        style={{ background: 'linear-gradient(135deg, rgba(30,58,138,0.03) 0%, rgba(255,255,255,0) 100%)' }}>
+    <div className="bg-white rounded-xl border border-[#e3e8ef] shadow-sm overflow-hidden">
+      <div className="flex items-center gap-3.5 px-6 py-4 border-b border-[#e3e8ef] bg-[#f7f9fc]">
         {number && (
-          <div className="flex items-center justify-center w-8 h-8 rounded-xl text-white text-sm font-bold shrink-0"
-            style={{ background: 'linear-gradient(135deg, #1e3a8a, #2563eb)' }}>
+          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#1e3a8a] text-white text-xs font-bold shrink-0">
             {number}
           </div>
         )}
         <div className="flex-1">
-          <h3 className="text-sm font-bold text-slate-800">{title}</h3>
-          <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>
+          <h3 className="text-sm font-bold text-[#0f1b33]">{title}</h3>
+          <p className="text-xs text-[#5b6577] mt-0.5">{subtitle}</p>
         </div>
-        <div className="p-2 rounded-xl bg-slate-50">
-          <Icon className="w-4 h-4 text-slate-400" />
+        <div className="p-2 rounded-lg bg-[#eef2fb]">
+          <Icon className="w-4 h-4 text-[#1e3a8a]" />
         </div>
       </div>
       <div className="p-6">{children}</div>
@@ -203,9 +201,9 @@ export default function EditWorkerPage(props: { params: Promise<{ id: string }> 
 
   if (loading) {
     return (
-      <div className="min-h-full flex flex-col items-center justify-center p-8" style={{ background: '#f1f5f9' }}>
-        <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-4" />
-        <p className="text-sm font-medium text-slate-500 animate-pulse">Đang tải dữ liệu...</p>
+      <div className="min-h-full flex flex-col items-center justify-center p-8 bg-[#f3f5f9]">
+        <Loader2 className="w-10 h-10 text-[#1e3a8a] animate-spin mb-4" />
+        <p className="text-sm font-medium text-[#5b6577] animate-pulse">Đang tải dữ liệu...</p>
       </div>
     );
   }
@@ -213,36 +211,35 @@ export default function EditWorkerPage(props: { params: Promise<{ id: string }> 
   if (!worker) return null;
 
   return (
-    <div className="min-h-full flex flex-col" style={{ background: '#f1f5f9' }}>
+    <div className="min-h-full flex flex-col bg-[#f3f5f9]">
 
       {/* ── Top Nav Bar ── */}
-      <header className="bg-white border-b border-slate-100 px-6 py-3.5 flex items-center gap-4 shrink-0 shadow-sm z-10">
+      <header className="bg-white border-b border-[#e3e8ef] px-6 py-3.5 flex items-center gap-4 shrink-0 shadow-[0_1px_2px_rgba(15,27,51,0.04)] z-10">
         <button
           type="button" onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-slate-400 hover:text-blue-700 text-sm font-medium transition-all hover:-translate-x-0.5"
+          className="flex items-center gap-1.5 text-[#5b6577] hover:text-[#1e3a8a] text-sm font-bold transition-all hover:-translate-x-0.5"
         >
           <ChevronLeft className="w-4 h-4" />
           Quay lại
         </button>
-        <div className="w-px h-5 bg-slate-200" />
+        <div className="w-px h-5 bg-[#e3e8ef]" />
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #1e3a8a, #970731)' }}>
+          <div className="w-8 h-8 rounded-[10px] flex items-center justify-center bg-[#1e3a8a]">
             <User className="w-4 h-4 text-white" />
           </div>
           <div className="min-w-0 truncate">
-            <h1 className="text-sm font-bold text-slate-800 truncate">Chỉnh Sửa: {worker.full_name}</h1>
-            <p className="text-[11px] text-slate-400 font-mono">MNV: {worker.mnv}</p>
+            <h1 className="text-sm font-extrabold text-[#0f1b33] truncate">Chỉnh Sửa: {worker.full_name}</h1>
+            <p className="text-[11px] text-[#5b6577] font-mono">MNV: {worker.mnv}</p>
           </div>
         </div>
 
         {/* Tab switcher in header */}
-        <div className="flex bg-slate-100 rounded-xl p-1 gap-1">
+        <div className="flex bg-[#f3f5f9] rounded-[10px] p-1 gap-1 border border-[#e3e8ef]">
           <button
             type="button"
             onClick={() => setActiveTab('info')}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-              activeTab === 'info' ? 'bg-white text-blue-700 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'
+            className={`px-4 py-1.5 rounded-[8px] text-[13px] font-bold transition-all ${
+              activeTab === 'info' ? 'bg-white text-[#1e3a8a] shadow-sm border border-[#e3e8ef]' : 'text-[#5b6577] hover:text-[#0f1b33]'
             }`}
           >
             Thông tin
@@ -250,13 +247,13 @@ export default function EditWorkerPage(props: { params: Promise<{ id: string }> 
           <button
             type="button"
             onClick={() => setActiveTab('docs')}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
-              activeTab === 'docs' ? 'bg-white text-blue-700 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'
+            className={`px-4 py-1.5 rounded-[8px] text-[13px] font-bold transition-all flex items-center gap-2 ${
+              activeTab === 'docs' ? 'bg-white text-[#1e3a8a] shadow-sm border border-[#e3e8ef]' : 'text-[#5b6577] hover:text-[#0f1b33]'
             }`}
           >
             Tài liệu
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-              completedDocs === DOC_TYPES.length ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+            <span className={`text-[11px] px-1.5 py-0.5 rounded-full font-bold ${
+              completedDocs === DOC_TYPES.length ? 'bg-[#ecfdf5] text-[#047857]' : 'bg-[#fef7e6] text-[#92400e]'
             }`}>
               {completedDocs}/{DOC_TYPES.length}
             </span>
@@ -394,31 +391,30 @@ export default function EditWorkerPage(props: { params: Promise<{ id: string }> 
                     <option value="Xe Đạp Điện">⚡ Xe Đạp Điện</option>
                   </SelectField>
                 </div>
-                <div className="mt-4 p-3.5 rounded-xl bg-blue-50/60 border border-blue-100 flex items-start gap-2.5">
-                  <Car className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
-                  <p className="text-xs text-blue-700 leading-relaxed">
+                <div className="mt-4 p-3.5 rounded-[10px] bg-[#eef2fb] border border-[#c9d4f0] flex items-start gap-2.5">
+                  <Car className="w-3.5 h-3.5 text-[#1e3a8a] shrink-0 mt-0.5" />
+                  <p className="text-xs text-[#1e3a8a] leading-relaxed font-medium">
                     Thông tin phương tiện sẽ được in trên thanh màu xanh ở mặt sau thẻ ra vào. Nếu không có xe, có thể để trống.
                   </p>
                 </div>
               </Section>
 
               {/* Action Bar */}
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 py-4 flex items-center justify-between">
-                <p className="text-xs text-slate-400 flex items-center gap-1.5">
-                  <span className="w-4 h-4 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-500 text-[9px] font-bold shrink-0">*</span>
-                  Các trường có dấu <span className="text-rose-500 font-bold mx-0.5">*</span> là bắt buộc
+              <div className="bg-white rounded-[12px] border border-[#e3e8ef] shadow-[0_1px_2px_rgba(15,27,51,0.04)] px-6 py-4 flex items-center justify-between">
+                <p className="text-xs text-[#5b6577] flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-full bg-[#fef2f2] border border-[#f5b5b8] flex items-center justify-center text-[#e31c23] text-[11px] font-bold shrink-0">*</span>
+                  Các trường có dấu <span className="text-[#e31c23] font-bold mx-0.5">*</span> là bắt buộc
                 </p>
                 <div className="flex items-center gap-3">
                   <button
                     type="button" onClick={() => router.back()}
-                    className="px-5 py-2.5 rounded-xl text-sm font-medium text-slate-600 border-2 border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all"
+                    className="btn-secondary"
                   >
                     Hủy bỏ
                   </button>
                   <button
                     type="submit" disabled={isSubmitting}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-blue-900/20 disabled:opacity-60 disabled:cursor-not-allowed"
-                    style={{ background: isSubmitting ? '#94a3b8' : 'linear-gradient(135deg, #1e3a8a, #970731)' }}
+                    className="btn-primary disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                       <><Loader2 className="w-4 h-4 animate-spin" /> Đang lưu...</>
@@ -438,19 +434,19 @@ export default function EditWorkerPage(props: { params: Promise<{ id: string }> 
                 {/* Progress bar */}
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-bold text-slate-700">Tiến độ hoàn thiện hồ sơ</span>
-                    <span className={`text-sm font-bold px-2.5 py-0.5 rounded-full ${completedDocs === DOC_TYPES.length ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                    <span className="text-sm font-bold text-[#0f1b33]">Tiến độ hoàn thiện hồ sơ</span>
+                    <span className={`text-sm font-bold px-2.5 py-0.5 rounded-full ${completedDocs === DOC_TYPES.length ? 'bg-[#ecfdf5] text-[#047857]' : 'bg-[#fef7e6] text-[#92400e]'}`}>
                       {completedDocs}/{DOC_TYPES.length} tài liệu
                     </span>
                   </div>
-                  <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner">
+                  <div className="w-full bg-[#f3f5f9] rounded-full h-3 overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all duration-700 ${completedDocs === DOC_TYPES.length ? 'bg-emerald-500' : 'bg-gradient-to-r from-blue-600 to-amber-400'}`}
+                      className={`h-full rounded-full transition-all duration-700 ${completedDocs === DOC_TYPES.length ? 'bg-[#10b981]' : 'bg-[#1e3a8a]'}`}
                       style={{ width: `${(completedDocs / DOC_TYPES.length) * 100}%` }}
                     />
                   </div>
                   {completedDocs === DOC_TYPES.length && (
-                    <div className="mt-3 flex items-center gap-2 text-emerald-600 text-sm font-medium bg-emerald-50 p-2.5 rounded-xl border border-emerald-100">
+                    <div className="mt-3 flex items-center gap-2 text-[#047857] text-sm font-medium bg-[#ecfdf5] p-2.5 rounded-[10px] border border-[#a7f3d0]">
                       <CheckCircle2 className="w-4 h-4 shrink-0" />
                       Hồ sơ đầy đủ! Công nhân đã đủ điều kiện cấp thẻ.
                     </div>
