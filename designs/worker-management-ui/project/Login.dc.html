@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Đăng nhập — SCMP Vincons</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body {
+  margin: 0;
+  font-family: "UTM Avo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #f3f5f9;
+  color: #0f1b33;
+}
+* { box-sizing: border-box; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+.login-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid #8592a4;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  background: #ffffff;
+  color: #0f1b33;
+  transition: all 0.15s;
+}
+.login-input:focus {
+  border-color: #1e3a8a;
+  box-shadow: 0 0 0 3px #c9d4f0;
+}
+.login-btn {
+  width: 100%;
+  height: 44px;
+  border-radius: 8px;
+  border: none;
+  background: #1e3a8a;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(30,58,138,0.3);
+  transition: all 0.15s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.login-btn:hover {
+  background: #192f72;
+}
+.highlight-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+</style>
+</helmet>
+
+<div style="display: flex; height: 860px; width: 100%; min-width: 1280px; overflow: hidden; background: #ffffff;">
+
+  <!-- LEFT BRAND HERO PANEL (60%) -->
+  <div style="flex: 1.2; background: #16296a; padding: 64px 56px; display: flex; flex-direction: column; justify-content: space-between; color: #ffffff; position: relative;">
+    
+    <!-- Top Brand Header -->
+    <div>
+      <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 32px;">
+        <div style="background: #ffffff; padding: 6px 12px; border-radius: 6px; display: inline-flex; align-items: center;">
+          <span style="font-weight: 800; font-size: 16px; color: #1e3a8a; letter-spacing: -0.5px;">VINCONS</span>
+        </div>
+        <div style="width: 1px; height: 24px; background: #2a3f86;"></div>
+        <span style="font-size: 14px; font-weight: 700; color: #fdef03; letter-spacing: 0.1em; text-transform: uppercase;">SCMP SYSTEM</span>
+      </div>
+
+      <div style="font-size: 13px; font-weight: 700; color: #fdef03; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;">
+        Dự án trọng điểm Vincons
+      </div>
+      <h1 style="margin: 0; font-size: 34px; font-weight: 800; line-height: 1.25; color: #ffffff; max-width: 520px; letter-spacing: -0.01em;">
+        Khu Du Lịch Nghỉ Dưỡng Suối Khoáng Mỹ Lâm
+      </h1>
+      <p style="margin: 12px 0 0; font-size: 15px; color: #b8c3e6; max-width: 480px; line-height: 1.5;">
+        Hệ thống quản lý định danh công nhân, cấp thẻ ra vào barrier tự động, kiểm soát an toàn lao động và ăn ca.
+      </p>
+    </div>
+
+    <!-- Highlights Features -->
+    <div style="padding: 24px 0;">
+      <div class="highlight-item">
+        <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(253,239,3,0.15); color: #fdef03; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div>
+          <div style="font-size: 14px; font-weight: 700; color: #ffffff;">Quản lý tập trung 1.400+ nhân sự</div>
+          <div style="font-size: 13px; color: #b8c3e6; margin-top: 2px;">Kiểm soát đầy đủ hợp đồng, chứng chỉ an toàn, số CCCD và phân tổ thi công.</div>
+        </div>
+      </div>
+
+      <div class="highlight-item">
+        <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(253,239,3,0.15); color: #fdef03; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div>
+          <div style="font-size: 14px; font-weight: 700; color: #ffffff;">Tự động cảnh báo hạn thẻ 30 ngày</div>
+          <div style="font-size: 13px; color: #b8c3e6; margin-top: 2px;">Nhắc nhở gia hạn thẻ và bổ sung hồ sơ định kỳ, giảm thiểu gián đoạn thi công.</div>
+        </div>
+      </div>
+
+      <div class="highlight-item" style="margin-bottom: 0;">
+        <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(253,239,3,0.15); color: #fdef03; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div>
+          <div style="font-size: 14px; font-weight: 700; color: #ffffff;">Bảo mật &amp; Quản trị phân quyền nghiêm ngặt</div>
+          <div style="font-size: 13px; color: #b8c3e6; margin-top: 2px;">Lưu vết lịch sử thao tác (Audit Log), chỉ tài khoản được phê duyệt mới được truy cập.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Footer Meta -->
+    <div style="border-top: 1px solid #2a3f86; padding-top: 18px; display: flex; justify-content: space-between; font-size: 12px; color: #7e95cf;">
+      <span>Bản quyền © 2026 Vincons Construction JSC</span>
+      <span>Phiên bản v2.4 (Cloudflare Native)</span>
+    </div>
+
+  </div>
+
+  <!-- RIGHT LOGIN CARD (40%) -->
+  <div style="flex: 1; padding: 64px 72px; display: flex; flex-direction: column; justify-content: center; background: #ffffff;">
+    
+    <div style="max-width: 400px; width: 100%; margin: 0 auto;">
+      
+      <!-- Card Header -->
+      <div style="margin-bottom: 32px;">
+        <div style="display: inline-block; padding: 4px 10px; border-radius: 6px; background: #eef2fb; color: #1e3a8a; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">
+          Đăng nhập an toàn
+        </div>
+        <h2 style="margin: 0; font-size: 26px; font-weight: 800; color: #0f1b33; letter-spacing: -0.01em;">Chào mừng trở lại</h2>
+        <p style="margin: 6px 0 0; font-size: 14px; color: #5b6577;">Vui lòng nhập tài khoản cán bộ công trường</p>
+      </div>
+
+      <!-- Form -->
+      <form style="display: flex; flex-direction: column; gap: 18px;">
+        
+        <!-- Username Field -->
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 6px;">Tên đăng nhập hoặc Email</label>
+          <div style="position: relative;">
+            <input class="login-input" type="text" placeholder="admin@vincons.vn" value="admin" />
+          </div>
+        </div>
+
+        <!-- Password Field -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label style="font-size: 13px; font-weight: 700; color: #334155;">Mật khẩu</label>
+            <a href="#" style="font-size: 12px; font-weight: 600; color: #1e3a8a;">Quên mật khẩu?</a>
+          </div>
+          <div style="position: relative;">
+            <input class="login-input" type="password" placeholder="••••••••••••" value="••••••••••••" />
+          </div>
+        </div>
+
+        <!-- Remember me -->
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px;">
+          <label style="display: flex; align-items: center; gap: 8px; color: #334155; cursor: pointer;">
+            <input type="checkbox" checked style="width: 16px; height: 16px; accent-color: #1e3a8a;" />
+            <span>Ghi nhớ đăng nhập trên thiết bị này</span>
+          </label>
+        </div>
+
+        <!-- Submit Button -->
+        <button class="login-btn" type="button" style="margin-top: 8px;">
+          <span>Đăng nhập hệ thống</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+
+      </form>
+
+      <!-- Support Notice Box -->
+      <div style="margin-top: 36px; padding: 14px 16px; border-radius: 8px; background: #f7f9fc; border: 1px solid #e3e8ef; font-size: 12px; color: #5b6577; line-height: 1.5;">
+        <span style="font-weight: 700; color: #0f1b33;">Hỗ trợ cấp tài khoản:</span> Liên hệ Ban Chỉ Huy Công Trường Mỹ Lâm hoặc Phòng An toàn &amp; CNTT (Hotline nội bộ: <b style="color: #1e3a8a;">0207.382.9999</b>).
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":860}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

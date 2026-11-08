@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Danh sách công nhân — SCMP Vincons</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body {
+  margin: 0;
+  font-family: "UTM Avo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #f3f5f9;
+  color: #0f1b33;
+}
+* { box-sizing: border-box; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  color: #b8c3e6;
+  font-size: 14px;
+  text-decoration: none;
+  position: relative;
+  transition: all 0.15s ease;
+}
+.sidebar-link:hover {
+  background: #1d3380;
+  color: #ffffff;
+}
+.sidebar-link.active {
+  background: #243d93;
+  color: #ffffff;
+  font-weight: 700;
+}
+.sidebar-link.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: #fdef03;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.btn-secondary {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid #8592a4;
+  background: #ffffff;
+  color: #0f1b33;
+  font-weight: 700;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s;
+}
+.btn-secondary:hover {
+  background: #f7f9fc;
+  border-color: #5b6577;
+}
+.btn-primary {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: none;
+  background: #1e3a8a;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(30,58,138,0.25);
+  transition: all 0.15s;
+}
+.btn-primary:hover {
+  background: #192f72;
+}
+.table-row:hover td {
+  background-color: #f7f9fc;
+}
+.table-row.selected td {
+  background-color: #eef2fb;
+}
+.filter-select {
+  height: 38px;
+  padding: 0 16px 0 12px;
+  border: 1px solid #8592a4;
+  border-radius: 8px;
+  font-size: 13px;
+  background-color: #ffffff;
+  font-weight: 600;
+  color: #0f1b33;
+}
+</style>
+</helmet>
+
+<div style="display: flex; height: 860px; width: 100%; min-width: 1280px; overflow: hidden; background: #f3f5f9;">
+
+  <!-- SIDEBAR -->
+  <aside style="width: 248px; background: #16296a; display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid #2a3f86;">
+    <div style="height: 64px; padding: 0 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #2a3f86;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="background: #ffffff; padding: 4px 8px; border-radius: 4px; display: flex; align-items: center;">
+          <span style="font-weight: 800; font-size: 13px; color: #1e3a8a;">VINCONS</span>
+        </div>
+        <span style="color: #657dbf; font-size: 12px;">|</span>
+        <span style="color: #ffffff; font-weight: 700; font-size: 13px;">SCMP</span>
+      </div>
+    </div>
+    <div style="padding: 16px 20px 12px; border-bottom: 1px solid #2a3f86;">
+      <div style="font-size: 10px; font-weight: 700; color: #fdef03; text-transform: uppercase; letter-spacing: 0.1em;">Khu DLND Mỹ Lâm</div>
+      <div style="font-size: 14px; font-weight: 700; color: #ffffff; margin-top: 2px;">Quản Lý Công Nhân</div>
+    </div>
+    <nav style="flex: 1; padding: 16px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;">
+      <div style="font-size: 10px; font-weight: 700; color: #7e95cf; text-transform: uppercase; letter-spacing: 0.08em; padding: 8px 12px 4px;">Quản lý</div>
+      <a class="sidebar-link" href="#">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg>
+        <span>Tổng quan</span>
+      </a>
+      <a class="sidebar-link active" href="#">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1M16 3.5a4 4 0 0 1 0 9M22 21v-1a6 6 0 0 0-4-5.6"/></svg>
+        <span>Danh sách công nhân</span>
+      </a>
+      <a class="sidebar-link" href="#">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        <span>Thẻ ra vào</span>
+      </a>
+      <a class="sidebar-link" href="#">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <span>Hồ sơ tài liệu</span>
+      </a>
+      <div style="font-size: 10px; font-weight: 700; color: #7e95cf; text-transform: uppercase; letter-spacing: 0.08em; padding: 14px 12px 4px;">Tiện ích in ấn</div>
+      <a class="sidebar-link" href="#">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 18h20M12 2v16M7 7h10M7 11h10"/></svg>
+        <span>In Tem Mũ</span>
+      </a>
+      <a class="sidebar-link" href="#">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 21v-8a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v8M18 11V3M6 11V3"/></svg>
+        <span>Thẻ Cơm</span>
+      </a>
+    </nav>
+    <div style="padding: 12px; border-top: 1px solid #2a3f86;">
+      <a class="sidebar-link" href="#">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Cài đặt hệ thống</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN BODY -->
+  <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0;">
+
+    <!-- TOP HEADER -->
+    <header style="height: 64px; background: #ffffff; border-bottom: 1px solid #e3e8ef; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 13px; color: #5b6577;">Nhân sự</span>
+        <span style="color: #c5cedb;">/</span>
+        <span style="font-size: 14px; font-weight: 700; color: #0f1b33;">Quản lý Công nhân công trường</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <button style="position: relative; width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e3e8ef; background: #ffffff; display: flex; align-items: center; justify-content: center; color: #334155;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span style="position: absolute; top: -2px; right: -2px; background: #e31c23; color: #fff; font-size: 10px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff;">3</span>
+        </button>
+        <div style="height: 24px; width: 1px; background: #e3e8ef;"></div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: #1e3a8a; color: #ffffff; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center;">
+            AD
+          </div>
+          <div>
+            <div style="font-size: 13px; font-weight: 700; color: #0f1b33;">Ban Chỉ Huy</div>
+            <div style="font-size: 11px; color: #5b6577;">Quản trị viên</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <div style="flex: 1; overflow-y: auto; padding: 24px 28px; display: flex; flex-direction: column;">
+      
+      <!-- Page Header & Action Buttons -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <div>
+          <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #0f1b33;">Danh sách công nhân</h1>
+          <p style="margin: 4px 0 0; font-size: 13px; color: #5b6577;">Tổng số 1.428 hồ sơ công nhân đang làm việc tại dự án Mỹ Lâm</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Xuất Excel
+          </button>
+          <button class="btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            Import Excel
+          </button>
+          <button class="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Thêm mới công nhân
+          </button>
+        </div>
+      </div>
+
+      <!-- FILTER TOOLBAR CARD -->
+      <div style="background: #ffffff; border: 1px solid #e3e8ef; border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+        <!-- Search bar with icon -->
+        <div style="position: relative; flex: 1; min-width: 260px;">
+          <svg style="position: absolute; left: 12px; top: 11px; color: #6b7586;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" placeholder="Tìm theo tên, MNV, số CCCD, SĐT..." style="width: 100%; height: 38px; padding: 0 12px 0 36px; border: 1px solid #8592a4; border-radius: 8px; font-size: 13px; outline: none; background: #ffffff;" value="Nguyễn Văn" />
+        </div>
+
+        <!-- Filter Area -->
+        <select class="filter-select">
+          <option>Khu vực: Tất cả</option>
+          <option selected>Khu A - Khách sạn</option>
+          <option>Khu B - Onsen</option>
+          <option>Khu C - Cảnh quan</option>
+        </select>
+
+        <!-- Filter Team / Subcontractor -->
+        <select class="filter-select">
+          <option>Tổ đội: Tất cả</option>
+          <option>Tổ Cốp pha</option>
+          <option>Tổ Cốt thép</option>
+          <option>Tổ Sơn bả</option>
+        </select>
+
+        <!-- Status Filter -->
+        <select class="filter-select">
+          <option>Trạng thái: Tất cả</option>
+          <option>Đủ hồ sơ</option>
+          <option>Thiếu ảnh thẻ</option>
+          <option>Sắp hết hạn thẻ</option>
+        </select>
+
+        <!-- Quick Clear / Reset -->
+        <button style="border: none; background: none; color: #5b6577; font-size: 12px; font-weight: 700; text-decoration: underline; padding: 0 4px;">Đặt lại</button>
+      </div>
+
+      <!-- BULK ACTION BAR -->
+      <div style="background: #eef2fb; border: 1px solid #c9d4f0; border-radius: 8px; padding: 10px 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 13px; font-weight: 700; color: #1e3a8a;">Đã chọn 2 công nhân</span>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button style="height: 30px; padding: 0 12px; border-radius: 6px; border: 1px solid #1e3a8a; background: #ffffff; color: #1e3a8a; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M8 14h8v7H8z"/></svg>
+            In thẻ ra vào
+          </button>
+          <button style="height: 30px; padding: 0 12px; border-radius: 6px; border: 1px solid #1e3a8a; background: #ffffff; color: #1e3a8a; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 18h20M12 2v16M7 7h10M7 11h10"/></svg>
+            In Tem Mũ
+          </button>
+          <button style="height: 30px; padding: 0 12px; border-radius: 6px; border: 1px solid #b4141a; background: #ffffff; color: #b4141a; font-size: 12px; font-weight: 700;">
+            Khóa thẻ
+          </button>
+        </div>
+      </div>
+
+      <!-- MAIN DATA TABLE CARD -->
+      <div style="background: #ffffff; border: 1px solid #e3e8ef; border-radius: 12px; box-shadow: 0 1px 2px rgba(15,27,51,0.05); overflow: hidden; flex: 1; display: flex; flex-direction: column;">
+        <div style="overflow-x: auto; flex: 1;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+            <thead>
+              <tr style="background: #f7f9fc; border-bottom: 1px solid #e3e8ef; color: #5b6577; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;">
+                <th style="padding: 12px 16px; width: 40px;"><input type="checkbox" style="width: 16px; height: 16px; accent-color: #1e3a8a;" /></th>
+                <th style="padding: 12px 16px;">Công nhân</th>
+                <th style="padding: 12px 16px;">CCCD / Ngày sinh</th>
+                <th style="padding: 12px 16px;">Khu vực / Tổ đội</th>
+                <th style="padding: 12px 16px;">Số điện thoại</th>
+                <th style="padding: 12px 16px;">Thời hạn thẻ</th>
+                <th style="padding: 12px 16px;">Hồ sơ</th>
+                <th style="padding: 12px 16px; text-align: right;">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <!-- Row 1 (Selected) -->
+              <tr class="table-row selected" style="border-bottom: 1px solid #e3e8ef;">
+                <td style="padding: 12px 16px;"><input type="checkbox" checked style="width: 16px; height: 16px; accent-color: #1e3a8a;" /></td>
+                <td style="padding: 12px 16px;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #1e3a8a; color: #ffffff; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                      AN
+                    </div>
+                    <div>
+                      <div style="font-weight: 700; color: #0f1b33; font-size: 14px;">Nguyễn Văn An</div>
+                      <div style="font-size: 12px; color: #5b6577;">MNV: VC-02391</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="padding: 12px 16px;">
+                  <div style="font-weight: 600; color: #0f1b33;">001092014829</div>
+                  <div style="font-size: 12px; color: #5b6577;">15/04/1988 (38 tuổi)</div>
+                </td>
+                <td style="padding: 12px 16px;">
+                  <div style="font-weight: 600; color: #0f1b33;">Khu A - Khách sạn</div>
+                  <div style="font-size: 12px; color: #5b6577;">Tổ Cốp pha 1 • Phục Hưng</div>
+                </td>
+                <td style="padding: 12px 16px; font-weight: 600; color: #334155;">0912.842.193</td>
+                <td style="padding: 12px 16px;">
+                  <div style="font-weight: 600; color: #0f1b33;">30/06/2027</div>
+                  <span class="badge" style="background: #e6f5ee; color: #047857; margin-top: 4px;">Còn 234 ngày</span>
+                </td>
+                <td style="padding: 12px 16px;">
+                  <span class="badge" style="background: #e6f5ee; color: #047857;">Đủ hồ sơ</span>
+                </td>
+                <td style="padding: 12px 16px; text-align: right;">
+                  <div style="display: inline-flex; gap: 6px;">
+                    <button style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #e3e8ef; background: #ffffff; display: flex; align-items: center; justify-content: center; color: #334155;" title="Xem hồ sơ">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                    <button style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #e3e8ef; background: #ffffff; display: flex; align-items: center; justify-content: center; color: #334155;" title="In thẻ">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M8 14h8v7H8z"/></svg>
+                    </button>
+                    <button style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #e3e8ef; background: #ffffff; display: flex; align-items: center; justify-content: center; color: #334155;" title="Chỉnh sửa">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Row 2 (Selected, Expiring) -->
+              <tr class="table-row selected" style="border-bottom: 1px solid #e3e8ef;">
+                <td style="padding: 12px 16px;"><input type="checkbox" checked style="width: 16px; height: 16px; accent-color: #1e3a8a;" /></td>
+                <td style="padding: 12px 16px;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #970731; color: #ffffff; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                      TU
+                    </div>
+                    <div>
+                      <div style="font-weight: 700; color: #0f1b33; font-size: 14px;">Nguyễn Văn Tuấn</div>
+                      <div style="font-size: 12px; color: #5b6577;">MNV: VC-00412</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="padding: 12px 16px;">
+                  <div style="font-weight: 600; color: #0f1b33;">024090019283</div>
+                  <div style="font-size: 12px; color: #5b6577;">22/10/1991 (35 tuổi)</div>
+                </td>
+                <td style="padding: 12px 16px;">
+                  <div style="font-weight: 600; color: #0f1b33;">Khu A - Khách sạn</div>
+                  <div style="font-size: 12px; color: #5b6577;">Tổ Cốp pha 2 • Vincons</div>
+                </td>
+                <td style="padding: 12px 16px; font-weight: 600; color: #334155;">0988.312.941</td>
+                <td style="padding: 12px 16px;">
+                  <div style="font-weight: 600; color: #b4141a;">12/11/2026</div>
+                  <span class="badge" style="background: #fdecec; color: #b4141a; margin-top: 4px;">Còn 4 ngày</span>
+                </td>
+                <td style="padding: 12px 16px;">
+                  <span class="badge" style="background: #fdf3dc; color: #92400e;">Cần gia hạn</span>
+                </td>
+                <td style="padding: 12px 16px; text-align: right;">
+                  <div style="display: inline-flex; gap: 6px;">
+                    <button style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #e3e8ef; background: #ffffff; display: flex; align-items: center; justify-content: center; color: #334155;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                    <button style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #1e3a8a; background: #eef2fb; display: flex; align-items: center; justify-content: center; color: #1e3a8a;" title="Gia hạn">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    </button>
+                    <button style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #e3e8ef; background: #ffffff; display: flex; align-items: center; justify-content: center; color: #334155;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Row 3 (Missing Docs) -->
+              <tr class="table-row" style="border-bottom: 1px solid #e3e8ef;">
+                <td style="padding: 12px 16px;"><input type="checkbox" style="width: 16px; height: 16px; accent-color: #1e3a8a;" /></td>
+                <td style="padding: 12px 16px;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #eef1f5; color: #5b6577; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px dashed #8592a4;">
+                      ?
+                    </div>
+                    <div>
+                      <div style="font-weight: 700; color: #0f1b33; font-size: 14px;">Nguyễn Đình Trọng</div>
+                      <div style="font-size: 12px; color: #5b6577;">MNV: VC-02405</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="padding: 12px 16px;">
+                  <div style="font-weight: 600; color: #0f1b33;">031085002914</div>
+                  <div style="font-size: 12px; color: #5b6577;">03/05/1985 (41 tuổi)</div>
+                </td>
+                <td style="padding: 12px 16px;">
+                  <div style="font-weight: 600; color: #0f1b33;">Khu B - Onsen</div>
+                  <div style="font-size: 12px; color: #5b6577;">Tổ Xây trát 3</div>
+                </td>
+                <td style="padding: 12px 16px; font-weight: 600; color: #334155;">0977.102.855</td>
+                <td style="padding: 12px 16px;">
+                  <div style="font-weight: 600; color: #0f1b33;">15/12/2026</div>
+                  <span class="badge" style="background: #e6f5ee; color: #047857; margin-top: 4px;">Còn 37 ngày</span>
+                </td>
+                <td style="padding: 12px 16px;">
+                  <span class="badge" style="background: #fdecec; color: #b4141a;">Thiếu ảnh thẻ</span>
+                </td>
+                <td style="padding: 12px 16px; text-align: right;">
+                  <div style="display: inline-flex; gap: 6px;">
+                    <button style="height: 30px; padding: 0 10px; border-radius: 6px; border: 1px solid #8592a4; background: #ffffff; color: #0f1b33; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px;">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                      Chụp ảnh
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- PAGINATION BAR -->
+        <div style="padding: 12px 20px; background: #ffffff; border-top: 1px solid #e3e8ef; display: flex; align-items: center; justify-content: space-between;">
+          <div style="font-size: 13px; color: #5b6577;">
+            Hiển thị <span style="font-weight: 700; color: #0f1b33;">1 - 20</span> trong tổng số <span style="font-weight: 700; color: #0f1b33;">1.428</span> công nhân
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <button style="height: 32px; padding: 0 12px; border-radius: 6px; border: 1px solid #8592a4; background: #ffffff; font-size: 12px; font-weight: 600; color: #5b6577;" disabled>← Trước</button>
+            <button style="height: 32px; width: 32px; border-radius: 6px; border: none; background: #1e3a8a; color: #ffffff; font-size: 12px; font-weight: 700;">1</button>
+            <button style="height: 32px; width: 32px; border-radius: 6px; border: 1px solid #e3e8ef; background: #ffffff; color: #0f1b33; font-size: 12px; font-weight: 600;">2</button>
+            <button style="height: 32px; width: 32px; border-radius: 6px; border: 1px solid #e3e8ef; background: #ffffff; color: #0f1b33; font-size: 12px; font-weight: 600;">3</button>
+            <span style="color: #5b6577; padding: 0 4px;">…</span>
+            <button style="height: 32px; width: 32px; border-radius: 6px; border: 1px solid #e3e8ef; background: #ffffff; color: #0f1b33; font-size: 12px; font-weight: 600;">72</button>
+            <button style="height: 32px; padding: 0 12px; border-radius: 6px; border: 1px solid #8592a4; background: #ffffff; font-size: 12px; font-weight: 600; color: #0f1b33;">Sau →</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":860}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

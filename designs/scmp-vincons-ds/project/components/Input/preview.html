@@ -1,0 +1,13 @@
+<!-- @dsCard group="Forms" height=200 subtitle="Bản dựng tĩnh" -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Input — preview</title></head>
+<body style="margin:0;padding:16px;background:var(--surface);font-family:var(--font-sans)">
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
+  <div class="vc-field"><label class="vc-label" for="i1">Họ và tên</label><input class="vc-input" id="i1" placeholder="Nhập họ tên công nhân"><span class="vc-help">Viết có dấu, như trên CCCD.</span></div>
+  <div class="vc-field"><label class="vc-label" for="i2">Số CCCD</label><input class="vc-input" id="i2" value="0010920" style="border-color:var(--brand-blue);box-shadow:0 0 0 3px var(--brand-blue-line)"><span class="vc-help">Đang nhập</span></div>
+  <div class="vc-field"><label class="vc-label" for="i3">Mã nhân viên</label><input class="vc-input vc-input--error" id="i3" value="VC-0239" aria-invalid="true"><span class="vc-help vc-help--error">Mã này đã tồn tại.</span></div>
+</div>
+<script></script>
+</body>
+</html>

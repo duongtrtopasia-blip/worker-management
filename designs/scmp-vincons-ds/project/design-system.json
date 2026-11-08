@@ -1,0 +1,51 @@
+{
+  "v": 3,
+  "layout": "files",
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-08T20:30:00Z"
+  },
+  "title": "SCMP Vincons",
+  "namespace": "SCMP",
+  "libraries": [],
+  "sections": {},
+  "groups": ["Logos"],
+  "assetGroups": {
+    "Logos": {
+      "name": "Logos",
+      "tile": "m",
+      "order": ["vincons_logo.png", "vingroup_logo.png", "vingroup_logo.svg"],
+      "files": {
+        "vincons_logo.png": {
+          "name": "vincons_logo.png",
+          "blob": "656f3e83e2dd1b2913fa088c830ebf5e",
+          "size": 23267,
+          "type": "image/png"
+        },
+        "vingroup_logo.png": {
+          "name": "vingroup_logo.png",
+          "blob": "39dd9dbbacf99a421d44ed9a4a0bb57e",
+          "size": 66020,
+          "type": "image/png"
+        },
+        "vingroup_logo.svg": {
+          "name": "vingroup_logo.svg",
+          "blob": "60aacbf08254556c23792cd4e5817711",
+          "size": 7700,
+          "type": "image/svg+xml"
+        }
+      }
+    }
+  },
+  "blobs": {},
+  "docs": {
+    "readme": "project/README.md",
+    "sections": []
+  },
+  "lastChange": {
+    "by": "Antigravity",
+    "at": "2026-11-08T20:43:00Z",
+    "via": "claude-design-system",
+    "note": "Initial extract from worker-management codebase"
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-08T20:45:00Z"
+  },
+  "title": "Giao diện SCMP Vincons - Quản lý Công nhân",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1280,
+      "h": 860,
+      "title": "Dashboard (Trang chủ)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Workers.dc.html": {
+      "x": 1360,
+      "y": 0,
+      "w": 1280,
+      "h": 860,
+      "title": "Danh sách công nhân (/workers)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "WorkerDetail.dc.html": {
+      "x": 2720,
+      "y": 0,
+      "w": 1280,
+      "h": 860,
+      "title": "Hồ sơ công nhân & Sửa (/workers/[id])",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Cards.dc.html": {
+      "x": 0,
+      "y": 980,
+      "w": 1280,
+      "h": 860,
+      "title": "Quản lý thẻ & In ấn (/cards, /helmet-tags, /meal-cards)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Login.dc.html": {
+      "x": 1360,
+      "y": 980,
+      "w": 1280,
+      "h": 860,
+      "title": "Trang đăng nhập (/login)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MobileApp.dc.html": {
+      "x": 2720,
+      "y": 980,
+      "w": 390,
+      "h": 844,
+      "title": "Mobile Responsive (390×844)",
+      "radius": 40,
+      "is_interactive": true
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Workers.dc.html",
+    "WorkerDetail.dc.html",
+    "Cards.dc.html",
+    "Login.dc.html",
+    "MobileApp.dc.html"
+  ],
+  "notes": {
+    "overview_title": {
+      "x": 0,
+      "y": -120,
+      "text": "SCMP Vincons — Tối ưu hóa UI Hệ thống Quản lý Công nhân",
+      "kind": "title1",
+      "maxW": 2640
+    }
+  },
+  "designSystems": [
+    {
+      "title": "SCMP Vincons",
+      "namespace": "scmp",
+      "artifact": "designs/scmp-vincons-ds",
+      "version": null,
+      "copiedAt": "2026-11-08T20:45:00Z"
+    }
+  ]
+}

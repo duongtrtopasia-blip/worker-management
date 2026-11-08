@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Quản lý in ấn thẻ — SCMP Vincons</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body {
+  margin: 0;
+  font-family: "UTM Avo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #f3f5f9;
+  color: #0f1b33;
+}
+* { box-sizing: border-box; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  color: #b8c3e6;
+  font-size: 14px;
+  text-decoration: none;
+  position: relative;
+  transition: all 0.15s ease;
+}
+.sidebar-link:hover {
+  background: #1d3380;
+  color: #ffffff;
+}
+.sidebar-link.active {
+  background: #243d93;
+  color: #ffffff;
+  font-weight: 700;
+}
+.sidebar-link.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: #fdef03;
+}
+.btn-primary {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: none;
+  background: #1e3a8a;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(30,58,138,0.25);
+  transition: all 0.15s;
+}
+.btn-primary:hover {
+  background: #192f72;
+}
+.btn-secondary {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid #8592a4;
+  background: #ffffff;
+  color: #0f1b33;
+  font-weight: 700;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s;
+}
+.btn-secondary:hover {
+  background: #f7f9fc;
+}
+.tab-button {
+  height: 40px;
+  padding: 0 16px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: #5b6577;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+.tab-button.active {
+  color: #1e3a8a;
+  font-weight: 700;
+  border-bottom: 2px solid #1e3a8a;
+}
+/* Physical Card Model (86mm x 54mm standard) */
+.card-plastic {
+  width: 250px;
+  height: 380px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #c5cedb;
+  box-shadow: 0 8px 24px -6px rgba(15,27,51,0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+</style>
+</helmet>
+
+<div style="display: flex; height: 860px; width: 100%; min-width: 1280px; overflow: hidden; background: #f3f5f9;">
+
+  <!-- SIDEBAR -->
+  <aside style="width: 248px; background: #16296a; display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid #2a3f86;">
+    <div style="height: 64px; padding: 0 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #2a3f86;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="background: #ffffff; padding: 4px 8px; border-radius: 4px; display: flex; align-items: center;">
+          <span style="font-weight: 800; font-size: 13px; color: #1e3a8a;">VINCONS</span>
+        </div>
+        <span style="color: #657dbf; font-size: 12px;">|</span>
+        <span style="color: #ffffff; font-weight: 700; font-size: 13px;">SCMP</span>
+      </div>
+    </div>
+    <div style="padding: 16px 20px 12px; border-bottom: 1px solid #2a3f86;">
+      <div style="font-size: 10px; font-weight: 700; color: #fdef03; text-transform: uppercase; letter-spacing: 0.1em;">Khu DLND Mỹ Lâm</div>
+      <div style="font-size: 14px; font-weight: 700; color: #ffffff; margin-top: 2px;">Quản Lý Công Nhân</div>
+    </div>
+    <nav style="flex: 1; padding: 16px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;">
+      <div style="font-size: 10px; font-weight: 700; color: #7e95cf; text-transform: uppercase; letter-spacing: 0.08em; padding: 8px 12px 4px;">Quản lý</div>
+      <a class="sidebar-link" href="#">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg>
+        <span>Tổng quan</span>
+      </a>
+      <a class="sidebar-link" href="#">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1M16 3.5a4 4 0 0 1 0 9M22 21v-1a6 6 0 0 0-4-5.6"/></svg>
+        <span>Danh sách công nhân</span>
+      </a>
+      <a class="sidebar-link active" href="#">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        <span>Thẻ ra vào</span>
+      </a>
+      <div style="font-size: 10px; font-weight: 700; color: #7e95cf; text-transform: uppercase; letter-spacing: 0.08em; padding: 14px 12px 4px;">Tiện ích in ấn</div>
+      <a class="sidebar-link" href="#">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 18h20M12 2v16M7 7h10M7 11h10"/></svg>
+        <span>In Tem Mũ</span>
+      </a>
+      <a class="sidebar-link" href="#">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 21v-8a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v8M18 11V3M6 11V3"/></svg>
+        <span>Thẻ Cơm</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- MAIN BODY -->
+  <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0;">
+
+    <!-- TOP HEADER -->
+    <header style="height: 64px; background: #ffffff; border-bottom: 1px solid #e3e8ef; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 13px; color: #5b6577;">In ấn</span>
+        <span style="color: #c5cedb;">/</span>
+        <span style="font-size: 14px; font-weight: 700; color: #0f1b33;">Quản lý &amp; In thẻ công trường</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <button class="btn-secondary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Cấu hình máy in
+        </button>
+        <button class="btn-primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M8 14h8v7H8z"/></svg>
+          In hàng loạt (PDF)
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <div style="flex: 1; overflow-y: auto; padding: 24px 28px; display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start;">
+
+      <!-- PRINT CONTROLS PANEL -->
+      <div style="background: #ffffff; border: 1px solid #e3e8ef; border-radius: 12px; padding: 20px; box-shadow: 0 1px 2px rgba(15,27,51,0.05);">
+        
+        <div style="font-size: 15px; font-weight: 700; color: #0f1b33; margin-bottom: 16px;">Tùy chọn in ấn</div>
+
+        <!-- Format switch -->
+        <div style="margin-bottom: 16px;">
+          <div style="font-size: 12px; font-weight: 700; color: #5b6577; text-transform: uppercase; margin-bottom: 6px;">Loại mẫu in</div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: #0f1b33; cursor: pointer; padding: 8px 10px; border-radius: 6px; background: #eef2fb; border: 1px solid #1e3a8a;">
+              <input type="radio" name="card_type" checked style="accent-color: #1e3a8a;" />
+              <span>Thẻ ra vào nhựa (CR80)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: #0f1b33; cursor: pointer; padding: 8px 10px; border-radius: 6px; border: 1px solid #e3e8ef;">
+              <input type="radio" name="card_type" style="accent-color: #1e3a8a;" />
+              <span>Tem Mũ bảo hộ (Sticker)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: #0f1b33; cursor: pointer; padding: 8px 10px; border-radius: 6px; border: 1px solid #e3e8ef;">
+              <input type="radio" name="card_type" style="accent-color: #1e3a8a;" />
+              <span>Phiếu nhận Cơm ca (Barcode)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Paper layout -->
+        <div style="margin-bottom: 16px;">
+          <div style="font-size: 12px; font-weight: 700; color: #5b6577; text-transform: uppercase; margin-bottom: 6px;">Khổ giấy in</div>
+          <select style="width: 100%; height: 38px; border: 1px solid #8592a4; border-radius: 8px; padding: 0 10px; font-size: 13px; font-weight: 600;">
+            <option>Giấy A4 (10 thẻ / trang)</option>
+            <option>Giấy A4 (4 thẻ / trang lớn)</option>
+            <option>Máy in thẻ nhựa chuyên dụng (1 thẻ)</option>
+          </select>
+        </div>
+
+        <!-- Filter workers -->
+        <div style="margin-bottom: 20px;">
+          <div style="font-size: 12px; font-weight: 700; color: #5b6577; text-transform: uppercase; margin-bottom: 6px;">Chọn danh sách in</div>
+          <select style="width: 100%; height: 38px; border: 1px solid #8592a4; border-radius: 8px; padding: 0 10px; font-size: 13px; font-weight: 600; margin-bottom: 8px;">
+            <option>Công nhân mới đăng ký tuần này (38)</option>
+            <option>Tổ Cốp pha 1 (45)</option>
+            <option>Toàn bộ Khu A (482)</option>
+            <option>Các công nhân đã chọn thủ công (2)</option>
+          </select>
+          <div style="font-size: 11px; color: #5b6577;">Ước tính: Sử dụng 4 tờ giấy A4</div>
+        </div>
+
+        <button class="btn-primary" style="width: 100%; justify-content: center;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M8 14h8v7H8z"/></svg>
+          Tạo bản in PDF ngay
+        </button>
+
+      </div>
+
+      <!-- PREVIEW CANVAS (Live Cards) -->
+      <div style="background: #ffffff; border: 1px solid #e3e8ef; border-radius: 12px; padding: 24px; box-shadow: 0 1px 2px rgba(15,27,51,0.05); display: flex; flex-direction: column;">
+        
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e3e8ef; padding-bottom: 16px; margin-bottom: 24px;">
+          <div>
+            <div style="font-size: 15px; font-weight: 700; color: #0f1b33;">Xem trước mẫu in thực tế</div>
+            <div style="font-size: 12px; color: #5b6577; margin-top: 2px;">Tỉ lệ chuẩn theo kích thước thẻ nhựa ISO CR80 (54 × 85.6 mm)</div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button style="height: 32px; padding: 0 12px; border-radius: 6px; border: 1px solid #1e3a8a; background: #eef2fb; color: #1e3a8a; font-size: 12px; font-weight: 700;">Mặt trước</button>
+            <button style="height: 32px; padding: 0 12px; border-radius: 6px; border: 1px solid #e3e8ef; background: #ffffff; color: #5b6577; font-size: 12px; font-weight: 600;">Mặt sau</button>
+            <button style="height: 32px; padding: 0 12px; border-radius: 6px; border: 1px solid #e3e8ef; background: #ffffff; color: #5b6577; font-size: 12px; font-weight: 600;">Tem Mũ</button>
+          </div>
+        </div>
+
+        <!-- DISPLAY 3 CARDS SIDE BY SIDE -->
+        <div style="display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; padding: 12px 0;">
+
+          <!-- CARD 1: THẺ RA VÀO (MẶT TRƯỚC) -->
+          <div class="card-plastic">
+            <!-- Header Stripe -->
+            <div style="background: #1e3a8a; height: 50px; padding: 0 14px; display: flex; align-items: center; justify-content: space-between;">
+              <span style="color: #ffffff; font-weight: 800; font-size: 13px;">VINCONS</span>
+              <span style="color: #fdef03; font-size: 9px; font-weight: 700; text-transform: uppercase;">MỸ LÂM</span>
+            </div>
+
+            <div style="padding: 16px; display: flex; flex-direction: column; align-items: center; text-align: center; flex: 1;">
+              <div style="font-size: 11px; font-weight: 700; color: #970731; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 8px;">THẺ RA VÀO CÔNG TRƯỜNG</div>
+
+              <!-- Portrait Frame -->
+              <div style="width: 90px; height: 112px; border-radius: 6px; border: 2px solid #1e3a8a; background: #eef2fb; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 50%; background: #1e3a8a; color: #ffffff; font-weight: 700; font-size: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px;">AN</div>
+                <span style="font-size: 9px; font-weight: 700; color: #1e3a8a;">3x4 PHOTO</span>
+              </div>
+
+              <!-- Name & Information -->
+              <div style="font-size: 15px; font-weight: 700; color: #0f1b33; line-height: 1.2;">NGUYỄN VĂN AN</div>
+              <div style="font-size: 12px; font-weight: 700; color: #1e3a8a; margin: 4px 0 8px;">MNV: VC-02391</div>
+
+              <div style="width: 100%; border-top: 1px dashed #c5cedb; padding-top: 8px; text-align: left; font-size: 11px; display: flex; flex-direction: column; gap: 3px;">
+                <div><span style="color: #5b6577;">Khu vực:</span> <span style="font-weight: 700; color: #0f1b33;">Khu A - Khách sạn</span></div>
+                <div><span style="color: #5b6577;">Tổ đội:</span> <span style="font-weight: 600; color: #0f1b33;">Cốp pha 1 • Phục Hưng</span></div>
+                <div><span style="color: #5b6577;">Hạn thẻ:</span> <span style="font-weight: 700; color: #047857;">30/06/2027</span></div>
+              </div>
+            </div>
+
+            <!-- Footer Bottom Strip -->
+            <div style="background: #f7f9fc; border-top: 1px solid #e3e8ef; height: 36px; padding: 0 12px; display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: 9px; color: #5b6577;">BAN CHỈ HUY VINCONS</span>
+              <span style="font-size: 9px; font-weight: 700; color: #1e3a8a;">SCMP SYSTEM</span>
+            </div>
+          </div>
+
+          <!-- CARD 2: MẶT SAU (NỘI QUY & HOTLINE) -->
+          <div class="card-plastic" style="background: #fbfcfe;">
+            <div style="background: #970731; height: 36px; padding: 0 14px; display: flex; align-items: center; justify-content: center;">
+              <span style="color: #ffffff; font-weight: 700; font-size: 11px; text-transform: uppercase;">NỘI QUY AN TOÀN LAO ĐỘNG</span>
+            </div>
+
+            <div style="padding: 16px; flex: 1; font-size: 10px; color: #334155; line-height: 1.5; display: flex; flex-direction: column; justify-content: space-between;">
+              <ol style="margin: 0; padding-left: 16px;">
+                <li style="margin-bottom: 6px;">Luôn đeo thẻ và đội mũ bảo hộ khi vào công trường.</li>
+                <li style="margin-bottom: 6px;">Không tự ý vào khu vực cấm hoặc chưa được phân công.</li>
+                <li style="margin-bottom: 6px;">Thẻ không được cho người khác mượn hoặc tẩy xóa.</li>
+                <li style="margin-bottom: 6px;">Xuất trình thẻ khi bảo vệ kiểm tra hoặc nhận cơm ca.</li>
+              </ol>
+
+              <div style="text-align: center; border: 1px solid #e3e8ef; border-radius: 6px; padding: 8px; background: #ffffff;">
+                <div style="font-size: 9px; font-weight: 700; color: #5b6577; text-transform: uppercase;">ĐƯỜNG DÂY NÓNG CÔNG TRƯỜNG</div>
+                <div style="font-size: 13px; font-weight: 800; color: #e31c23; margin-top: 2px;">0207.382.9999</div>
+                <div style="font-size: 9px; color: #5b6577;">Ban An Toàn SCMP Mỹ Lâm</div>
+              </div>
+
+              <!-- Barcode illustration -->
+              <div style="text-align: center;">
+                <div style="height: 28px; background: repeating-linear-gradient(90deg, #0f1b33 0, #0f1b33 2px, transparent 2px, transparent 5px, #0f1b33 5px, #0f1b33 8px); margin: 0 auto; width: 80%;"></div>
+                <span style="font-size: 9px; font-weight: 600; color: #5b6577; letter-spacing: 0.1em;">*VC-02391*</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD 3: TEM MŨ BẢO HỘ (STICKER) -->
+          <div style="width: 250px; height: 180px; background: #ffffff; border-radius: 12px; border: 2px dashed #1e3a8a; padding: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); display: flex; flex-direction: column; justify-content: space-between; align-self: center;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e3a8a; padding-bottom: 6px;">
+              <span style="font-size: 11px; font-weight: 800; color: #1e3a8a;">VINCONS ATLD</span>
+              <span style="font-size: 9px; font-weight: 700; background: #fdef03; color: #0f1b33; padding: 2px 6px; border-radius: 4px;">TEM MŨ</span>
+            </div>
+
+            <div style="text-align: center; padding: 4px 0;">
+              <div style="font-size: 16px; font-weight: 800; color: #0f1b33;">NGUYỄN VĂN AN</div>
+              <div style="font-size: 12px; font-weight: 700; color: #970731; margin-top: 2px;">MNV: VC-02391</div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; font-size: 10px; font-weight: 600; color: #334155; border-top: 1px solid #e3e8ef; padding-top: 6px;">
+              <span>Nhóm máu: <b style="color: #e31c23;">O+</b></span>
+              <span>SĐT: 0912.842.193</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":860}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

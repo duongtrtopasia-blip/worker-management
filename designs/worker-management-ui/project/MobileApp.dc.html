@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Mobile View — SCMP Vincons</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body {
+  margin: 0;
+  font-family: "UTM Avo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #0f1b33;
+  color: #0f1b33;
+}
+* { box-sizing: border-box; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+.mobile-card {
+  background: #ffffff;
+  border: 1px solid #e3e8ef;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 1px 2px rgba(15,27,51,0.05);
+  margin-bottom: 12px;
+}
+.mobile-nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #5b6577;
+  text-decoration: none;
+  flex: 1;
+  height: 100%;
+}
+.mobile-nav-btn.active {
+  color: #1e3a8a;
+  font-weight: 700;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+</style>
+</helmet>
+
+<!-- Phone Screen Container (390 x 844) -->
+<div style="width: 390px; height: 844px; background: #f3f5f9; display: flex; flex-direction: column; overflow: hidden; position: relative; border-radius: 40px; border: 8px solid #0f1b33; box-shadow: 0 24px 48px -12px rgba(0,0,0,0.4);">
+  
+  <!-- Notch Bar -->
+  <div style="height: 36px; background: #16296a; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; color: #ffffff; font-size: 11px; font-weight: 700;">
+    <span>08:30</span>
+    <div style="width: 80px; height: 18px; background: #0f1b33; border-radius: 10px;"></div>
+    <span>5G • 98%</span>
+  </div>
+
+  <!-- Mobile App Header -->
+  <header style="height: 54px; background: #16296a; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; color: #ffffff; flex-shrink: 0;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-weight: 800; font-size: 14px; color: #fdef03;">VINCONS</span>
+      <span style="color: #657dbf; font-size: 12px;">|</span>
+      <span style="font-size: 12px; font-weight: 700;">Mỹ Lâm</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button style="width: 34px; height: 34px; border-radius: 50%; background: #243d93; border: none; color: #ffffff; display: flex; align-items: center; justify-content: center;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <div style="width: 32px; height: 32px; border-radius: 50%; background: #970731; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center;">
+        AD
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Quick Search & Camera Scan Bar -->
+  <div style="padding: 12px 16px; background: #ffffff; border-bottom: 1px solid #e3e8ef; display: flex; gap: 8px;">
+    <div style="position: relative; flex: 1;">
+      <svg style="position: absolute; left: 10px; top: 11px; color: #6b7586;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Tra cứu công nhân / CCCD..." style="width: 100%; height: 38px; padding: 0 12px 0 34px; border: 1px solid #8592a4; border-radius: 8px; font-size: 13px; outline: none; background: #f7f9fc;" />
+    </div>
+    <button style="width: 38px; height: 38px; border-radius: 8px; border: none; background: #1e3a8a; color: #ffffff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" title="Quét mã QR Thẻ">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+    </button>
+  </div>
+
+  <!-- Scrollable List of Worker Cards -->
+  <div style="flex: 1; overflow-y: auto; padding: 14px 16px 80px;">
+
+    <!-- Summary Count Pill -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 12px; color: #5b6577;">
+      <span>Tổng số: <b style="color: #0f1b33;">1.428 công nhân</b></span>
+      <span style="font-weight: 700; color: #1e3a8a;">Lọc: Khu A (482)</span>
+    </div>
+
+    <!-- Worker Mobile Card 1 -->
+    <div class="mobile-card">
+      <div style="display: flex; gap: 12px; align-items: flex-start;">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: #1e3a8a; color: #ffffff; font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          AN
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="font-weight: 700; font-size: 14px; color: #0f1b33;">Nguyễn Văn An</div>
+            <span class="badge" style="background: #e6f5ee; color: #047857;">Còn 234 ngày</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: #1e3a8a; margin-top: 2px;">MNV: VC-02391</div>
+          <div style="font-size: 12px; color: #5b6577; margin-top: 4px;">Khu A • Tổ Cốp pha 1 (Phục Hưng)</div>
+          <div style="font-size: 11px; color: #5b6577; margin-top: 2px;">CCCD: 001092014829 • SĐT: 0912.842.193</div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; border-top: 1px solid #f0f3f8; padding-top: 10px; margin-top: 10px;">
+        <button style="flex: 1; height: 32px; border-radius: 6px; border: 1px solid #8592a4; background: #ffffff; color: #0f1b33; font-size: 12px; font-weight: 700;">Xem chi tiết</button>
+        <button style="flex: 1; height: 32px; border-radius: 6px; border: 1px solid #1e3a8a; background: #eef2fb; color: #1e3a8a; font-size: 12px; font-weight: 700;">In thẻ</button>
+      </div>
+    </div>
+
+    <!-- Worker Mobile Card 2 (Expiring Alert) -->
+    <div class="mobile-card" style="border-left: 4px solid #d97706;">
+      <div style="display: flex; gap: 12px; align-items: flex-start;">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: #970731; color: #ffffff; font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          TU
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="font-weight: 700; font-size: 14px; color: #0f1b33;">Nguyễn Văn Tuấn</div>
+            <span class="badge" style="background: #fdecec; color: #b4141a;">Còn 4 ngày</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: #1e3a8a; margin-top: 2px;">MNV: VC-00412</div>
+          <div style="font-size: 12px; color: #5b6577; margin-top: 4px;">Khu A • Tổ Cốp pha 2 (Vincons)</div>
+          <div style="font-size: 11px; color: #b4141a; font-weight: 600; margin-top: 2px;">⚠️ Thẻ hết hạn ngày 12/11/2026</div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; border-top: 1px solid #f0f3f8; padding-top: 10px; margin-top: 10px;">
+        <button style="flex: 1; height: 32px; border-radius: 6px; border: 1px solid #8592a4; background: #ffffff; color: #0f1b33; font-size: 12px; font-weight: 700;">Xem chi tiết</button>
+        <button style="flex: 1; height: 32px; border-radius: 6px; border: none; background: #d97706; color: #ffffff; font-size: 12px; font-weight: 700;">Gia hạn ngay</button>
+      </div>
+    </div>
+
+    <!-- Worker Mobile Card 3 (Missing Docs) -->
+    <div class="mobile-card" style="border-left: 4px solid #e31c23;">
+      <div style="display: flex; gap: 12px; align-items: flex-start;">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: #eef1f5; color: #5b6577; font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px dashed #8592a4;">
+          ?
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="font-weight: 700; font-size: 14px; color: #0f1b33;">Nguyễn Đình Trọng</div>
+            <span class="badge" style="background: #fdecec; color: #b4141a;">Thiếu ảnh thẻ</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: #1e3a8a; margin-top: 2px;">MNV: VC-02405</div>
+          <div style="font-size: 12px; color: #5b6577; margin-top: 4px;">Khu B • Tổ Xây trát 3</div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; border-top: 1px solid #f0f3f8; padding-top: 10px; margin-top: 10px;">
+        <button style="flex: 1; height: 32px; border-radius: 6px; border: 1px solid #8592a4; background: #ffffff; color: #0f1b33; font-size: 12px; font-weight: 700;">Xem chi tiết</button>
+        <button style="flex: 1; height: 32px; border-radius: 6px; border: 1px solid #e31c23; background: #fdecec; color: #b4141a; font-size: 12px; font-weight: 700;">Chụp ảnh ngay</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FIXED BOTTOM NAVIGATION BAR (72px) -->
+  <nav style="position: absolute; bottom: 0; left: 0; right: 0; height: 68px; background: #ffffff; border-top: 1px solid #e3e8ef; display: flex; align-items: center; justify-content: space-around; padding: 0 4px; box-shadow: 0 -4px 12px rgba(0,0,0,0.06);">
+    <a class="mobile-nav-btn" href="#">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg>
+      <span>Tổng quan</span>
+    </a>
+    <a class="mobile-nav-btn active" href="#">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1"/></svg>
+      <span>Công nhân</span>
+    </a>
+    <a class="mobile-nav-btn" href="#">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+      <span>Thẻ ra vào</span>
+    </a>
+    <a class="mobile-nav-btn" href="#">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 17h14M6 17l1.5-6h9L18 17M8 21v-4M16 21v-4"/></svg>
+      <span>Tra cứu xe</span>
+    </a>
+    <a class="mobile-nav-btn" href="#">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Cài đặt</span>
+    </a>
+  </nav>
+
+</div>
+
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

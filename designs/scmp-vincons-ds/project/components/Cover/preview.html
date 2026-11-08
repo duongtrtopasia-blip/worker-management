@@ -1,0 +1,47 @@
+<!-- @dsCard height=320 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>SCMP Vincons — cover</title>
+<style>
+html,body{margin:0;background:var(--canvas)}
+.cv{position:relative;width:960px;height:320px;overflow:hidden;font-family:var(--font-sans)}
+.cv svg{position:absolute;left:480px;top:0}
+.b-blue{fill:var(--brand-blue)}
+.b-maroon{fill:var(--brand-maroon)}
+.b-yellow{fill:var(--brand-yellow)}
+.b-red{fill:var(--brand-red)}
+.b-tint{fill:var(--brand-blue-soft)}
+.b-ink{fill:var(--sidebar)}
+.t-lg{rx:var(--radius-lg)}
+.t-md{rx:var(--radius-md)}
+.txt{position:absolute;left:48px;bottom:40px;max-width:440px}
+.name{margin:0;font-weight:700;font-size:96px;line-height:.95;letter-spacing:-0.02em;color:var(--ink)}
+.tag{margin:16px 0 0;font-size:14px;line-height:20px;color:var(--ink-muted)}
+</style>
+</head>
+<body>
+<div class="cv">
+<svg width="480" height="320" viewBox="0 0 480 320" aria-hidden="true">
+<!--
+blocks: brand-blue 216x200 slab, sidebar 120x96, brand-maroon 120x104, brand-yellow 96x96, brand-red 48x48, tint 168x96
+arrangement: one tall navy slab with satellites, modular grid at 24px gutter, bleeding off the top and right edges
+pattern: geometric/modular dense UI (tables, cards, 4px grid) -> tiles cut by radius-lg/radius-md, one merged two-wide like a table row
+scales: gap space-6 (24px), units multiples of space-6, corners radius-lg (12) and radius-md (8)
+-->
+  <rect class="b-blue t-lg" x="24" y="-12" width="216" height="212"/>
+  <rect class="b-ink t-lg" x="264" y="-12" width="120" height="108"/>
+  <rect class="b-yellow t-md" x="408" y="-12" width="96" height="108"/>
+  <rect class="b-maroon t-lg" x="264" y="120" width="120" height="104"/>
+  <rect class="b-red t-md" x="408" y="120" width="48" height="48"/>
+  <rect class="b-tint t-lg" x="24" y="224" width="216" height="72"/>
+  <rect class="b-tint t-md" x="264" y="248" width="72" height="48"/>
+  <rect class="b-tint t-md" x="360" y="248" width="144" height="48"/>
+</svg>
+<div class="txt">
+  <h1 class="name">SCMP<br>Vincons</h1>
+  <p class="tag">Quản lý công nhân và thẻ ra vào công trường: rõ ràng, nhất quán, đọc được ngay.</p>
+</div>
+</div>
+<script></script>
+</body>
+</html>
