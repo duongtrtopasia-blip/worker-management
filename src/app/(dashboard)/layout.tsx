@@ -16,6 +16,7 @@ import {
   HardHat,
   UtensilsCrossed,
   ClipboardList,
+  Smartphone,
 } from 'lucide-react';
 import { logoutAction } from '@/app/actions/auth';
 import { AppNotification, getNotificationsAction } from '@/app/actions/notification';
@@ -283,6 +284,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Sidebar Bottom: Settings & Logout */}
         <div style={{ padding: '12px', borderTop: '1px solid #2a3f86' }} className="space-y-1">
+          <a
+            href="/SCMP-Vincons.apk"
+            download="SCMP-Vincons.apk"
+            className="sidebar-link hover:!bg-[#fdef03]/15 hover:!text-[#fdef03]"
+          >
+            <Smartphone className="w-[18px] h-[18px] shrink-0" />
+            <span>Tải App Android (.APK)</span>
+          </a>
           <Link
             href="/settings"
             className={`sidebar-link ${isItemActive('/settings') ? 'active' : ''}`}

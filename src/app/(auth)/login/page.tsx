@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { loginAction } from '@/app/actions/auth';
-import { Eye, EyeOff, ArrowRight, Users, Calendar, Shield } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Users, Calendar, Shield, Smartphone } from 'lucide-react';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -430,6 +430,27 @@ export default function LoginPage() {
             <span style={{ fontWeight: 700, color: '#0f1b33' }}>Hỗ trợ cấp tài khoản:</span> Liên hệ
             Ban Chỉ Huy Công Trường Mỹ Lâm hoặc Phòng An toàn &amp; CNTT.
           </div>
+
+          {/* Android APK Download Button */}
+          <a
+            href="/SCMP-Vincons.apk"
+            download="SCMP-Vincons.apk"
+            style={{
+              marginTop: '12px',
+              padding: '11px 16px',
+              borderRadius: '8px',
+              background: '#eef2fb',
+              border: '1px solid #c9d4f0',
+              fontSize: '13px',
+              fontWeight: 700,
+              color: '#1e3a8a',
+              textDecoration: 'none',
+            }}
+            className="flex items-center justify-center gap-2 hover:bg-[#e1e8f9] transition-colors"
+          >
+            <Smartphone className="w-4 h-4 shrink-0" />
+            <span>Tải ứng dụng Android (.APK)</span>
+          </a>
         </div>
       </div>
     </div>
