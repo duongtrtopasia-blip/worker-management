@@ -72,9 +72,10 @@ export default function WorkerDetailPage(props: { params: Promise<{ id: string }
   };
 
   const startDate = new Date(worker.start_date || worker.created_at);
-  const expiryDate = new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000);
+  const expiryDate = new Date(startDate);
+  expiryDate.setMonth(expiryDate.getMonth() + 6);
   const diffDays = Math.ceil((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-  const validityPct = Math.max(0, Math.min(100, Math.round((diffDays / 365) * 100)));
+  const validityPct = Math.max(0, Math.min(100, Math.round((diffDays / 180) * 100)));
 
   const getDoc = (type: string) => documents.find((d) => d.doc_type === type);
 

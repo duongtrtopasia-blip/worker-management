@@ -41,7 +41,8 @@ function computeDashboardStats(data: any[]) {
   const now = new Date();
   data.forEach((w) => {
     const startDate = new Date(w.start_date || w.created_at);
-    const expiryDate = new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000);
+    const expiryDate = new Date(startDate);
+    expiryDate.setMonth(expiryDate.getMonth() + 6);
     const diffTime = expiryDate.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 

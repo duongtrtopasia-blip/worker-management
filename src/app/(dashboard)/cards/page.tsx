@@ -91,7 +91,11 @@ export default function CardsPage() {
     project_name: 'Khu DLND Mỹ Lâm\nTuyên Quang',
     contractor_name: 'VINCONS',
     issue_date: new Date().toISOString(),
-    expiry_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
+    expiry_date: (() => {
+      const d = new Date();
+      d.setMonth(d.getMonth() + 6);
+      return d.toISOString();
+    })(),
     qr_data: `${w.mnv} - ${w.full_name}${w.vehicle_plate ? ` - ${w.vehicle_plate}` : ''}`,
   });
 
