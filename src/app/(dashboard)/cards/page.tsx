@@ -41,12 +41,18 @@ export default function CardsPage() {
   const [printMode, setPrintMode] = useState<PrintMode>('print');
   const [searchQuery, setSearchQuery] = useState('');
   const deferredSearchQuery = useDeferredValue(searchQuery);
+  const [visibleLimit, setVisibleLimit] = useState<number>(80);
+  const [bulkPrintJob, setBulkPrintJob] = useState<{
+    workers: any[];
+    markIssued: boolean;
+  } | null>(null);
 
   useEffect(() => {
     fetchWorkers(false);
   }, []);
   useEffect(() => {
     setCheckedIds(new Set());
+    setVisibleLimit(80);
   }, [filterStatus, printMode, deferredSearchQuery]);
 
   const fetchWorkers = async (force = true) => {
@@ -188,14 +194,7 @@ export default function CardsPage() {
       toast.error('Không có thẻ nào cần in!');
       return;
     }
-    const html = buildPrintHTML(target);
-    if (!html) {
-      toast.error('Không thể lấy dữ liệu thẻ!');
-      return;
-    }
-    openPrintWindow(html, 'A4 portrait');
-    handlePrintSuccess(target.map((w: any) => w.id));
-    toast.success(`Đang in ${target.length} thẻ...`);
+    setBulkPrintJob({ workers: target, markIssued: true });
   };
 
   const handleReprint = () => {
@@ -207,15 +206,32 @@ export default function CardsPage() {
       toast.error('Chưa chọn thẻ nào để in lại!');
       return;
     }
-    const html = buildPrintHTML(target);
-    if (!html) {
-      toast.error('Không thể lấy dữ liệu thẻ!');
-      return;
-    }
-    openPrintWindow(html, 'A4 portrait');
-    toast.success(`Đang in lại ${target.length} thẻ...`);
-    setCheckedIds(new Set());
+    setBulkPrintJob({ workers: target, markIssued: false });
   };
+
+  useEffect(() => {
+    if (!bulkPrintJob || bulkPrintJob.workers.length === 0) return;
+
+    const timer = setTimeout(() => {
+      const html = buildPrintHTML(bulkPrintJob.workers);
+      if (!html) {
+        toast.error('Không thể lấy dữ liệu thẻ!');
+        setBulkPrintJob(null);
+        return;
+      }
+      openPrintWindow(html, 'A4 portrait');
+      if (bulkPrintJob.markIssued) {
+        handlePrintSuccess(bulkPrintJob.workers.map((w: any) => w.id));
+        toast.success(`Đang in ${bulkPrintJob.workers.length} thẻ...`);
+      } else {
+        toast.success(`Đang in lại ${bulkPrintJob.workers.length} thẻ...`);
+        setCheckedIds(new Set());
+      }
+      setBulkPrintJob(null);
+    }, 60);
+
+    return () => clearTimeout(timer);
+  }, [bulkPrintJob]);
 
   const fWorkers = useMemo(() => {
     let filtered = workers;
@@ -631,106 +647,118 @@ export default function CardsPage() {
                 <p className="text-sm text-[#5b6577] font-medium">Danh sách trống</p>
               </div>
             ) : (
-              fWorkers.map((w) => {
-                const isEligible = isReprintMode
-                  ? w.card_status === 'issued'
-                  : w.card_status === 'approved';
-                const isChecked = checkedIds.has(w.id);
-                const isSelected = selectedWorker?.id === w.id;
-                return (
-                  <div
-                    key={w.id}
-                    onClick={() => setSelectedWorker(w)}
-                    style={{
-                      padding: '12px',
-                      borderRadius: '8px',
-                      border: isSelected
-                        ? '1px solid #1e3a8a'
-                        : isChecked
-                        ? '1px solid #047857'
-                        : '1px solid #e3e8ef',
-                      background: isSelected
-                        ? '#eef2fb'
-                        : isChecked
-                        ? '#e6f5ee'
-                        : '#ffffff',
-                      cursor: 'pointer',
-                    }}
-                    className="hover:bg-[#f7f9fc] transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      {isEligible && (
-                        <button onClick={(e) => toggleCheck(w.id, e)} className="shrink-0">
-                          {isChecked ? (
-                            <CheckSquare className="h-4 w-4 text-[#1e3a8a]" />
+              <>
+                {fWorkers.slice(0, visibleLimit).map((w) => {
+                  const isEligible = isReprintMode
+                    ? w.card_status === 'issued'
+                    : w.card_status === 'approved';
+                  const isChecked = checkedIds.has(w.id);
+                  const isSelected = selectedWorker?.id === w.id;
+                  return (
+                    <div
+                      key={w.id}
+                      onClick={() => setSelectedWorker(w)}
+                      style={{
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: isSelected
+                          ? '1px solid #1e3a8a'
+                          : isChecked
+                          ? '1px solid #047857'
+                          : '1px solid #e3e8ef',
+                        background: isSelected
+                          ? '#eef2fb'
+                          : isChecked
+                          ? '#e6f5ee'
+                          : '#ffffff',
+                        cursor: 'pointer',
+                      }}
+                      className="hover:bg-[#f7f9fc] transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        {isEligible && (
+                          <button onClick={(e) => toggleCheck(w.id, e)} className="shrink-0">
+                            {isChecked ? (
+                              <CheckSquare className="h-4 w-4 text-[#1e3a8a]" />
+                            ) : (
+                              <Square className="h-4 w-4 text-[#8592a4]" />
+                            )}
+                          </button>
+                        )}
+                        <div
+                          style={{
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '50%',
+                            background: '#1e3a8a',
+                            color: '#ffffff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            overflow: 'hidden',
+                          }}
+                        >
+                          {w.portrait_url ? (
+                            <img
+                              src={w.portrait_url}
+                              loading="lazy"
+                              className="w-full h-full object-cover"
+                              alt={w.full_name}
+                            />
                           ) : (
-                            <Square className="h-4 w-4 text-[#8592a4]" />
+                            <span className="text-white text-xs font-bold">
+                              {w.full_name?.charAt(0)}
+                            </span>
                           )}
-                        </button>
-                      )}
-                      <div
-                        style={{
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '50%',
-                          background: '#1e3a8a',
-                          color: '#ffffff',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0,
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {w.portrait_url ? (
-                          <img
-                            src={w.portrait_url}
-                            className="w-full h-full object-cover"
-                            alt={w.full_name}
-                          />
-                        ) : (
-                          <span className="text-white text-xs font-bold">
-                            {w.full_name?.charAt(0)}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-sm text-[#0f1b33] truncate">{w.full_name}</p>
-                        <p className="text-xs text-[#5b6577] truncate">
-                          MNV: {w.mnv} · {w.team}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        {w.card_status === 'pending' && (
-                          <span
-                            className="scmp-badge"
-                            style={{ background: '#fdf3dc', color: '#92400e' }}
-                          >
-                            Chờ duyệt
-                          </span>
-                        )}
-                        {w.card_status === 'approved' && (
-                          <span
-                            className="scmp-badge"
-                            style={{ background: '#e6f5ee', color: '#047857' }}
-                          >
-                            Chờ in
-                          </span>
-                        )}
-                        {w.card_status === 'issued' && (
-                          <span
-                            className="scmp-badge"
-                            style={{ background: '#eef2fb', color: '#1e3a8a' }}
-                          >
-                            Đã cấp
-                          </span>
-                        )}
-                        {isSelected && <ChevronRight className="w-4 h-4 text-[#1e3a8a]" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm text-[#0f1b33] truncate">{w.full_name}</p>
+                          <p className="text-xs text-[#5b6577] truncate">
+                            MNV: {w.mnv} · {w.team}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          {w.card_status === 'pending' && (
+                            <span
+                              className="scmp-badge"
+                              style={{ background: '#fdf3dc', color: '#92400e' }}
+                            >
+                              Chờ duyệt
+                            </span>
+                          )}
+                          {w.card_status === 'approved' && (
+                            <span
+                              className="scmp-badge"
+                              style={{ background: '#e6f5ee', color: '#047857' }}
+                            >
+                              Chờ in
+                            </span>
+                          )}
+                          {w.card_status === 'issued' && (
+                            <span
+                              className="scmp-badge"
+                              style={{ background: '#eef2fb', color: '#1e3a8a' }}
+                            >
+                              Đã cấp
+                            </span>
+                          )}
+                          {isSelected && <ChevronRight className="w-4 h-4 text-[#1e3a8a]" />}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })
+                  );
+                })}
+                {fWorkers.length > visibleLimit && (
+                  <button
+                    type="button"
+                    onClick={() => setVisibleLimit((prev) => prev + 100)}
+                    className="w-full py-2.5 text-xs font-bold text-[#1e3a8a] bg-[#eef2fb] hover:bg-[#e1e8f9] rounded-lg transition-colors"
+                  >
+                    Xem thêm ({fWorkers.length - visibleLimit} thẻ còn lại)
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -807,14 +835,16 @@ export default function CardsPage() {
         </div>
       </div>
 
-      {/* Hidden render for bulk print */}
-      <div className="absolute opacity-0 pointer-events-none -z-50 -top-[9999px] -left-[9999px]">
-        {workers.map((w) => (
-          <div key={w.id} data-worker-id={w.id}>
-            <CardTemplate data={buildCardData(w)} layout="horizontal" />
-          </div>
-        ))}
-      </div>
+      {/* On-demand hidden render for bulk print only when triggered */}
+      {bulkPrintJob && (
+        <div className="absolute opacity-0 pointer-events-none -z-50 -top-[9999px] -left-[9999px]">
+          {bulkPrintJob.workers.map((w) => (
+            <div key={w.id} data-worker-id={w.id}>
+              <CardTemplate data={buildCardData(w)} layout="horizontal" />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

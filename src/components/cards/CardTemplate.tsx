@@ -12,6 +12,7 @@ const AutoFitText = ({ text, className, align = 'center', defaultFontSize = 13 }
       const textEl = textRef.current;
       
       textEl.style.fontSize = `${defaultFontSize}px`;
+      if (container.clientWidth <= 0) return;
       let currentSize = defaultFontSize;
       
       while (textEl.scrollWidth > container.clientWidth && currentSize > 6) {
