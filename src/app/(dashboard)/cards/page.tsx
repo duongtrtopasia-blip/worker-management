@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect, useDeferredValue, useMemo } from 'react';
 import Link from 'next/link';
 import { CardTemplate, CardData } from '@/components/cards/CardTemplate';
